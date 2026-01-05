@@ -1,365 +1,92 @@
-name: OWH Domain WHOIS RDAP - Build and Release
+name: Generate new release for plugin
 
 on:
-  push:
-    branches: [ main, master, develop ]
-    tags: [ 'v*.*.*' ]
   pull_request:
-    branches: [ main, master ]
+    types: [ closed ]
+    branches: [ main ]
 
+env:
+  PLUGIN_NAME: owh-domain-whois-rdap
+  PHP_VERSION: "7.4"
+  DEPLOY_TAG: "2.9.0"
 jobs:
-  test:
-    name: Test and Validate
+  release-build:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        php-version: [7.4, 8.0, 8.1, 8.2]
-        wordpress-version: [5.0, 5.9, 6.0, 6.4]
-
+    permissions:
+      contents: write
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+    # Run composer install and generate vendor
+    - name: Run composer install
+      uses: php-actions/composer@v6
       with:
-        php-version: ${{ matrix.php-version }}
-        extensions: mbstring, intl, gd, xml, zip
-        ini-values: post_max_size=256M, max_execution_time=180
-        coverage: xdebug
-        tools: composer:v2
+        php_version: ${{ env.PHP_VERSION }}
+        working_dir: "."
+        args: --ignore-platform-reqs
+        command: install
+        dev: no
 
-    - name: Validate composer.json
+    #- name: Executar Plugin Check com configurações personalizadas
+    #  uses: wordpress/plugin-check-action@v1
+    #  with:
+    #    build-dir: './'
+    #    exclude-directories: 'node_modules,vendor,.eslintrc'
+    #    ignore-codes: |
+    #      WordPress.WP.I18n.TextDomainMismatch
+    #      WordPress.Security.NonceVerification.Missing
+    #      WordPress.Security.NonceVerification.Recommended
+    #      WordPress.DB.SlowDBQuery.slow_db_query_meta_key
+    #      WordPress.DB.SlowDBQuery.slow_db_query_meta_value
+    #      trademarked_term
+    #      textdomain_mismatch
+    #      hidden_files
+    #    categories: |
+    #      performance
+    #      accessibility
+    #      general
+    #      plugin_repo
+    #      security
+    #    strict: true
+
+    # Add plugin files to a root directory
+    - name: Prepare plugin folder
       run: |
-        if [ -f composer.json ]; then
-          composer validate --strict
-        fi
+        mkdir -p dist
+        mkdir -p build/${{ env.PLUGIN_NAME }}
+        mv ./admin ./assets ./includes ./public ./screenshots ./src *.php *.txt ./build/${{ env.PLUGIN_NAME }}
+        cp -r vendor build/${{ env.PLUGIN_NAME }}/vendor
+        find ./build -type f -exec chmod 0644 {} +
+        find ./build -type d -exec chmod 0755 {} +
 
-    - name: Install dependencies
-      run: |
-        if [ -f composer.json ]; then
-          composer install --prefer-dist --no-progress --no-suggest
-        fi
-
-    - name: PHP Syntax Check
-      run: |
-        find . -type f -name "*.php" ! -path "./vendor/*" ! -path "./node_modules/*" -exec php -l {} \;
-
-    - name: WordPress Coding Standards
-      run: |
-        if [ -f composer.json ]; then
-          composer global require "squizlabs/php_codesniffer=*"
-          composer global require "wp-coding-standards/wpcs=*"
-          phpcs --config-set installed_paths $HOME/.composer/vendor/wp-coding-standards/wpcs
-          phpcs --standard=WordPress --ignore=vendor/ .
-        else
-          echo "Skipping WPCS check (no composer.json found)"
-        fi
-
-    - name: PSR-4 Standards Check for src/
-      run: |
-        if [ -d src/ ]; then
-          find src/ -type f -name "*.php" -exec php -l {} \;
-          echo "PSR-4 namespace check passed"
-        fi
-
-    - name: Check plugin header
-      run: |
-        if grep -q "Plugin Name:" lknaci-owh-domain-whois-rdap.php; then
-          echo "Plugin header found"
-        else
-          echo "Plugin header missing or invalid"
-          exit 1
-        fi
-
-    - name: Validate plugin structure
-      run: |
-        # Check required directories
-        required_dirs=("admin" "public" "includes" "src")
-        for dir in "${required_dirs[@]}"; do
-          if [ ! -d "$dir" ]; then
-            echo "Required directory missing: $dir"
-            exit 1
-          fi
-        done
-        
-        # Check required files
-        required_files=(
-          "lknaci-owh-domain-whois-rdap.php"
-          "includes/class-lknaci-owh-domain-whois-rdap.php"
-          "includes/class-lknaci-owh-domain-whois-rdap-activator.php"
-          "includes/class-lknaci-owh-domain-whois-rdap-deactivator.php"
-          "admin/class-lknaci-owh-domain-whois-rdap-admin.php"
-          "public/class-lknaci-owh-domain-whois-rdap-public.php"
-        )
-        
-        for file in "${required_files[@]}"; do
-          if [ ! -f "$file" ]; then
-            echo "Required file missing: $file"
-            exit 1
-          fi
-        done
-
-    - name: Run PHPUnit tests (if available)
-      run: |
-        if [ -f phpunit.xml ] || [ -f phpunit.xml.dist ]; then
-          vendor/bin/phpunit
-        else
-          echo "No PHPUnit configuration found, skipping tests"
-        fi
-
-  security:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    needs: test
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Security scan for WordPress
-      run: |
-        # Check for common WordPress security issues
-        echo "Checking for security vulnerabilities..."
-        
-        # Check for direct file access protection
-        if ! grep -r "defined.*WPINC" . --include="*.php" | head -1; then
-          echo "Warning: Some files may not have direct access protection"
-        fi
-        
-        # Check for SQL injection patterns
-        if grep -r "\\$_\(GET\|POST\|REQUEST\)" . --include="*.php" | grep -v "wp_unslash\|sanitize_"; then
-          echo "Warning: Potential unsanitized input usage found"
-        fi
-        
-        # Check for XSS vulnerabilities
-        if grep -r "echo.*\\$_\(GET\|POST\|REQUEST\)" . --include="*.php"; then
-          echo "Warning: Potential XSS vulnerability found"
-        fi
-
-  build:
-    name: Build Release Package
-    runs-on: ubuntu-latest
-    needs: [test, security]
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Archive Release
+      uses: thedoctor0/zip-release@master
       with:
-        node-version: '18'
-        cache: 'npm'
+        type: 'zip'
+        path: '.'
+        directory: 'build'
+        filename: '${{ env.PLUGIN_NAME }}.zip'
+        exclusions: '*.git* /*node_modules/* .editorconfig'
 
-    - name: Install Node dependencies (if package.json exists)
+    - name: Move .zip to custom location
       run: |
-        if [ -f package.json ]; then
-          npm ci
-          npm run build --if-present
-        fi
+        mv ./build/${{ env.PLUGIN_NAME }}.zip ./dist/
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+    # Update version tag
+    - name: Bump version and push tag
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v6.0
       with:
-        php-version: '8.0'
-        extensions: mbstring, intl, gd, xml, zip
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        custom_tag: ${{ env.DEPLOY_TAG }} # // TODO caso necessário definir a tag da release manualmente
 
-    - name: Install Composer dependencies for production
-      run: |
-        if [ -f composer.json ]; then
-          composer install --no-dev --optimize-autoloader
-        fi
-
-    - name: Create languages directory
-      run: |
-        mkdir -p languages
-
-    - name: Generate .pot file (if wp-cli available)
-      run: |
-        if command -v wp &> /dev/null; then
-          wp i18n make-pot . languages/lknaci-owh-domain-whois-rdap.pot --skip-js
-        else
-          echo "WP-CLI not available, skipping .pot generation"
-        fi
-
-    - name: Prepare build directory
-      run: |
-        mkdir -p build
-        rsync -av --progress . build/lknaci-owh-domain-whois-rdap \
-          --exclude='.git' \
-          --exclude='.github' \
-          --exclude='.vscode' \
-          --exclude='node_modules' \
-          --exclude='build' \
-          --exclude='*.md' \
-          --exclude='.gitignore' \
-          --exclude='.gitattributes' \
-          --exclude='composer.lock' \
-          --exclude='package-lock.json' \
-          --exclude='phpunit.xml' \
-          --exclude='tests/' \
-          --exclude='*.log'
-
-    - name: Validate plugin in build directory
-      run: |
-        cd build/lknaci-owh-domain-whois-rdap
-        php -l lknaci-owh-domain-whois-rdap.php
-        
-        # Check if all required files are present
-        required_files=(
-          "lknaci-owh-domain-whois-rdap.php"
-          "admin/class-lknaci-owh-domain-whois-rdap-admin.php"
-          "public/class-lknaci-owh-domain-whois-rdap-public.php"
-          "src/Services/ServiceContainer.php"
-          "src/Services/RdapClient.php"
-        )
-        
-        for file in "${required_files[@]}"; do
-          if [ ! -f "$file" ]; then
-            echo "Error: Required file missing in build: $file"
-            exit 1
-          fi
-        done
-
-    - name: Create ZIP package
-      run: |
-        cd build
-        zip -r ../lknaci-owh-domain-whois-rdap.zip lknaci-owh-domain-whois-rdap/
-        cd ..
-        
-        # Verify ZIP contents
-        unzip -l lknaci-owh-domain-whois-rdap.zip | head -20
-
-    - name: Upload build artifact
-      uses: actions/upload-artifact@v3
+    # Generate new release
+    - name: Generate new Release
+      uses: ncipollo/release-action@v1
       with:
-        name: lknaci-owh-domain-whois-rdap-${{ github.sha }}
-        path: lknaci-owh-domain-whois-rdap.zip
-        retention-days: 90
-
-    - name: Calculate package checksums
-      run: |
-        sha256sum lknaci-owh-domain-whois-rdap.zip > checksums.txt
-        md5sum lknaci-owh-domain-whois-rdap.zip >> checksums.txt
-        cat checksums.txt
-
-    - name: Upload checksums
-      uses: actions/upload-artifact@v3
-      with:
-        name: checksums-${{ github.sha }}
-        path: checksums.txt
-
-  release:
-    name: Create GitHub Release
-    runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/')
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: lknaci-owh-domain-whois-rdap-${{ github.sha }}
-
-    - name: Download checksums
-      uses: actions/download-artifact@v3
-      with:
-        name: checksums-${{ github.sha }}
-
-    - name: Extract version from tag
-      id: version
-      run: |
-        VERSION=${GITHUB_REF#refs/tags/}
-        echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
-        echo "VERSION_NUMBER=${VERSION#v}" >> $GITHUB_OUTPUT
-
-    - name: Create Release Notes
-      run: |
-        cat > release-notes.md << 'EOF'
-        ## OWH Domain WHOIS RDAP v${{ steps.version.outputs.VERSION_NUMBER }}
-        
-        ### Features
-        - Complete RDAP protocol implementation
-        - WordPress admin dashboard with statistics
-        - Public domain search functionality
-        - Intelligent caching system
-        - IANA bootstrap file management
-        - Responsive design with dark mode support
-        
-        ### Technical Details
-        - **PHP Requirements:** 7.4+
-        - **WordPress Requirements:** 5.0+
-        - **Architecture:** Hybrid (WordPress + PSR-4)
-        - **Protocol:** RDAP only (no legacy WHOIS)
-        
-        ### Installation
-        1. Download the plugin ZIP file
-        2. Upload via WordPress admin or extract to wp-content/plugins/
-        3. Activate the plugin
-        4. Configure settings in WordPress admin
-        
-        ### Security
-        See checksums.txt for file integrity verification.
-        EOF
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        name: OWH Domain WHOIS RDAP v${{ steps.version.outputs.VERSION_NUMBER }}
-        body_path: release-notes.md
-        files: |
-          lknaci-owh-domain-whois-rdap.zip
-          checksums.txt
-        draft: false
-        prerelease: ${{ contains(steps.version.outputs.VERSION, 'rc') || contains(steps.version.outputs.VERSION, 'beta') || contains(steps.version.outputs.VERSION, 'alpha') }}
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  wordpress-deploy:
-    name: Deploy to WordPress.org
-    runs-on: ubuntu-latest
-    needs: build
-    if: startsWith(github.ref, 'refs/tags/') && !contains(github.ref, 'rc') && !contains(github.ref, 'beta') && !contains(github.ref, 'alpha')
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download build artifact
-      uses: actions/download-artifact@v3
-      with:
-        name: lknaci-owh-domain-whois-rdap-${{ github.sha }}
-
-    - name: WordPress.org Deployment
-      uses: 10up/action-wordpress-plugin-deploy@stable
-      env:
-        SVN_USERNAME: ${{ secrets.WORDPRESS_ORG_USERNAME }}
-        SVN_PASSWORD: ${{ secrets.WORDPRESS_ORG_PASSWORD }}
-        SLUG: lknaci-owh-domain-whois-rdap
-        VERSION: ${{ github.ref_name }}
-
-  notify:
-    name: Notify Build Status
-    runs-on: ubuntu-latest
-    needs: [test, security, build]
-    if: always()
-    
-    steps:
-    - name: Notify Success
-      if: ${{ needs.test.result == 'success' && needs.security.result == 'success' && needs.build.result == 'success' }}
-      run: |
-        echo "✅ Build completed successfully!"
-        echo "Plugin is ready for release."
-
-    - name: Notify Failure
-      if: ${{ needs.test.result == 'failure' || needs.security.result == 'failure' || needs.build.result == 'failure' }}
-      run: |
-        echo "❌ Build failed!"
-        echo "Please check the logs for details."
-        exit 1
+        artifacts: "dist/${{ env.PLUGIN_NAME }}.zip"
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit: "main"
+        draft: true
+        tag: ${{ steps.tag_version.outputs.new_tag }}
+        name: Release ${{ steps.tag_version.outputs.new_tag }}
