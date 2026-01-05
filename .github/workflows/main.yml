@@ -17,15 +17,6 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    # Run composer install and generate vendor
-    - name: Run composer install
-      uses: php-actions/composer@v6
-      with:
-        php_version: ${{ env.PHP_VERSION }}
-        working_dir: "."
-        args: --ignore-platform-reqs
-        command: install
-        dev: no
 
     #- name: Executar Plugin Check com configurações personalizadas
     #  uses: wordpress/plugin-check-action@v1
