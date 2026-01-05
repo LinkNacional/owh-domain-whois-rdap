@@ -45,8 +45,20 @@ jobs:
       run: |
         mkdir -p dist
         mkdir -p build/${{ env.PLUGIN_NAME }}
-        mv ./admin ./assets ./includes ./public ./screenshots ./src *.php *.txt ./build/${{ env.PLUGIN_NAME }}
-        cp -r vendor build/${{ env.PLUGIN_NAME }}/vendor
+        
+        # Move existing directories and files
+        [ -d ./admin ] && mv ./admin ./build/${{ env.PLUGIN_NAME }}/ || echo "admin not found"
+        [ -d ./includes ] && mv ./includes ./build/${{ env.PLUGIN_NAME }}/ || echo "includes not found"
+        [ -d ./public ] && mv ./public ./build/${{ env.PLUGIN_NAME }}/ || echo "public not found"
+        [ -d ./src ] && mv ./src ./build/${{ env.PLUGIN_NAME }}/ || echo "src not found"
+        
+        # Move optional directories if they exist
+        [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
+        [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
+        
+        # Move PHP files
+        mv *.php ./build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || echo "No PHP files found"
+        
         find ./build -type f -exec chmod 0644 {} +
         find ./build -type d -exec chmod 0755 {} +
 
