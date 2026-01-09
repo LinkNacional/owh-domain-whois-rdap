@@ -208,6 +208,11 @@ class Lknaci_Owh_Domain_Whois_Rdap_Admin {
 				'inputFocusColor' => array(
 					'type' => 'string',
 					'default' => '#0073aa'
+				),
+				// Layout options
+				'buttonLayout' => array(
+					'type' => 'string',
+					'default' => 'external'
 				)
 			)
 		) );
@@ -467,6 +472,11 @@ class Lknaci_Owh_Domain_Whois_Rdap_Admin {
 		}
 		if ( isset( $attributes['inputFocusColor'] ) && ! empty( $attributes['inputFocusColor'] ) ) {
 			$shortcode_atts[] = 'input_focus_color="' . esc_attr( $attributes['inputFocusColor'] ) . '"';
+		}
+		
+		// Add layout options
+		if ( isset( $attributes['buttonLayout'] ) && ! empty( $attributes['buttonLayout'] ) ) {
+			$shortcode_atts[] = 'button_layout="' . esc_attr( $attributes['buttonLayout'] ) . '"';
 		}
 		
 		return do_shortcode( '[owh-rdap-whois-search ' . implode( ' ', $shortcode_atts ) . ']' );

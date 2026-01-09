@@ -143,7 +143,8 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			'primary_color' => '',
 			'button_hover_color' => '',
 			'input_border_color' => '',
-			'input_focus_color' => ''
+			'input_focus_color' => '',
+			'button_layout' => 'external'
 		), $atts );
 
 		$settings_manager = $this->service_container->get( 'SettingsManager' );
@@ -176,7 +177,8 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			'primary_color' => ! empty( $atts['primary_color'] ) ? $atts['primary_color'] : '',
 			'button_hover_color' => ! empty( $atts['button_hover_color'] ) ? $atts['button_hover_color'] : '',
 			'input_border_color' => ! empty( $atts['input_border_color'] ) ? $atts['input_border_color'] : '',
-			'input_focus_color' => ! empty( $atts['input_focus_color'] ) ? $atts['input_focus_color'] : ''
+			'input_focus_color' => ! empty( $atts['input_focus_color'] ) ? $atts['input_focus_color'] : '',
+			'button_layout' => ! empty( $atts['button_layout'] ) ? $atts['button_layout'] : 'external'
 		);
 
 		ob_start();

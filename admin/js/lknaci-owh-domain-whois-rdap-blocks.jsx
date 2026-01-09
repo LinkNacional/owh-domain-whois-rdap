@@ -113,6 +113,11 @@ registerBlockType('owh-rdap/domain-search', {
         inputFocusColor: {
             type: 'string',
             default: '#0073aa'
+        },
+        // Layout options
+        buttonLayout: {
+            type: 'string',
+            default: 'external' // 'external' ou 'internal'
         }
     },
     supports: {
@@ -124,7 +129,7 @@ registerBlockType('owh-rdap/domain-search', {
             showTitle, customTitle, showExamples, placeholderText, searchButtonText, 
             loadingText, examplesText, example1, example2, example3, customCSS, 
             borderWidth, borderColor, borderRadius, backgroundColor, padding,
-            primaryColor, buttonHoverColor, inputBorderColor, inputFocusColor
+            primaryColor, buttonHoverColor, inputBorderColor, inputFocusColor, buttonLayout
         } = attributes;
 
         // Preview component
@@ -159,17 +164,19 @@ registerBlockType('owh-rdap/domain-search', {
 
             const inputWrapperStyle = {
                 display: 'flex',
-                gap: '10px',
-                marginBottom: '15px'
+                gap: buttonLayout === 'external' ? '10px' : '0',
+                marginBottom: '15px',
+                position: 'relative'
             };
 
             const inputStyle = {
                 flex: '1',
-                padding: '12px 16px',
+                padding: buttonLayout === 'external' ? '12px 16px' : '12px 120px 12px 16px',
                 border: `2px solid ${inputBorderColor}`,
                 borderRadius: '6px',
                 fontSize: '16px',
-                transition: 'border-color 0.3s ease'
+                transition: 'border-color 0.3s ease',
+                width: '100%'
             };
 
             const buttonStyle = {
@@ -182,7 +189,18 @@ registerBlockType('owh-rdap/domain-search', {
                 fontWeight: '600',
                 cursor: 'pointer',
                 transition: 'background-color 0.3s ease',
-                minWidth: '120px'
+                minWidth: '120px',
+                ...(buttonLayout === 'internal' ? {
+                    position: 'absolute',
+                    transform: 'translateY(-50%)',
+                    padding: '8px 16px',
+                    fontSize: '14px',
+                    borderRadius: '4px',
+                    minWidth: '100px',
+                    right: '7px',
+                    top: '50%',
+                    height: '48px',
+                } : {})
             };
 
             const examplesStyle = {
@@ -410,6 +428,16 @@ registerBlockType('owh-rdap/domain-search', {
                                             title={__('Layout e Cores', 'lknaci-owh-domain-whois-rdap')}
                                             initialOpen={false}
                                         >
+                                            <SelectControl
+                                                label={__('Layout do Botão', 'lknaci-owh-domain-whois-rdap')}
+                                                value={buttonLayout}
+                                                options={[
+                                                    { label: __('Externo (ao lado do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'external' },
+                                                    { label: __('Interno (dentro do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'internal' }
+                                                ]}
+                                                onChange={(value) => setAttributes({ buttonLayout: value })}
+                                                help={__('Controla a posição do botão em relação ao campo de pesquisa', 'lknaci-owh-domain-whois-rdap')}
+                                            />
                                             <div style={{ marginBottom: '20px' }}>
                                                 <label style={{ 
                                                     display: 'block', 
@@ -1090,6 +1118,16 @@ registerBlockType('owh-rdap/domain-results', {
                                             title={__('Layout e Cores', 'lknaci-owh-domain-whois-rdap')}
                                             initialOpen={false}
                                         >
+                                            <SelectControl
+                                                label={__('Layout do Botão', 'lknaci-owh-domain-whois-rdap')}
+                                                value={buttonLayout}
+                                                options={[
+                                                    { label: __('Externo (ao lado do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'external' },
+                                                    { label: __('Interno (dentro do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'internal' }
+                                                ]}
+                                                onChange={(value) => setAttributes({ buttonLayout: value })}
+                                                help={__('Controla a posição do botão em relação ao campo de pesquisa', 'lknaci-owh-domain-whois-rdap')}
+                                            />
                                             <div style={{ marginBottom: '20px' }}>
                                                 <label style={{ 
                                                     display: 'block', 
@@ -1136,11 +1174,11 @@ registerBlockType('owh-rdap/domain-results', {
                                 );
                             }
 
-                            // Tab: Cores de Status
+                            // Tab: Cores
                             if (tab.name === 'colors') {
                                 return (
                                     <PanelBody
-                                        title={__('Cores dos Status', 'lknaci-owh-domain-whois-rdap')}
+                                        title={__('Esquema de Cores', 'lknaci-owh-domain-whois-rdap')}
                                         initialOpen={true}
                                     >
                                         <div style={{ marginBottom: '20px' }}>
@@ -1151,11 +1189,11 @@ registerBlockType('owh-rdap/domain-results', {
                                                 fontWeight: '500', 
                                                 textTransform: 'uppercase' 
                                             }}>
-                                                {__('Cor do Status "Disponível"', 'lknaci-owh-domain-whois-rdap')}
+                                                {__('Cor Primária (Botão)', 'lknaci-owh-domain-whois-rdap')}
                                             </label>
                                             <ColorPicker
-                                                color={availableColor}
-                                                onChangeComplete={(color) => setAttributes({ availableColor: color.hex })}
+                                                color={primaryColor}
+                                                onChangeComplete={(color) => setAttributes({ primaryColor: color.hex })}
                                                 disableAlpha={true}
                                             />
                                         </div>
@@ -1167,11 +1205,43 @@ registerBlockType('owh-rdap/domain-results', {
                                                 fontWeight: '500', 
                                                 textTransform: 'uppercase' 
                                             }}>
-                                                {__('Cor do Status "Indisponível"', 'lknaci-owh-domain-whois-rdap')}
+                                                {__('Cor Hover do Botão', 'lknaci-owh-domain-whois-rdap')}
                                             </label>
                                             <ColorPicker
-                                                color={unavailableColor}
-                                                onChangeComplete={(color) => setAttributes({ unavailableColor: color.hex })}
+                                                color={buttonHoverColor}
+                                                onChangeComplete={(color) => setAttributes({ buttonHoverColor: color.hex })}
+                                                disableAlpha={true}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '8px', 
+                                                fontSize: '11px', 
+                                                fontWeight: '500', 
+                                                textTransform: 'uppercase' 
+                                            }}>
+                                                {__('Cor da Borda do Campo', 'lknaci-owh-domain-whois-rdap')}
+                                            </label>
+                                            <ColorPicker
+                                                color={inputBorderColor}
+                                                onChangeComplete={(color) => setAttributes({ inputBorderColor: color.hex })}
+                                                disableAlpha={true}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '20px' }}>
+                                            <label style={{ 
+                                                display: 'block', 
+                                                marginBottom: '8px', 
+                                                fontSize: '11px', 
+                                                fontWeight: '500', 
+                                                textTransform: 'uppercase' 
+                                            }}>
+                                                {__('Cor de Foco do Campo', 'lknaci-owh-domain-whois-rdap')}
+                                            </label>
+                                            <ColorPicker
+                                                color={inputFocusColor}
+                                                onChangeComplete={(color) => setAttributes({ inputFocusColor: color.hex })}
                                                 disableAlpha={true}
                                             />
                                         </div>
@@ -1664,6 +1734,16 @@ registerBlockType('owh-rdap/whois-details', {
                                             title={__('Layout e Cores', 'lknaci-owh-domain-whois-rdap')}
                                             initialOpen={false}
                                         >
+                                            <SelectControl
+                                                label={__('Layout do Botão', 'lknaci-owh-domain-whois-rdap')}
+                                                value={buttonLayout}
+                                                options={[
+                                                    { label: __('Externo (ao lado do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'external' },
+                                                    { label: __('Interno (dentro do campo)', 'lknaci-owh-domain-whois-rdap'), value: 'internal' }
+                                                ]}
+                                                onChange={(value) => setAttributes({ buttonLayout: value })}
+                                                help={__('Controla a posição do botão em relação ao campo de pesquisa', 'lknaci-owh-domain-whois-rdap')}
+                                            />
                                             <div style={{ marginBottom: '20px' }}>
                                                 <label style={{ 
                                                     display: 'block', 

@@ -62,8 +62,10 @@ if ( isset( $custom_attributes['padding'] ) && is_numeric( $custom_attributes['p
 
 $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' ', $container_styles ) . '"' : '';
 
-// Generate dynamic CSS for colors
+// Generate dynamic CSS for colors and layout
 $dynamic_css = '';
+$button_layout = isset( $custom_attributes['button_layout'] ) ? $custom_attributes['button_layout'] : 'external';
+
 if ( isset( $custom_attributes ) ) {
 	$primary_color = ! empty( $custom_attributes['primary_color'] ) ? $custom_attributes['primary_color'] : '#0073aa';
 	$button_hover_color = ! empty( $custom_attributes['button_hover_color'] ) ? $custom_attributes['button_hover_color'] : '#005a87';
@@ -91,6 +93,52 @@ if ( isset( $custom_attributes ) ) {
 			color: {$button_hover_color} !important; 
 		}
 	";
+	
+	// Add layout-specific CSS
+	if ( $button_layout === 'internal' ) {
+		$dynamic_css .= "
+			.owh-rdap-search-input-wrapper {
+				position: relative !important;
+				display: block !important;
+			}
+			.owh-rdap-domain-input {
+				padding-right: 130px !important;
+				width: 100% !important;
+				box-sizing: border-box !important;
+			}
+			.owh-rdap-search-button {
+				position: absolute !important;
+				right: 6px !important;
+				top: 6px !important;
+				width: 110px !important;
+				bottom: 6px !important;
+				transform: none !important;
+				padding: 0 12px !important;
+				font-size: 14px !important;
+				border-radius: 4px !important;
+				min-width: 110px !important;
+				height: auto !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+		";
+	} else {
+		$dynamic_css .= "
+			.owh-rdap-search-input-wrapper {
+				display: flex !important;
+				gap: 12px !important;
+				align-items: center !important;
+			}
+			.owh-rdap-domain-input {
+				flex: 1 !important;
+			}
+			.owh-rdap-search-button {
+				flex-shrink: 0 !important;
+				min-width: 120px !important;
+			}
+		";
+	}
 }
 
 ?>
