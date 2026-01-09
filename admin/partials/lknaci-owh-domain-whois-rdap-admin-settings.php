@@ -30,7 +30,9 @@ defined( 'ABSPATH' ) or exit;
         
         <p style="margin-top: 15px;"><?php _e('Para exibir os resultados da pesquisa, use o shortcode:', 'lknaci-owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-results]</code>
-        
+
+        <p style="margin-top: 15px;"><?php _e('Para exibir detalhes WHOIS completos, use o shortcode:', 'lknaci-owh-domain-whois-rdap'); ?></p>
+        <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-details]</code>
         <div style="margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd;">
             <h4><?php _e('Template Variables para Custom URL:', 'lknaci-owh-domain-whois-rdap'); ?></h4>
             <ul style="margin: 0;">

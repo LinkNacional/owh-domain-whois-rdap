@@ -1,0 +1,37 @@
+{
+    "name": "lknaci/owh-domain-whois-rdap",
+    "type": "wordpress-plugin",
+    "license": "Proprietary",
+    "description": "WordPress plugin para verificação de disponibilidade de domínios via protocolo RDAP",
+    "autoload": {
+        "psr-4": {
+            "OwhDomainWhoisRdap\\": "src/"
+        },
+        "classmap": [
+            "includes/",
+            "admin/",
+            "public/"
+        ]
+    },
+    "authors": [
+        {
+            "name": "Link Nacional",
+            "email": "ticket@linknacional.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "phan/phan": "5.4.1"
+    },
+    "keywords": [
+        "wordpress",
+        "plugin",
+        "domain",
+        "whois",
+        "rdap",
+        "dns"
+    ]
+}

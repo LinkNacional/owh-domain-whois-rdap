@@ -58,6 +58,12 @@ O plugin oferece uma experiência completa de verificação de domínios com int
 [owh-rdap-whois-results]
 ```
 
+#### Detalhes WHOIS Completos
+```php
+[owh-rdap-whois-details]
+```
+
+
 ### Blocos Gutenberg
 
 #### Bloco Enhanced

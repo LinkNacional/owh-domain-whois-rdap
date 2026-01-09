@@ -1,5 +1,84 @@
 /* OWH Domain WHOIS RDAP - Admin Styles */
 
+/* Layout 2x2 forçado para as abas dos blocos */
+.owh-rdap-block-tabs .components-tab-panel__tabs {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto auto !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+    padding: 0 !important;
+    width: 100% !important;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button {
+    margin: 0 !important;
+    border-radius: 6px !important;
+    border: 1px solid #ddd !important;
+    padding: 10px 8px !important;
+    text-align: center !important;
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: #f7f7f7 !important;
+    color: #555 !important;
+    transition: all 0.2s ease !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    flex: 1 !important;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:hover {
+    background: #e8f4fd !important;
+    border-color: #0073aa !important;
+    color: #0073aa !important;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button.is-active {
+    background: #0073aa !important;
+    border-color: #0073aa !important;
+    color: white !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 4px rgba(0, 115, 170, 0.2) !important;
+}
+
+/* Garantir que sempre seja 2x2, mesmo com número ímpar de abas */
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(3) {
+    grid-column: 1;
+    grid-row: 2;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(4) {
+    grid-column: 2;
+    grid-row: 2;
+}
+
+/* Para casos com mais de 4 abas (como o bloco de resultados que tem 6) */
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(5) {
+    grid-column: 1;
+    grid-row: 3;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs .components-button:nth-child(6) {
+    grid-column: 2;
+    grid-row: 3;
+}
+
 .owh-rdap-admin-container {
     max-width: 1200px;
     margin: 20px 0;
@@ -130,6 +209,103 @@
     color: #0c5460;
 }
 
+/* Gutenberg Block Tabs Styles */
+.owh-rdap-block-tabs .components-tab-panel__tab-content {
+    padding-top: 16px;
+}
+
+.owh-rdap-block-tabs .components-tab-panel__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    margin-bottom: 0;
+    background: #f6f7f7;
+    border-radius: 6px 6px 0 0;
+    padding: 4px;
+}
+
+.owh-rdap-block-tabs .components-button {
+    flex: 1;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    background: transparent;
+    border: none;
+    color: #757575;
+    transition: all 0.15s ease-in-out;
+    white-space: nowrap;
+    min-height: auto;
+}
+
+.owh-rdap-block-tabs .components-button:hover {
+    background: #e0e0e0;
+    color: #1e1e1e;
+}
+
+.owh-rdap-block-tabs .components-button.is-active {
+    background: #007cba;
+    color: #fff;
+    box-shadow: 0 1px 2px rgba(0, 124, 186, 0.3);
+}
+
+.owh-rdap-block-tabs .components-button.is-active:hover {
+    background: #005a87;
+}
+
+/* Panel body customization */
+.owh-rdap-block-tabs .components-panel__body {
+    border: none;
+    margin: 0;
+}
+
+.owh-rdap-block-tabs .components-panel__body-title {
+    margin-bottom: 16px;
+    color: #1e1e1e;
+    font-weight: 600;
+}
+
+/* Color picker improvements */
+.owh-rdap-block-tabs .components-color-picker {
+    max-width: 200px;
+}
+
+/* Range control improvements */
+.owh-rdap-block-tabs .components-range-control {
+    margin-bottom: 16px;
+}
+
+.owh-rdap-block-tabs .components-range-control__wrapper {
+    margin-left: 0;
+}
+
+/* Textarea improvements */
+.owh-rdap-block-tabs .components-textarea-control textarea {
+    font-family: Monaco, Consolas, 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+/* Toggle control spacing */
+.owh-rdap-block-tabs .components-toggle-control {
+    margin-bottom: 16px;
+}
+
+/* Text control spacing */
+.owh-rdap-block-tabs .components-text-control {
+    margin-bottom: 16px;
+}
+
+/* Preview icon area */
+.owh-rdap-icon-preview {
+    border: 2px dashed #ddd;
+    border-radius: 4px;
+    text-align: center;
+    padding: 20px;
+    background: #f9f9f9;
+}
+
+/* Responsive tabs */
 @media (max-width: 782px) {
     .owh-rdap-setting-row {
         flex-direction: column;
@@ -138,5 +314,14 @@
     
     .owh-rdap-setting-label {
         flex: none;
+    }
+    
+    .owh-rdap-block-tabs .components-tab-panel__tabs {
+        flex-direction: column;
+    }
+    
+    .owh-rdap-block-tabs .components-button {
+        text-align: left;
+        justify-content: flex-start;
     }
 }

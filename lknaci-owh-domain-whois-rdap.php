@@ -44,11 +44,15 @@ define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_PATH', plugin_dir_path( __FILE__ ) );
 define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_URL', plugin_dir_url( __FILE__ ) );
 
 /**
+ * Composer Autoloader
+ */
+require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
+
+/**
  * The code that runs during plugin activation.
  * This action is documented in includes/class-lknaci-owh-domain-whois-rdap-activator.php
  */
 function lknaci_activate_owh_domain_whois_rdap() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-lknaci-owh-domain-whois-rdap-activator.php';
 	Lknaci_Owh_Domain_Whois_Rdap_Activator::activate();
 }
 
@@ -57,38 +61,11 @@ function lknaci_activate_owh_domain_whois_rdap() {
  * This action is documented in includes/class-lknaci-owh-domain-whois-rdap-deactivator.php
  */
 function lknaci_deactivate_owh_domain_whois_rdap() {
-	require_once plugin_dir_path( __FILE__ ) . 'includes/class-lknaci-owh-domain-whois-rdap-deactivator.php';
 	Lknaci_Owh_Domain_Whois_Rdap_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'lknaci_activate_owh_domain_whois_rdap' );
 register_deactivation_hook( __FILE__, 'lknaci_deactivate_owh_domain_whois_rdap' );
-
-/**
- * The core plugin class that is used to define internationalization,
- * admin-specific hooks, and public-facing site hooks.
- */
-require plugin_dir_path( __FILE__ ) . 'includes/class-lknaci-owh-domain-whois-rdap.php';
-
-/**
- * Autoloader para as classes PSR-4 (src/)
- */
-spl_autoload_register( function ( $class ) {
-	$prefix = 'OwhDomainWhoisRdap\\';
-	$base_dir = __DIR__ . '/src/';
-
-	$len = strlen( $prefix );
-	if ( strncmp( $prefix, $class, $len ) !== 0 ) {
-		return;
-	}
-
-	$relative_class = substr( $class, $len );
-	$file = $base_dir . str_replace( '\\', '/', $relative_class ) . '.php';
-
-	if ( file_exists( $file ) ) {
-		require $file;
-	}
-} );
 
 /**
  * Begins execution of the plugin.

@@ -141,7 +141,7 @@
             
             return `
                 <div class="woo-forminp-header" style="min-height: 44px;">
-                    <p class="woo-forminp-header-text" style="font-weight: bold; color: rgb(18, 21, 25); padding-left: 6px;">${headerText}</p>
+                    <p class="woo-forminp-header-text" style="font-weight: bold; padding-left: 6px;">${headerText}</p>
                     <span style="color: rgb(52, 59, 69); font-size: 13px; padding-left: 6px; display: block;">${description}</span>
                     <hr style="border-top: 1px solid rgb(221, 221, 221); border-right: none; border-bottom: none; border-left: none; border-image: initial; margin: 8px 0px;">
                 </div>

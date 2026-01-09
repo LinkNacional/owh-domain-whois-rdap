@@ -107,29 +107,6 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 	 */
 	private function load_dependencies() {
 
-		/**
-		 * The class responsible for orchestrating the actions and filters of the
-		 * core plugin.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-owh-domain-whois-rdap-loader.php';
-
-		/**
-		 * The class responsible for defining internationalization functionality
-		 * of the plugin.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'includes/class-lknaci-owh-domain-whois-rdap-i18n.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the admin area.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'admin/class-lknaci-owh-domain-whois-rdap-admin.php';
-
-		/**
-		 * The class responsible for defining all actions that occur in the public-facing
-		 * side of the site.
-		 */
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'public/class-lknaci-owh-domain-whois-rdap-public.php';
-
 		$this->loader = new Owh_Domain_Whois_Rdap_Loader();
 
 		// Initialize service container
