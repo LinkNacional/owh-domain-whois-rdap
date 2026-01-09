@@ -16,7 +16,7 @@
  * Plugin Name:       OWH Domain WHOIS RDAP
  * Plugin URI:        https://github.com/owhgroup/owh-domain-whois-rdap
  * Description:       Verificação de disponibilidade de domínios via protocolo RDAP.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Author:            OWH Group
  * Author URI:        https://owhgroup.com.br
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.0.0' );
+define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.1.0' );
 
 /**
  * Plugin path and URL

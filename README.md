@@ -5,7 +5,7 @@
 * Tags: domínios, WHOIS, RDAP, verificação, disponibilidade, DNS
 * Testado até: 6.8
 * Requer PHP: 7.4
-* Tag estável: 1.0.0
+* Tag estável: 1.1.0
 * Licença: GPLv2 ou posterior
 * URI da licença: [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
