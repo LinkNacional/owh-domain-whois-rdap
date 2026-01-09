@@ -159,7 +159,7 @@ if ( isset( $custom_attributes ) ) {
 		<h3 class="owh-rdap-search-title"><?php echo esc_html( $custom_title ); ?></h3>
 	<?php endif; ?>
 	
-	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="<?php echo $results_page ? 'get' : 'post'; ?>" <?php echo $results_page ? 'action="' . get_permalink( $results_page ) . '"' : ''; ?>>
+	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . get_permalink( $results_page ) . '"' : ''; ?>>
 		<div class="owh-rdap-search-wrapper">
 			<div class="owh-rdap-search-input-wrapper">
 				<input 
@@ -190,10 +190,6 @@ if ( isset( $custom_attributes ) ) {
 			</div>
 			<?php endif; ?>
 		</div>
-
-		<?php if ( ! $results_page ) : ?>
-		<?php wp_nonce_field( 'lknaci_owh_rdap_public_nonce', 'lknaci_owh_rdap_public_nonce' ); ?>
-		<?php endif; ?>
 	</form>
 
 </div>

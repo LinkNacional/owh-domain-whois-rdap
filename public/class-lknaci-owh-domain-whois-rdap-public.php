@@ -91,17 +91,6 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			$this->version, 
 			false 
 		);
-
-		// Localize script for AJAX
-		wp_localize_script( $this->plugin_name, 'lknaci_owh_rdap_public', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce' => wp_create_nonce( 'lknaci_owh_rdap_public_nonce' ),
-			'strings' => array(
-				'searching' => __( 'Pesquisando domínio...', 'lknaci-owh-domain-whois-rdap' ),
-				'error' => __( 'Erro ao pesquisar domínio. Tente novamente.', 'lknaci-owh-domain-whois-rdap' ),
-				'invalid_domain' => __( 'Por favor, digite um domínio válido.', 'lknaci-owh-domain-whois-rdap' ),
-			)
-		));
 	}
 
 	/**

@@ -784,6 +784,8 @@ class Lknaci_Owh_Domain_Whois_Rdap_Admin {
 	 */
 	public function enable_search_callback() {
 		$value = get_option( 'owh_rdap_enable_search', false );
+		// Convert to integer to ensure proper comparison
+		$value = (int) $value;
 		echo '<fieldset>';
 		echo '<label><input type="radio" name="owh_rdap_enable_search" value="1"' . checked( 1, $value, false ) . '> ' . __( 'Ativar', 'lknaci-owh-domain-whois-rdap' ) . '</label><br>';
 		echo '<label><input type="radio" name="owh_rdap_enable_search" value="0"' . checked( 0, $value, false ) . '> ' . __( 'Desativar', 'lknaci-owh-domain-whois-rdap' ) . '</label>';
