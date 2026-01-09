@@ -22,7 +22,6 @@ $defaults = array(
 	'custom_title' => __( 'Pesquisar Domínio', 'lknaci-owh-domain-whois-rdap' ),
 	'placeholder_text' => __( 'Digite o nome do domínio...', 'lknaci-owh-domain-whois-rdap' ),
 	'search_button_text' => __( 'Pesquisar', 'lknaci-owh-domain-whois-rdap' ),
-	'loading_text' => __( 'Pesquisando...', 'lknaci-owh-domain-whois-rdap' ),
 	'examples_text' => __( 'Exemplos:', 'lknaci-owh-domain-whois-rdap' ),
 	'example1' => 'exemplo.com',
 	'example2' => 'meusite.com.br',
@@ -176,7 +175,6 @@ if ( isset( $custom_attributes ) ) {
 					<span class="owh-rdap-search-text"><?php echo esc_html( $search_button_text ); ?></span>
 					<span class="owh-rdap-search-loading" style="display: none;">
 						<span class="owh-rdap-spinner"></span>
-						<?php echo esc_html( $loading_text ); ?>
 					</span>
 				</button>
 			</div>

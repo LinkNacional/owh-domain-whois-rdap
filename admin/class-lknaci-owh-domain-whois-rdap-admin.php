@@ -424,9 +424,6 @@ class Lknaci_Owh_Domain_Whois_Rdap_Admin {
 		if ( isset( $attributes['searchButtonText'] ) && ! empty( $attributes['searchButtonText'] ) ) {
 			$shortcode_atts[] = 'search_button_text="' . esc_attr( $attributes['searchButtonText'] ) . '"';
 		}
-		if ( isset( $attributes['loadingText'] ) && ! empty( $attributes['loadingText'] ) ) {
-			$shortcode_atts[] = 'loading_text="' . esc_attr( $attributes['loadingText'] ) . '"';
-		}
 		if ( isset( $attributes['examplesText'] ) && ! empty( $attributes['examplesText'] ) ) {
 			$shortcode_atts[] = 'examples_text="' . esc_attr( $attributes['examplesText'] ) . '"';
 		}
