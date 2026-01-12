@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
-  DEPLOY_TAG: "1.1.0"
+  DEPLOY_TAG: "1.2.0"
 jobs:
   release-build:
     runs-on: ubuntu-latest
@@ -64,16 +64,22 @@ jobs:
         [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
         [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
         
-        # Move composer files and vendor directory
-        [ -d ./vendor ] && mv ./vendor ./build/${{ env.PLUGIN_NAME }}/ || echo "vendor not found"
-        [ -f ./composer.json ] && mv ./composer.json ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.json not found"
-        [ -f ./composer.lock ] && mv ./composer.lock ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.lock not found"
+        # Copy composer files and vendor directory (using cp to avoid permission issues)
+        if [ -d ./vendor ]; then
+          cp -r ./vendor ./build/${{ env.PLUGIN_NAME }}/ || echo "Failed to copy vendor"
+        else
+          echo "vendor not found"
+        fi
+        
+        [ -f ./composer.json ] && cp ./composer.json ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.json not found"
+        [ -f ./composer.lock ] && cp ./composer.lock ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.lock not found"
         
         # Move PHP files
-        mv *.php ./build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || echo "No PHP files found"
+        find . -maxdepth 1 -name "*.php" -exec cp {} ./build/${{ env.PLUGIN_NAME }}/ \; 2>/dev/null || echo "No PHP files found"
         
-        find ./build -type f -exec chmod 0644 {} +
-        find ./build -type d -exec chmod 0755 {} +
+        # Set proper permissions
+        sudo find ./build -type f -exec chmod 0644 {} + || true
+        sudo find ./build -type d -exec chmod 0755 {} + || true
 
     - name: Archive Release
       uses: thedoctor0/zip-release@master
