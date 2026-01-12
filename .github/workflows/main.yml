@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
-  DEPLOY_TAG: "1.1.0"
+  DEPLOY_TAG: "1.2.0"
 jobs:
   release-build:
     runs-on: ubuntu-latest
@@ -63,6 +63,11 @@ jobs:
         # Move optional directories if they exist
         [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
         [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
+        
+        # Move composer files and vendor directory
+        [ -d ./vendor ] && mv ./vendor ./build/${{ env.PLUGIN_NAME }}/ || echo "vendor not found"
+        [ -f ./composer.json ] && mv ./composer.json ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.json not found"
+        [ -f ./composer.lock ] && mv ./composer.lock ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.lock not found"
         
         # Move PHP files
         mv *.php ./build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || echo "No PHP files found"
