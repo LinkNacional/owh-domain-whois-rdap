@@ -5,7 +5,7 @@
 * Tags: domínios, WHOIS, RDAP, verificação, disponibilidade, DNS
 * Testado até: 6.8
 * Requer PHP: 7.4
-* Tag estável: 1.0.0
+* Tag estável: 1.1.0
 * Licença: GPLv2 ou posterior
 * URI da licença: [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -18,8 +18,11 @@ O plugin oferece uma experiência completa de verificação de domínios com int
 ## ✅ Principais Funcionalidades
 
 - **Protocolo RDAP Moderno** - Utiliza apenas RDAP (JSON) para consultas mais rápidas e precisas
-- **Validação Automática** - Validação de domínios em tempo real
-- **Suporte a Múltiplas TLDs** - Compatível com centenas de extensões de domínio
+- **Validação TLD Oficial** - Valida extensões de domínio usando a lista oficial da IANA (data.iana.org/rdap/dns.json)
+- **Validação Automática** - Validação de domínios em tempo real com verificação prévia de TLD
+- **Suporte a Múltiplas TLDs** - Compatível com centenas de extensões de domínio oficiais
+- **Cache Inteligente** - Sistema de cache otimizado para melhor performance
+- **Segurança Aprimorada** - Rejeita domínios com TLDs inválidas antes mesmo da consulta RDAP
 
 ## Como instalar?
 
@@ -57,6 +60,12 @@ O plugin oferece uma experiência completa de verificação de domínios com int
 ```php
 [owh-rdap-whois-results]
 ```
+
+#### Detalhes WHOIS Completos
+```php
+[owh-rdap-whois-details]
+```
+
 
 ### Blocos Gutenberg
 

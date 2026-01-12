@@ -178,4 +178,25 @@ class SettingsManager
     {
         return (int) $this->get('unavailable_cache_time', 86400);
     }
+
+    /**
+     * Get WHOIS details page ID
+     *
+     * @return int
+     */
+    public function getWhoisDetailsPageId(): int
+    {
+        // Use direct WordPress option name since this is a standalone page setting
+        return (int) \get_option('owh_rdap_whois_details_page', 0);
+    }
+
+    /**
+     * Check if WHOIS details link should be shown for unavailable domains
+     *
+     * @return bool
+     */
+    public function shouldShowWhoisDetailsLink(): bool
+    {
+        return $this->getWhoisDetailsPageId() > 0;
+    }
 }

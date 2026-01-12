@@ -1,0 +1,26 @@
+{
+  "name": "owh-domain-whois-rdap-blocks",
+  "version": "1.0.0",
+  "description": "WordPress Gutenberg blocks for RDAP domain WHOIS plugin",
+  "scripts": {
+    "build": "babel admin/js/lknaci-owh-domain-whois-rdap-blocks.jsx --out-file admin/js/lknaci-owh-domain-whois-rdap-blocks.js --presets=@babel/preset-react",
+    "watch": "babel admin/js/lknaci-owh-domain-whois-rdap-blocks.jsx --watch --out-file admin/js/lknaci-owh-domain-whois-rdap-blocks.js --presets=@babel/preset-react",
+    "dev": "npm run watch"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.22.0",
+    "@babel/core": "^7.22.0",
+    "@babel/preset-react": "^7.22.0"
+  },
+  "babel": {
+    "presets": [
+      [
+        "@babel/preset-react",
+        {
+          "pragma": "wp.element.createElement",
+          "pragmaFrag": "wp.element.Fragment"
+        }
+      ]
+    ]
+  }
+}

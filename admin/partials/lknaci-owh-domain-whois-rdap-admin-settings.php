@@ -25,12 +25,24 @@ defined( 'ABSPATH' ) or exit;
     
     <div class="owh-rdap-info" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-left: 4px solid #0073aa;">
         <h3><?php _e('Como usar', 'lknaci-owh-domain-whois-rdap'); ?></h3>
+        
+        <h4><?php _e('Shortcodes:', 'lknaci-owh-domain-whois-rdap'); ?></h4>
         <p><?php _e('Para exibir o formulário de pesquisa, use o shortcode:', 'lknaci-owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-search]</code>
         
         <p style="margin-top: 15px;"><?php _e('Para exibir os resultados da pesquisa, use o shortcode:', 'lknaci-owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-results]</code>
+
+        <p style="margin-top: 15px;"><?php _e('Para exibir detalhes WHOIS completos, use o shortcode:', 'lknaci-owh-domain-whois-rdap'); ?></p>
+        <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-details]</code>
         
+        <h4 style="margin-top: 25px;"><?php _e('Blocos do Gutenberg:', 'lknaci-owh-domain-whois-rdap'); ?></h4>
+        <p><?php _e('Você também pode usar os blocos do Gutenberg no editor de posts/páginas. Procure por:', 'lknaci-owh-domain-whois-rdap'); ?></p>
+        <ul style="margin: 10px 0 0 20px;">
+            <li><strong><?php _e('OWH RDAP Search', 'lknaci-owh-domain-whois-rdap'); ?></strong> - <?php _e('Formulário de pesquisa de domínio', 'lknaci-owh-domain-whois-rdap'); ?></li>
+            <li><strong><?php _e('OWH RDAP Results', 'lknaci-owh-domain-whois-rdap'); ?></strong> - <?php _e('Resultados da pesquisa de domínio', 'lknaci-owh-domain-whois-rdap'); ?></li>
+            <li><strong><?php _e('OWH RDAP Details', 'lknaci-owh-domain-whois-rdap'); ?></strong> - <?php _e('Detalhes WHOIS completos', 'lknaci-owh-domain-whois-rdap'); ?></li>
+        </ul>
         <div style="margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd;">
             <h4><?php _e('Template Variables para Custom URL:', 'lknaci-owh-domain-whois-rdap'); ?></h4>
             <ul style="margin: 0;">

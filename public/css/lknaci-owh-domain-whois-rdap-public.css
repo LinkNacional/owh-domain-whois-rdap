@@ -1,29 +1,42 @@
 /* OWH Domain WHOIS RDAP - Public Styles */
 
+/* Enhanced search container styles for customization */
 .owh-rdap-search-container {
     max-width: 600px;
     margin: 20px auto;
     padding: 0 20px;
+    transition: all 0.3s ease;
+    
+    border: 0px solid rgb(221, 221, 221);
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 10px;
 }
 
-.owh-rdap-search-form {
+/* Title customization support */
+.owh-rdap-search-title {
+    text-align: center;
     margin-bottom: 20px;
+    font-weight: 600;
+    font-size: 24px;
+    line-height: 1.3;
+    color: #333;
 }
 
 .owh-rdap-search-wrapper {
     background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    border: 1px solid #e0e0e0;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 10px;
 }
 
 .owh-rdap-search-input-wrapper {
     display: flex;
     gap: 12px;
     margin-bottom: 15px;
+    height: 60px;
+    align-items: center;
 }
 
+/* Enhanced input styles with customization support */
 .owh-rdap-domain-input {
     flex: 1;
     padding: 12px 16px;
@@ -33,6 +46,8 @@
     line-height: 1.4;
     transition: all 0.3s ease;
     background: #fff;
+    font-family: inherit;
+    height: -webkit-fill-available;
 }
 
 .owh-rdap-domain-input:focus {
@@ -45,10 +60,12 @@
     border-color: #dc3232;
 }
 
+/* Enhanced button styles with customization support */
 .owh-rdap-search-button {
     padding: 12px 24px;
     background: linear-gradient(135deg, #0073aa, #005a87);
     color: white;
+    height: 100%;
     border: none;
     border-radius: 6px;
     font-size: 16px;
@@ -77,6 +94,34 @@
     box-shadow: none;
 }
 
+/* Enhanced examples section with customization */
+.owh-rdap-search-examples {
+    text-align: center;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+.owh-rdap-examples-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.owh-rdap-example-domain {
+    color: #0073aa;
+    text-decoration: underline;
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-weight: 500;
+}
+
+.owh-rdap-example-domain:hover {
+    color: #005a87;
+    text-decoration: none;
+}
+
+/* Loading animation styles */
 .owh-rdap-search-loading {
     display: flex;
     align-items: center;
@@ -125,9 +170,9 @@
 
 /* Results Styles */
 .owh-rdap-results-container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 0 20px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: rgba(0, 0, 0, 0.1) 0px 2px 10px;
 }
 
 .owh-rdap-search-header {
@@ -142,14 +187,6 @@
     font-weight: 600;
 }
 
-.owh-rdap-result-content {
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
-    padding: 30px;
-    margin-bottom: 30px;
-    border: 1px solid #e0e0e0;
-}
 
 .owh-rdap-result-available,
 .owh-rdap-result-unavailable,
@@ -338,10 +375,6 @@
         gap: 10px;
     }
     
-    .owh-rdap-search-button {
-        width: 100%;
-    }
-    
     .owh-rdap-result-available,
     .owh-rdap-result-unavailable,
     .owh-rdap-result-error {
@@ -367,17 +400,14 @@
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
     .owh-rdap-search-wrapper,
-    .owh-rdap-result-content,
     .owh-rdap-search-results {
-        background: #2c3338;
+        background: #f0f0f1;
         border-color: #555;
-        color: #fff;
     }
     
     .owh-rdap-domain-input {
-        background: #2c3338;
+        background: #f0f0f1;
         border-color: #555;
-        color: #fff;
     }
     
     .owh-rdap-domain-input:focus {
@@ -454,5 +484,282 @@
     .owh-rdap-search-block .owh-rdap-search-preview button {
         width: 100% !important;
         margin: 0 !important;
+    }
+}
+
+/* WHOIS Details Styles */
+.owh-rdap-whois-details-container {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 0 20px;
+}
+
+.owh-rdap-whois-details-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.owh-rdap-whois-details-header h3 {
+    color: #333;
+    font-size: 24px;
+    margin: 0;
+}
+
+.owh-rdap-whois-registered {
+    background: #fff;
+}
+
+.owh-rdap-domain-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.owh-rdap-domain-header h4 {
+    color: #333;
+    font-size: 20px;
+    margin: 0 0 10px 0;
+}
+
+.owh-rdap-status {
+    color: #666;
+    font-style: italic;
+    margin: 0;
+}
+
+.owh-rdap-domain-events,
+.owh-rdap-domain-entities,
+.owh-rdap-nameservers,
+.owh-rdap-domain-status,
+.owh-rdap-secure-dns {
+    margin-bottom: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-left: 4px solid #0073aa;
+}
+
+.owh-rdap-domain-events h5,
+.owh-rdap-domain-entities h5,
+.owh-rdap-nameservers h5,
+.owh-rdap-domain-status h5,
+.owh-rdap-secure-dns h5 {
+    color: #333;
+    font-size: 16px;
+    margin: 0 0 15px 0;
+    font-weight: 600;
+}
+
+.owh-rdap-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.owh-rdap-table th,
+.owh-rdap-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.owh-rdap-table th {
+    background: #f8f8f8;
+    font-weight: 600;
+    color: #333;
+}
+
+.owh-rdap-table td {
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.owh-rdap-table tbody tr:hover {
+    background: #f5f5f5;
+}
+
+.owh-rdap-entity-item {
+    background: #fff;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.owh-rdap-event-item {
+    background: #fff;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.owh-rdap-entity-item h6,
+.owh-rdap-event-item h6 {
+    color: #0073aa;
+    font-size: 14px;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.owh-rdap-event-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    font-family: monospace;
+    background: #fff;
+    padding: 6px 8px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+.owh-rdap-vcard-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    font-family: monospace;
+    background: #fff;
+    padding: 6px 8px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
+.owh-rdap-nameserver-list ul,
+.owh-rdap-status-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.owh-rdap-nameserver-list li,
+.owh-rdap-status-list li {
+    background: #fff;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 14px;
+}
+
+.owh-rdap-secure-dns p {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 14px;
+    margin: 0;
+}
+
+.owh-rdap-whois-available,
+.owh-rdap-domain-error {
+    padding: 30px;
+    text-align: center;
+}
+
+.owh-rdap-no-domain{
+    text-align: center;
+}
+
+.owh-rdap-available-icon,
+.owh-rdap-error-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.owh-rdap-available-content h4,
+.owh-rdap-error-content h4 {
+    color: #333;
+    margin: 0 0 10px 0;
+}
+
+.owh-rdap-available-content p,
+.owh-rdap-error-content p {
+    color: #666;
+    margin: 0;
+}
+
+.owh-rdap-no-data {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    font-style: italic;
+}
+
+.owh-rdap-whois-details-link {
+    margin-top: 15px;
+}
+
+.owh-rdap-details-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: #0073aa;
+    color: #fff !important;
+    text-decoration: none !important;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.owh-rdap-details-button:hover {
+    background: #005a87;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.owh-rdap-details-button .dashicons {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .owh-rdap-whois-details-container {
+        padding: 0 15px;
+    }
+    
+    .owh-rdap-domain-events,
+    .owh-rdap-domain-entities,
+    .owh-rdap-nameservers,
+    .owh-rdap-domain-status,
+    .owh-rdap-secure-dns {
+        padding: 15px;
+        margin-bottom: 20px;
+    }
+    
+    .owh-rdap-table {
+        font-size: 14px;
+    }
+    
+    .owh-rdap-table th,
+    .owh-rdap-table td {
+        padding: 8px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .owh-rdap-table {
+        font-size: 12px;
+    }
+    
+    .owh-rdap-entity-item,
+    .owh-rdap-event-item {
+        padding: 10px;
+    }
+    
+    .owh-rdap-vcard-info p,
+    .owh-rdap-event-info p {
+        font-size: 13px;
     }
 }

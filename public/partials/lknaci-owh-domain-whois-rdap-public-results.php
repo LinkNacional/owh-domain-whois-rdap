@@ -17,40 +17,103 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+// Set default values for custom attributes
+$defaults = array(
+	'no_result_text' => __( 'Aguardando Pesquisa', 'lknaci-owh-domain-whois-rdap' ),
+	'no_result_description' => __( 'Os resultados da pesquisa de domínios aparecerão aqui.', 'lknaci-owh-domain-whois-rdap' ),
+	'available_title' => __( 'Domínio Disponível', 'lknaci-owh-domain-whois-rdap' ),
+	'available_text' => __( 'Este domínio está disponível para registro!', 'lknaci-owh-domain-whois-rdap' ),
+	'unavailable_title' => __( 'Domínio Indisponível', 'lknaci-owh-domain-whois-rdap' ),
+	'unavailable_text' => __( 'Este domínio já está registrado e não está disponível.', 'lknaci-owh-domain-whois-rdap' ),
+	'buy_button_text' => __( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ),
+	'details_button_text' => __( 'Ver detalhes completos do WHOIS', 'lknaci-owh-domain-whois-rdap' ),
+	'show_icons' => true,
+	'search_icon' => '🔍',
+	'available_icon' => '✅',
+	'unavailable_icon' => '❌'
+);
+
+// Merge custom attributes with defaults
+if ( isset( $custom_attributes ) && is_array( $custom_attributes ) ) {
+	foreach ( $defaults as $key => $default_value ) {
+		if ( isset( $custom_attributes[ $key ] ) && $custom_attributes[ $key ] !== '' ) {
+			$$key = $custom_attributes[ $key ];
+		} else {
+			$$key = $default_value;
+		}
+	}
+} else {
+	foreach ( $defaults as $key => $default_value ) {
+		$$key = $default_value;
+	}
+}
+
+// Generate custom styles
+$container_styles = array();
+if ( isset( $custom_attributes['border_width'] ) && $custom_attributes['border_width'] !== '' ) {
+	$border_color = isset( $custom_attributes['border_color'] ) ? $custom_attributes['border_color'] : '#ddd';
+	$container_styles[] = 'border: ' . intval( $custom_attributes['border_width'] ) . 'px solid ' . $border_color . ';';
+}
+if ( isset( $custom_attributes['border_radius'] ) && $custom_attributes['border_radius'] !== '' ) {
+	$container_styles[] = 'border-radius: ' . intval( $custom_attributes['border_radius'] ) . 'px;';
+}
+if ( isset( $custom_attributes['background_color'] ) && $custom_attributes['background_color'] !== '' ) {
+	$container_styles[] = 'background-color: ' . esc_attr( $custom_attributes['background_color'] ) . ';';
+}
+if ( isset( $custom_attributes['padding'] ) && $custom_attributes['padding'] !== '' ) {
+	$container_styles[] = 'padding: ' . intval( $custom_attributes['padding'] ) . 'px;';
+}
+
+$container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' ', $container_styles ) . '"' : '';
+
 ?>
 
-<div class="owh-rdap-results-container">
+<?php if ( isset( $custom_attributes['custom_css'] ) && ! empty( $custom_attributes['custom_css'] ) ) : ?>
+<style>
+	.owh-rdap-results-container { <?php echo esc_html( $custom_attributes['custom_css'] ); ?> }
+</style>
+<?php endif; ?>
+
+<div class="owh-rdap-results-container"<?php echo $container_style_attr; ?>>
 	<?php if ( $result ) : ?>
 		<?php if ( isset( $show_title ) && $show_title ) : ?>
 			<div class="owh-rdap-search-header">
-				<h3><?php printf( __( 'Resultado da pesquisa para: %s', 'lknaci-owh-domain-whois-rdap' ), '<strong>' . esc_html( $result->getDomain() ) . '</strong>' ); ?></h3>
+				<?php 
+				$title_text = isset( $custom_attributes['custom_title'] ) && ! empty( $custom_attributes['custom_title'] ) 
+					? $custom_attributes['custom_title'] 
+					: __( 'Resultado da pesquisa para: %s', 'lknaci-owh-domain-whois-rdap' );
+				
+				if ( strpos( $title_text, '{domain}' ) !== false ) {
+					$title_text = str_replace( '{domain}', '<strong>' . esc_html( $result->getDomain() ) . '</strong>', $title_text );
+					echo '<h3>' . $title_text . '</h3>';
+				} else {
+					printf( '<h3>' . $title_text . '</h3>', '<strong>' . esc_html( $result->getDomain() ) . '</strong>' );
+				}
+				?>
 			</div>
 		<?php endif; ?>
 
 		<div class="owh-rdap-result-content"><?php else : ?>
 			<div class="owh-rdap-result-placeholder">
 			<div style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;">
-				<div style="font-size: 48px; margin-bottom: 15px;">🔍</div>
-				<h3><?php _e( 'Aguardando Pesquisa', 'lknaci-owh-domain-whois-rdap' ); ?></h3>
-				<p><?php _e( 'Os resultados da pesquisa de domínios aparecerão aqui.', 'lknaci-owh-domain-whois-rdap' ); ?></p>
+				<?php if ( $show_icons ) : ?>
+					<div style="font-size: 48px; margin-bottom: 15px;"><?php echo esc_html( $search_icon ); ?></div>
+				<?php endif; ?>
+				<h3><?php echo esc_html( $no_result_text ); ?></h3>
+				<p><?php echo esc_html( $no_result_description ); ?></p>
 			</div>
 		</div>
 	<?php endif; ?>
 
 	<?php if ( $result ) : ?>
-		<?php if ( $result->hasError() ) : ?>
-			<div class="owh-rdap-result-error">
-				<div class="owh-rdap-error-icon">⚠️</div>
-				<div class="owh-rdap-error-content">
-					<h4><?php _e( 'Erro na Pesquisa', 'lknaci-owh-domain-whois-rdap' ); ?></h4>
-					<p><?php echo esc_html( $result->getError() ); ?></p>
-			</div>
-		<?php elseif ( $result->isAvailable() ) : ?>
+		<?php if ( $result->isAvailable() ) : ?>
 			<div class="owh-rdap-result-available">
-				<div class="owh-rdap-available-icon">✅</div>
+				<?php if ( $show_icons ) : ?>
+					<div class="owh-rdap-available-icon"><?php echo esc_html( $available_icon ); ?></div>
+				<?php endif; ?>
 				<div class="owh-rdap-available-content">
-					<h4><?php echo esc_html( $result->getStatus() ); ?></h4>
-					<p><?php _e( 'Este domínio está disponível para registro!', 'lknaci-owh-domain-whois-rdap' ); ?></p>
+					<h4 style="<?php echo isset( $custom_attributes['available_color'] ) ? 'color: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>"><?php echo esc_html( $available_title ); ?></h4>
+					<p><?php echo esc_html( $available_text ); ?></p>
 					
 					<?php 
 					// New integration logic
@@ -72,9 +135,10 @@ if ( ! defined( 'WPINC' ) ) {
 								<a href="<?php echo esc_url( $buy_url ); ?>" 
 								   class="owh-rdap-buy-button" 
 								   target="_blank" 
-								   rel="noopener noreferrer">
+								   rel="noopener noreferrer"
+								   style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
 									<span class="dashicons dashicons-cart"></span>
-									<?php _e( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ); ?>
+									<?php echo esc_html( $buy_button_text ); ?>
 								</a>
 							</div>
 							<?php
@@ -90,10 +154,11 @@ if ( ! defined( 'WPINC' ) ) {
 									<input type="hidden" name="domainsregperiod[<?php echo esc_attr( $result->getDomain() ); ?>]" value="1">
 								</form>
 								<button type="button" 
-										class="owh-rdap-search-button" 
-										onclick="document.getElementById('<?php echo esc_js( $form_id ); ?>').submit();">
+										class="owh-rdap-search-button result" 
+										onclick="document.getElementById('<?php echo esc_js( $form_id ); ?>').submit();"
+										style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
 									<span class="dashicons dashicons-cart"></span>
-									<?php _e( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ); ?>
+									<?php echo esc_html( $buy_button_text ); ?>
 								</button>
 							</div>
 							<?php
@@ -104,46 +169,35 @@ if ( ! defined( 'WPINC' ) ) {
 			</div>
 		<?php else : ?>
 			<div class="owh-rdap-result-unavailable">
-				<div class="owh-rdap-unavailable-icon">❌</div>
+				<?php if ( $show_icons ) : ?>
+					<div class="owh-rdap-unavailable-icon"><?php echo esc_html( $unavailable_icon ); ?></div>
+				<?php endif; ?>
 				<div class="owh-rdap-unavailable-content">
-					<h4><?php echo esc_html( $result->getStatus() ); ?></h4>
-					<p><?php _e( 'Este domínio já está registrado e não está disponível.', 'lknaci-owh-domain-whois-rdap' ); ?></p>
+					<h4 style="<?php echo isset( $custom_attributes['unavailable_color'] ) ? 'color: ' . esc_attr( $custom_attributes['unavailable_color'] ) . ';' : ''; ?>"><?php echo esc_html( $unavailable_title ); ?></h4>
+					<p><?php echo esc_html( $unavailable_text ); ?></p>
 					
 					<?php 
-					$rdap_data = $result->getRdapData();
-					if ( $rdap_data && isset( $rdap_data['events'] ) ) :
+					// Check if WHOIS details page is configured
+					$whois_details_page_id = get_option( 'owh_rdap_whois_details_page', 0 );
+					if ( ! empty( $whois_details_page_id ) && $whois_details_page_id > 0 ) :
+						$whois_details_url = get_permalink( $whois_details_page_id );
+						if ( $whois_details_url ) :
+							$whois_details_url = add_query_arg( 'domain', $result->getDomain(), $whois_details_url );
 					?>
-					<div class="owh-rdap-domain-info">
-						<h5><?php _e( 'Informações do Domínio:', 'lknaci-owh-domain-whois-rdap' ); ?></h5>
-						<ul class="owh-rdap-domain-details">
-							<?php 
-							// Mapeamento de traduções para eventos RDAP
-							$event_translations = array(
-								'expiration' => 'Expiração',
-								'registration' => 'Registro',
-								'last changed' => 'Última Alteração',
-								'last update of rdap database' => 'Última Atualização da Base RDAP',
-								'reregistration' => 'Renovação',
-								'transfer' => 'Transferência',
-								'locked' => 'Bloqueado',
-								'unlocked' => 'Desbloqueado',
-							);
-							
-							foreach ( $rdap_data['events'] as $event ) : ?>
-								<?php if ( isset( $event['eventAction'] ) && isset( $event['eventDate'] ) ) : ?>
-								<?php 
-									$event_key = strtolower( str_replace( '_', ' ', $event['eventAction'] ) );
-									$event_label = isset( $event_translations[$event_key] ) ? $event_translations[$event_key] : ucfirst( str_replace( '_', ' ', $event['eventAction'] ) );
-								?>
-								<li>
-									<strong><?php echo esc_html( $event_label ); ?>:</strong>
-									<?php echo esc_html( date( 'd/m/Y', strtotime( $event['eventDate'] ) ) ); ?>
-								</li>
-								<?php endif; ?>
-							<?php endforeach; ?>
-						</ul>
+					<div class="owh-rdap-whois-details-link">
+						<p>
+							<a href="<?php echo esc_url( $whois_details_url ); ?>" 
+							   class="owh-rdap-details-button"
+							   style="<?php echo isset( $custom_attributes['unavailable_color'] ) ? 'background: ' . esc_attr( $custom_attributes['unavailable_color'] ) . ';' : ''; ?>">
+								<span class="dashicons dashicons-info"></span>
+								<?php echo esc_html( $details_button_text ); ?>
+							</a>
+						</p>
 					</div>
-					<?php endif; ?>
+					<?php 
+						endif;
+					endif; 
+					?>
 				</div>
 			</div>
 		<?php endif; ?>
@@ -155,7 +209,6 @@ if ( ! defined( 'WPINC' ) ) {
 .owh-rdap-results-container {
 	max-width: 600px;
 	margin: 0 auto;
-	padding: 20px;
 }
 
 .owh-rdap-search-header {
@@ -169,32 +222,21 @@ if ( ! defined( 'WPINC' ) ) {
 	margin: 0;
 }
 
-.owh-rdap-result-content {
-	background: #fff;
-	border-radius: 8px;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-	padding: 30px;
-	margin-bottom: 30px;
-}
-
 .owh-rdap-result-available,
-.owh-rdap-result-unavailable,
-.owh-rdap-result-error {
+.owh-rdap-result-unavailable {
 	display: flex;
 	align-items: flex-start;
 	gap: 20px;
 }
 
 .owh-rdap-available-icon,
-.owh-rdap-unavailable-icon,
-.owh-rdap-error-icon {
+.owh-rdap-unavailable-icon {
 	font-size: 48px;
 	line-height: 1;
 }
 
 .owh-rdap-available-content h4,
-.owh-rdap-unavailable-content h4,
-.owh-rdap-error-content h4 {
+.owh-rdap-unavailable-content h4 {
 	margin: 0 0 10px 0;
 	font-size: 20px;
 }
@@ -203,14 +245,12 @@ if ( ! defined( 'WPINC' ) ) {
 	color: #46b450;
 }
 
-.owh-rdap-unavailable-content h4,
-.owh-rdap-error-content h4 {
+.owh-rdap-unavailable-content h4 {
 	color: #dc3232;
 }
 
 .owh-rdap-available-content p,
-.owh-rdap-unavailable-content p,
-.owh-rdap-error-content p {
+.owh-rdap-unavailable-content p {
 	margin: 0 0 20px 0;
 	color: #666;
 	font-size: 16px;
@@ -306,8 +346,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 @media (max-width: 600px) {
 	.owh-rdap-result-available,
-	.owh-rdap-result-unavailable,
-	.owh-rdap-result-error {
+	.owh-rdap-result-unavailable {
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
@@ -315,8 +354,7 @@ if ( ! defined( 'WPINC' ) ) {
 	}
 	
 	.owh-rdap-available-icon,
-	.owh-rdap-unavailable-icon,
-	.owh-rdap-error-icon {
+	.owh-rdap-unavailable-icon {
 		font-size: 36px;
 	}
 }

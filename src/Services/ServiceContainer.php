@@ -56,6 +56,13 @@ class ServiceContainer
             return new BootstrapFileHandler();
         }, true);
 
+        // Register TldValidator
+        $this->bind('TldValidator', function () {
+            return new TldValidator(
+                $this->get('BootstrapFileHandler')
+            );
+        }, true);
+
         // Register RdapClient
         $this->bind('RdapClient', function () {
             return new RdapClient();

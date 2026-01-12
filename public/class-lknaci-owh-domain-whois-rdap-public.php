@@ -91,17 +91,6 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			$this->version, 
 			false 
 		);
-
-		// Localize script for AJAX
-		wp_localize_script( $this->plugin_name, 'lknaci_owh_rdap_public', array(
-			'ajax_url' => admin_url( 'admin-ajax.php' ),
-			'nonce' => wp_create_nonce( 'lknaci_owh_rdap_public_nonce' ),
-			'strings' => array(
-				'searching' => __( 'Pesquisando domínio...', 'lknaci-owh-domain-whois-rdap' ),
-				'error' => __( 'Erro ao pesquisar domínio. Tente novamente.', 'lknaci-owh-domain-whois-rdap' ),
-				'invalid_domain' => __( 'Por favor, digite um domínio válido.', 'lknaci-owh-domain-whois-rdap' ),
-			)
-		));
 	}
 
 	/**
@@ -112,6 +101,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	public function register_shortcodes() {
 		add_shortcode( 'owh-rdap-whois-search', array( $this, 'search_shortcode' ) );
 		add_shortcode( 'owh-rdap-whois-results', array( $this, 'results_shortcode' ) );
+		add_shortcode( 'owh-rdap-whois-details', array( $this, 'whois_details_shortcode' ) );
 	}
 
 	/**
@@ -123,10 +113,26 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function search_shortcode( $atts ) {
 		$atts = shortcode_atts( array(
-			'placeholder' => '',
-			'button_text' => '',
-			'show_examples' => 'true',
 			'show_title' => 'true',
+			'custom_title' => '',
+			'placeholder_text' => '',
+			'search_button_text' => '',
+			'show_examples' => 'true',
+			'examples_text' => '',
+			'example1' => '',
+			'example2' => '',
+			'example3' => '',
+			'custom_css' => '',
+			'border_width' => '',
+			'border_color' => '',
+			'border_radius' => '',
+			'background_color' => '',
+			'padding' => '',
+			'primary_color' => '',
+			'button_hover_color' => '',
+			'input_border_color' => '',
+			'input_focus_color' => '',
+			'button_layout' => 'external'
 		), $atts );
 
 		$settings_manager = $this->service_container->get( 'SettingsManager' );
@@ -136,10 +142,31 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) . '</p>';
 		}
 
-		$placeholder = ! empty( $atts['placeholder'] ) ? $atts['placeholder'] : $settings_manager->getPlaceholderText();
-		$button_text = ! empty( $atts['button_text'] ) ? $atts['button_text'] : __( 'Pesquisar', 'lknaci-owh-domain-whois-rdap' );
 		$show_title = $atts['show_title'] === 'true';
+		$show_examples = $atts['show_examples'] === 'true';
 		$results_page = $settings_manager->getResultsPageId();
+
+		// Pass custom attributes to the template
+		$custom_attributes = array(
+			'custom_title' => ! empty( $atts['custom_title'] ) ? $atts['custom_title'] : '',
+			'placeholder_text' => ! empty( $atts['placeholder_text'] ) ? $atts['placeholder_text'] : '',
+			'search_button_text' => ! empty( $atts['search_button_text'] ) ? $atts['search_button_text'] : '',
+			'examples_text' => ! empty( $atts['examples_text'] ) ? $atts['examples_text'] : '',
+			'example1' => ! empty( $atts['example1'] ) ? $atts['example1'] : '',
+			'example2' => ! empty( $atts['example2'] ) ? $atts['example2'] : '',
+			'example3' => ! empty( $atts['example3'] ) ? $atts['example3'] : '',
+			'custom_css' => ! empty( $atts['custom_css'] ) ? $atts['custom_css'] : '',
+			'border_width' => isset( $atts['border_width'] ) ? $atts['border_width'] : '',
+			'border_color' => ! empty( $atts['border_color'] ) ? $atts['border_color'] : '',
+			'border_radius' => isset( $atts['border_radius'] ) ? $atts['border_radius'] : '',
+			'background_color' => ! empty( $atts['background_color'] ) ? $atts['background_color'] : '',
+			'padding' => isset( $atts['padding'] ) ? $atts['padding'] : '',
+			'primary_color' => ! empty( $atts['primary_color'] ) ? $atts['primary_color'] : '',
+			'button_hover_color' => ! empty( $atts['button_hover_color'] ) ? $atts['button_hover_color'] : '',
+			'input_border_color' => ! empty( $atts['input_border_color'] ) ? $atts['input_border_color'] : '',
+			'input_focus_color' => ! empty( $atts['input_focus_color'] ) ? $atts['input_focus_color'] : '',
+			'button_layout' => ! empty( $atts['button_layout'] ) ? $atts['button_layout'] : 'external'
+		);
 
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-search.php';
@@ -156,6 +183,27 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	public function results_shortcode( $atts ) {
 		$atts = shortcode_atts( array(
 			'show_title' => 'true',
+			'custom_title' => '',
+			'no_result_text' => '',
+			'no_result_description' => '',
+			'available_title' => '',
+			'available_text' => '',
+			'unavailable_title' => '',
+			'unavailable_text' => '',
+			'buy_button_text' => '',
+			'details_button_text' => '',
+			'show_icons' => 'true',
+			'search_icon' => '',
+			'available_icon' => '',
+			'unavailable_icon' => '',
+			'custom_css' => '',
+			'border_width' => '',
+			'border_color' => '',
+			'border_radius' => '',
+			'background_color' => '',
+			'padding' => '',
+			'available_color' => '',
+			'unavailable_color' => ''
 		), $atts );
 
 		$settings_manager = $this->service_container->get( 'SettingsManager' );
@@ -176,6 +224,31 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			$availability_service = $this->service_container->get( 'AvailabilityService' );
 			$result = $availability_service->checkAvailability( $domain );
 		}
+
+		// Pass custom attributes to the template
+		$custom_attributes = array(
+			'custom_title' => ! empty( $atts['custom_title'] ) ? $atts['custom_title'] : '',
+			'no_result_text' => ! empty( $atts['no_result_text'] ) ? $atts['no_result_text'] : '',
+			'no_result_description' => ! empty( $atts['no_result_description'] ) ? $atts['no_result_description'] : '',
+			'available_title' => ! empty( $atts['available_title'] ) ? $atts['available_title'] : '',
+			'available_text' => ! empty( $atts['available_text'] ) ? $atts['available_text'] : '',
+			'unavailable_title' => ! empty( $atts['unavailable_title'] ) ? $atts['unavailable_title'] : '',
+			'unavailable_text' => ! empty( $atts['unavailable_text'] ) ? $atts['unavailable_text'] : '',
+			'buy_button_text' => ! empty( $atts['buy_button_text'] ) ? $atts['buy_button_text'] : '',
+			'details_button_text' => ! empty( $atts['details_button_text'] ) ? $atts['details_button_text'] : '',
+			'show_icons' => $atts['show_icons'] === 'true',
+			'search_icon' => ! empty( $atts['search_icon'] ) ? $atts['search_icon'] : '',
+			'available_icon' => ! empty( $atts['available_icon'] ) ? $atts['available_icon'] : '',
+			'unavailable_icon' => ! empty( $atts['unavailable_icon'] ) ? $atts['unavailable_icon'] : '',
+			'custom_css' => ! empty( $atts['custom_css'] ) ? $atts['custom_css'] : '',
+			'border_width' => ! empty( $atts['border_width'] ) ? intval( $atts['border_width'] ) : '',
+			'border_color' => ! empty( $atts['border_color'] ) ? $atts['border_color'] : '',
+			'border_radius' => ! empty( $atts['border_radius'] ) ? intval( $atts['border_radius'] ) : '',
+			'background_color' => ! empty( $atts['background_color'] ) ? $atts['background_color'] : '',
+			'padding' => ! empty( $atts['padding'] ) ? intval( $atts['padding'] ) : '',
+			'available_color' => ! empty( $atts['available_color'] ) ? $atts['available_color'] : '',
+			'unavailable_color' => ! empty( $atts['unavailable_color'] ) ? $atts['unavailable_color'] : ''
+		);
 
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-results.php';
@@ -283,5 +356,102 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	public function handle_domain_search() {
 		// Redirect to the existing check domain handler
 		return $this->ajax_check_domain();
+	}
+
+	/**
+	 * WHOIS details shortcode
+	 *
+	 * @since    1.0.0
+	 * @param array $atts Shortcode attributes
+	 * @return string Shortcode output
+	 */
+	public function whois_details_shortcode( $atts ) {
+		// Parse attributes
+		$atts = shortcode_atts( array(
+			'show_title' => 'true',
+			'custom_title' => 'Detalhes WHOIS/RDAP',
+			'show_events' => 'true',
+			'events_title' => 'Histórico de Eventos',
+			'show_entities' => 'true',
+			'entities_title' => 'Entidades Relacionadas',
+			'show_nameservers' => 'true',
+			'nameservers_title' => 'Servidores DNS (Nameservers)',
+			'show_status' => 'true',
+			'status_title' => 'Status do Domínio',
+			'show_dnssec' => 'true',
+			'dnssec_title' => 'DNSSEC',
+			'no_domain_text' => 'Nenhum Domínio Informado',
+			'no_domain_description' => 'Para visualizar os detalhes WHOIS, acesse esta página através do link "Ver detalhes completos" nos resultados da pesquisa.',
+			'available_text' => 'Este domínio está disponível para registro e não possui informações WHOIS.',
+			'error_text' => 'Erro na Pesquisa',
+			// CSS styling attributes
+			'border_width' => '1',
+			'border_color' => '#ddd',
+			'border_radius' => '4',
+			'background_color' => '#ffffff',
+			'padding' => '20',
+			'custom_css' => '',
+			'show_icon' => 'true',
+			'custom_icon' => '📋'
+		), $atts, 'owh-rdap-whois-details' );
+
+		// Check if search is enabled
+		if ( ! get_option( 'owh_rdap_enable_search', false ) ) {
+			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) . '</p>';
+		}
+
+		// Get domain from URL parameter
+		$domain = isset( $_GET['domain'] ) ? sanitize_text_field( $_GET['domain'] ) : '';
+		
+		// Convert string booleans to actual booleans
+		$show_title = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
+		$show_events = filter_var( $atts['show_events'], FILTER_VALIDATE_BOOLEAN );
+		$show_entities = filter_var( $atts['show_entities'], FILTER_VALIDATE_BOOLEAN );
+		$show_nameservers = filter_var( $atts['show_nameservers'], FILTER_VALIDATE_BOOLEAN );
+		$show_status = filter_var( $atts['show_status'], FILTER_VALIDATE_BOOLEAN );
+		$show_dnssec = filter_var( $atts['show_dnssec'], FILTER_VALIDATE_BOOLEAN );
+		$show_icon = filter_var( $atts['show_icon'], FILTER_VALIDATE_BOOLEAN );
+		
+		// Pass all custom texts to template
+		$custom_title = $atts['custom_title'];
+		$events_title = $atts['events_title'];
+		$entities_title = $atts['entities_title'];
+		$nameservers_title = $atts['nameservers_title'];
+		$status_title = $atts['status_title'];
+		$dnssec_title = $atts['dnssec_title'];
+		$no_domain_text = $atts['no_domain_text'];
+		$no_domain_description = $atts['no_domain_description'];
+		$available_text = $atts['available_text'];
+		$error_text = $atts['error_text'];
+		
+		// CSS styling variables
+		$border_width = intval( $atts['border_width'] );
+		$border_color = $atts['border_color'];
+		$border_radius = intval( $atts['border_radius'] );
+		$background_color = $atts['background_color'];
+		$padding = intval( $atts['padding'] );
+		$custom_css = $atts['custom_css'];
+		$custom_icon = $atts['custom_icon'];
+		
+		$result = null;
+
+		// If domain is provided, fetch WHOIS data
+		if ( ! empty( $domain ) ) {
+			try {
+				$availability_service = $this->service_container->get( 'AvailabilityService' );
+				$result = $availability_service->checkAvailability( $domain );
+			} catch ( Exception $e ) {
+				// Handle error silently or return error message
+				$result = null;
+			}
+		}
+
+		// Start output buffering
+		ob_start();
+
+		// Include the WHOIS details template
+		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-whois-details.php';
+
+		return ob_get_clean();
 	}
 }
