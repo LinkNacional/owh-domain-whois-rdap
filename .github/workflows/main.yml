@@ -64,6 +64,11 @@ jobs:
         [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
         [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
         
+        # Move composer files and vendor directory
+        [ -d ./vendor ] && mv ./vendor ./build/${{ env.PLUGIN_NAME }}/ || echo "vendor not found"
+        [ -f ./composer.json ] && mv ./composer.json ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.json not found"
+        [ -f ./composer.lock ] && mv ./composer.lock ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.lock not found"
+        
         # Move PHP files
         mv *.php ./build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || echo "No PHP files found"
         
