@@ -18,8 +18,11 @@ O plugin oferece uma experiência completa de verificação de domínios com int
 ## ✅ Principais Funcionalidades
 
 - **Protocolo RDAP Moderno** - Utiliza apenas RDAP (JSON) para consultas mais rápidas e precisas
-- **Validação Automática** - Validação de domínios em tempo real
-- **Suporte a Múltiplas TLDs** - Compatível com centenas de extensões de domínio
+- **Validação TLD Oficial** - Valida extensões de domínio usando a lista oficial da IANA (data.iana.org/rdap/dns.json)
+- **Validação Automática** - Validação de domínios em tempo real com verificação prévia de TLD
+- **Suporte a Múltiplas TLDs** - Compatível com centenas de extensões de domínio oficiais
+- **Cache Inteligente** - Sistema de cache otimizado para melhor performance
+- **Segurança Aprimorada** - Rejeita domínios com TLDs inválidas antes mesmo da consulta RDAP
 
 ## Como instalar?
 

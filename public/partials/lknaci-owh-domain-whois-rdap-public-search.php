@@ -105,7 +105,7 @@ if ( isset( $custom_attributes ) ) {
 				width: 100% !important;
 				box-sizing: border-box !important;
 			}
-			.owh-rdap-search-button {
+			#owh-rdap-search-button {
 				position: absolute !important;
 				right: 6px !important;
 				top: 6px !important;

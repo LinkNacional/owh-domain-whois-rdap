@@ -105,42 +105,34 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 					<?php if ( isset( $show_events ) && $show_events && isset( $rdap_data['events'] ) && is_array( $rdap_data['events'] ) ) : ?>
 					<div class="owh-rdap-domain-events">
 						<h5><?php echo esc_html( isset( $events_title ) ? $events_title : __( 'Histórico de Eventos', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
-						<div class="owh-rdap-events-table">
-							<table class="owh-rdap-table">
-								<thead>
-									<tr>
-										<th><?php _e( 'Evento', 'lknaci-owh-domain-whois-rdap' ); ?></th>
-										<th><?php _e( 'Data', 'lknaci-owh-domain-whois-rdap' ); ?></th>
-									</tr>
-								</thead>
-								<tbody>
-									<?php 
-									// Mapeamento de traduções para eventos RDAP
-									$event_translations = array(
-										'expiration' => 'Expiração',
-										'registration' => 'Registro',
-										'last changed' => 'Última Alteração',
-										'last update of rdap database' => 'Última Atualização da Base RDAP',
-										'reregistration' => 'Renovação',
-										'transfer' => 'Transferência',
-										'locked' => 'Bloqueado',
-										'unlocked' => 'Desbloqueado',
-									);
-									
-									foreach ( $rdap_data['events'] as $event ) : ?>
-										<?php if ( isset( $event['eventAction'] ) && isset( $event['eventDate'] ) ) : ?>
-										<?php 
-											$event_key = strtolower( str_replace( '_', ' ', $event['eventAction'] ) );
-											$event_label = isset( $event_translations[$event_key] ) ? $event_translations[$event_key] : ucfirst( str_replace( '_', ' ', $event['eventAction'] ) );
-										?>
-										<tr>
-											<td><strong><?php echo esc_html( $event_label ); ?></strong></td>
-											<td><?php echo esc_html( date_i18n( 'd/m/Y H:i:s', strtotime( $event['eventDate'] ) ) ); ?></td>
-										</tr>
-										<?php endif; ?>
-									<?php endforeach; ?>
-								</tbody>
-							</table>
+						<div class="owh-rdap-events-list">
+							<?php 
+							// Mapeamento de traduções para eventos RDAP
+							$event_translations = array(
+								'expiration' => 'Expiração',
+								'registration' => 'Registro',
+								'last changed' => 'Última Alteração',
+								'last update of rdap database' => 'Última Atualização da Base RDAP',
+								'reregistration' => 'Renovação',
+								'transfer' => 'Transferência',
+								'locked' => 'Bloqueado',
+								'unlocked' => 'Desbloqueado',
+							);
+							
+							foreach ( $rdap_data['events'] as $event ) : ?>
+								<?php if ( isset( $event['eventAction'] ) && isset( $event['eventDate'] ) ) : ?>
+								<?php 
+									$event_key = strtolower( str_replace( '_', ' ', $event['eventAction'] ) );
+									$event_label = isset( $event_translations[$event_key] ) ? $event_translations[$event_key] : ucfirst( str_replace( '_', ' ', $event['eventAction'] ) );
+								?>
+								<div class="owh-rdap-event-item">
+									<h6><?php echo esc_html( $event_label ); ?></h6>
+									<div class="owh-rdap-event-info">
+										<p><strong>Data:</strong> <?php echo esc_html( date_i18n( 'd/m/Y H:i:s', strtotime( $event['eventDate'] ) ) ); ?></p>
+									</div>
+								</div>
+								<?php endif; ?>
+							<?php endforeach; ?>
 						</div>
 					</div>
 					<?php endif; ?>

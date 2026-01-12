@@ -356,13 +356,6 @@ registerBlockType('owh-rdap/domain-search', {
           onChange: value => setAttributes({
             searchButtonText: value
           })
-        }), /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Texto de carregamento', 'lknaci-owh-domain-whois-rdap'),
-          value: loadingText,
-          onChange: value => setAttributes({
-            loadingText: value
-          }),
-          help: __('Texto exibido durante a pesquisa', 'lknaci-owh-domain-whois-rdap')
         })));
       }
 
@@ -663,6 +656,11 @@ registerBlockType('owh-rdap/domain-results', {
       type: 'string',
       default: '#dc3232'
     },
+    // Layout options
+    buttonLayout: {
+      type: 'string',
+      default: 'external' // 'external' ou 'internal'
+    },
     // Watermark
     showWatermark: {
       type: 'boolean',
@@ -701,7 +699,8 @@ registerBlockType('owh-rdap/domain-results', {
       padding,
       availableColor,
       unavailableColor,
-      showWatermark
+      showWatermark,
+      buttonLayout
     } = attributes;
 
     // Preview component
@@ -1161,10 +1160,10 @@ registerBlockType('owh-rdap/domain-results', {
             fontWeight: '500',
             textTransform: 'uppercase'
           }
-        }, __('Cor Primária (Botão)', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: primaryColor,
+        }, __('Cor Domínio Disponível', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: availableColor,
           onChangeComplete: color => setAttributes({
-            primaryColor: color.hex
+            availableColor: color.hex
           }),
           disableAlpha: true
         })), /*#__PURE__*/React.createElement("div", {
@@ -1179,46 +1178,10 @@ registerBlockType('owh-rdap/domain-results', {
             fontWeight: '500',
             textTransform: 'uppercase'
           }
-        }, __('Cor Hover do Botão', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: buttonHoverColor,
+        }, __('Cor Domínio Indisponível', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: unavailableColor,
           onChangeComplete: color => setAttributes({
-            buttonHoverColor: color.hex
-          }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor da Borda do Campo', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: inputBorderColor,
-          onChangeComplete: color => setAttributes({
-            inputBorderColor: color.hex
-          }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor de Foco do Campo', 'lknaci-owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: inputFocusColor,
-          onChangeComplete: color => setAttributes({
-            inputFocusColor: color.hex
+            unavailableColor: color.hex
           }),
           disableAlpha: true
         })));
@@ -1338,6 +1301,11 @@ registerBlockType('owh-rdap/whois-details', {
     padding: {
       type: 'number',
       default: 20
+    },
+    // Layout options  
+    buttonLayout: {
+      type: 'string',
+      default: 'external' // 'external' ou 'internal'
     }
   },
   supports: {
@@ -1373,7 +1341,8 @@ registerBlockType('owh-rdap/whois-details', {
       borderColor,
       borderRadius,
       backgroundColor,
-      padding
+      padding,
+      buttonLayout
     } = attributes;
 
     // Preview component

@@ -369,12 +369,6 @@ registerBlockType('owh-rdap/domain-search', {
                                                 value={searchButtonText}
                                                 onChange={(value) => setAttributes({ searchButtonText: value })}
                                             />
-                                            <TextControl
-                                                label={__('Texto de carregamento', 'lknaci-owh-domain-whois-rdap')}
-                                                value={loadingText}
-                                                onChange={(value) => setAttributes({ loadingText: value })}
-                                                help={__('Texto exibido durante a pesquisa', 'lknaci-owh-domain-whois-rdap')}
-                                            />
                                         </PanelBody>
                                         
                                         
@@ -682,6 +676,11 @@ registerBlockType('owh-rdap/domain-results', {
             type: 'string',
             default: '#dc3232'
         },
+        // Layout options
+        buttonLayout: {
+            type: 'string',
+            default: 'external' // 'external' ou 'internal'
+        },
         // Watermark
         showWatermark: {
             type: 'boolean',
@@ -699,7 +698,7 @@ registerBlockType('owh-rdap/domain-results', {
             buyButtonText, detailsButtonText,
             showIcons, searchIcon, availableIcon, unavailableIcon,
             previewMode, customCSS, borderWidth, borderColor, borderRadius,
-            backgroundColor, padding, availableColor, unavailableColor, showWatermark
+            backgroundColor, padding, availableColor, unavailableColor, showWatermark, buttonLayout
         } = attributes;
 
         // Preview component
@@ -1189,11 +1188,11 @@ registerBlockType('owh-rdap/domain-results', {
                                                 fontWeight: '500', 
                                                 textTransform: 'uppercase' 
                                             }}>
-                                                {__('Cor Primária (Botão)', 'lknaci-owh-domain-whois-rdap')}
+                                                {__('Cor Domínio Disponível', 'lknaci-owh-domain-whois-rdap')}
                                             </label>
                                             <ColorPicker
-                                                color={primaryColor}
-                                                onChangeComplete={(color) => setAttributes({ primaryColor: color.hex })}
+                                                color={availableColor}
+                                                onChangeComplete={(color) => setAttributes({ availableColor: color.hex })}
                                                 disableAlpha={true}
                                             />
                                         </div>
@@ -1205,43 +1204,11 @@ registerBlockType('owh-rdap/domain-results', {
                                                 fontWeight: '500', 
                                                 textTransform: 'uppercase' 
                                             }}>
-                                                {__('Cor Hover do Botão', 'lknaci-owh-domain-whois-rdap')}
+                                                {__('Cor Domínio Indisponível', 'lknaci-owh-domain-whois-rdap')}
                                             </label>
                                             <ColorPicker
-                                                color={buttonHoverColor}
-                                                onChangeComplete={(color) => setAttributes({ buttonHoverColor: color.hex })}
-                                                disableAlpha={true}
-                                            />
-                                        </div>
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={{ 
-                                                display: 'block', 
-                                                marginBottom: '8px', 
-                                                fontSize: '11px', 
-                                                fontWeight: '500', 
-                                                textTransform: 'uppercase' 
-                                            }}>
-                                                {__('Cor da Borda do Campo', 'lknaci-owh-domain-whois-rdap')}
-                                            </label>
-                                            <ColorPicker
-                                                color={inputBorderColor}
-                                                onChangeComplete={(color) => setAttributes({ inputBorderColor: color.hex })}
-                                                disableAlpha={true}
-                                            />
-                                        </div>
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={{ 
-                                                display: 'block', 
-                                                marginBottom: '8px', 
-                                                fontSize: '11px', 
-                                                fontWeight: '500', 
-                                                textTransform: 'uppercase' 
-                                            }}>
-                                                {__('Cor de Foco do Campo', 'lknaci-owh-domain-whois-rdap')}
-                                            </label>
-                                            <ColorPicker
-                                                color={inputFocusColor}
-                                                onChangeComplete={(color) => setAttributes({ inputFocusColor: color.hex })}
+                                                color={unavailableColor}
+                                                onChangeComplete={(color) => setAttributes({ unavailableColor: color.hex })}
                                                 disableAlpha={true}
                                             />
                                         </div>
@@ -1374,6 +1341,11 @@ registerBlockType('owh-rdap/whois-details', {
         padding: {
             type: 'number',
             default: 20
+        },
+        // Layout options  
+        buttonLayout: {
+            type: 'string',
+            default: 'external' // 'external' ou 'internal'
         }
     },
     supports: {
@@ -1386,7 +1358,7 @@ registerBlockType('owh-rdap/whois-details', {
             showNameservers, nameserversTitle, showStatus, statusTitle, showDnssec, dnssecTitle,
             noDomainText, noDomainDescription, availableText, errorText, previewMode,
             showIcon, customIcon, customCSS, borderWidth, borderColor, borderRadius, 
-            backgroundColor, padding
+            backgroundColor, padding, buttonLayout
         } = attributes;
 
         // Preview component

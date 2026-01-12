@@ -154,7 +154,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 									<input type="hidden" name="domainsregperiod[<?php echo esc_attr( $result->getDomain() ); ?>]" value="1">
 								</form>
 								<button type="button" 
-										class="owh-rdap-search-button" 
+										class="owh-rdap-search-button result" 
 										onclick="document.getElementById('<?php echo esc_js( $form_id ); ?>').submit();"
 										style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
 									<span class="dashicons dashicons-cart"></span>

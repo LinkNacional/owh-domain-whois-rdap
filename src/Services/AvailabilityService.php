@@ -86,6 +86,29 @@ class AvailabilityService
 
         $domain = strtolower(trim($domain));
 
+        // Extract TLD from domain
+        $tld = $this->extractTld($domain);
+        if (!$tld) {
+            return new DomainResult(
+                $domain,
+                false,
+                'TLD não encontrado',
+                null,
+                'Não foi possível extrair a TLD do domínio'
+            );
+        }
+
+        // Validate TLD using IANA list
+        if (!$this->bootstrapHandler->isValidTld($tld)) {
+            return new DomainResult(
+                $domain,
+                false,
+                'TLD não suportado',
+                null,
+                sprintf('A extensão "%s" não está na lista oficial da IANA', $tld)
+            );
+        }
+
         // Check cache first
         $cached_result = $this->cacheManager->get($domain);
         if ($cached_result !== false) {
@@ -217,5 +240,22 @@ class AvailabilityService
             $result->toArray(),
             $cacheTime
         );
+    }
+
+    /**
+     * Extract TLD from domain
+     *
+     * @param string $domain
+     * @return string|null
+     */
+    private function extractTld(string $domain): ?string
+    {
+        $parts = explode('.', $domain);
+        
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        return end($parts);
     }
 }

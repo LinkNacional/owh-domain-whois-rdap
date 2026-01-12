@@ -86,6 +86,36 @@ class BootstrapFileHandler
     }
 
     /**
+     * Check if TLD is valid/supported
+     *
+     * @param string $tld
+     * @return bool
+     */
+    public function isValidTld(string $tld): bool
+    {
+        $dns_data = $this->getDnsData();
+        
+        if (!$dns_data || !isset($dns_data['services'])) {
+            return false;
+        }
+
+        $tld = strtolower($tld);
+        if (strpos($tld, '.') === 0) {
+            $tld = substr($tld, 1); // Remove leading dot
+        }
+
+        foreach ($dns_data['services'] as $service) {
+            if (isset($service[0])) {
+                if (in_array($tld, $service[0])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Update DNS data from IANA
      *
      * @return bool

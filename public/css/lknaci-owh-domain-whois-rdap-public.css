@@ -572,6 +572,11 @@
     color: #333;
 }
 
+.owh-rdap-table td {
+    font-family: monospace;
+    font-size: 14px;
+}
+
 .owh-rdap-table tbody tr:hover {
     background: #f5f5f5;
 }
@@ -584,7 +589,16 @@
     border: 1px solid #ddd;
 }
 
-.owh-rdap-entity-item h6 {
+.owh-rdap-event-item {
+    background: #fff;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+}
+
+.owh-rdap-entity-item h6,
+.owh-rdap-event-item h6 {
     color: #0073aa;
     font-size: 14px;
     font-weight: 600;
@@ -593,10 +607,26 @@
     letter-spacing: 0.5px;
 }
 
+.owh-rdap-event-info p {
+    margin: 5px 0;
+    font-size: 14px;
+    line-height: 1.4;
+    font-family: monospace;
+    background: #fff;
+    padding: 6px 8px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
+}
+
 .owh-rdap-vcard-info p {
     margin: 5px 0;
     font-size: 14px;
     line-height: 1.4;
+    font-family: monospace;
+    background: #fff;
+    padding: 6px 8px;
+    border-radius: 3px;
+    border: 1px solid #ddd;
 }
 
 .owh-rdap-nameserver-list ul,
@@ -615,6 +645,16 @@
     border: 1px solid #ddd;
     font-family: monospace;
     font-size: 14px;
+}
+
+.owh-rdap-secure-dns p {
+    background: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #ddd;
+    font-family: monospace;
+    font-size: 14px;
+    margin: 0;
 }
 
 .owh-rdap-whois-available,
@@ -713,11 +753,13 @@
         font-size: 12px;
     }
     
-    .owh-rdap-entity-item {
+    .owh-rdap-entity-item,
+    .owh-rdap-event-item {
         padding: 10px;
     }
     
-    .owh-rdap-vcard-info p {
+    .owh-rdap-vcard-info p,
+    .owh-rdap-event-info p {
         font-size: 13px;
     }
 }
