@@ -14,15 +14,15 @@ defined( 'ABSPATH' ) or exit;
 ?>
 
 <div class="wrap">
-    <h1><?php _e('OWH Domain WHOIS RDAP', 'owh-domain-whois-rdap'); ?></h1>
+    <h1><?php esc_html_e('OWH Domain WHOIS RDAP', 'owh-domain-whois-rdap'); ?></h1>
     
     <!-- Tab Navigation -->
     <nav class="nav-tab-wrapper owh-tab-wrapper">
         <a href="#general" class="nav-tab nav-tab-active owh-tab" data-tab="general">
-            <?php _e('Geral', 'owh-domain-whois-rdap'); ?>
+            <?php esc_html_e('Geral', 'owh-domain-whois-rdap'); ?>
         </a>
         <a href="#rdap" class="nav-tab owh-tab" data-tab="rdap">
-            <?php _e('RDAP', 'owh-domain-whois-rdap'); ?>
+            <?php esc_html_e('RDAP', 'owh-domain-whois-rdap'); ?>
         </a>
     </nav>
     
@@ -41,26 +41,26 @@ defined( 'ABSPATH' ) or exit;
         
         <!-- RDAP Tab -->
         <div id="tab-rdap" class="owh-tab-panel" style="display: none;">
-            <h2><?php _e('Configurações RDAP', 'owh-domain-whois-rdap'); ?></h2>
-            <p><?php _e('Gerenciar configurações específicas do protocolo RDAP (Registration Data Access Protocol).', 'owh-domain-whois-rdap'); ?></p>
+            <h2><?php esc_html_e('Configurações RDAP', 'owh-domain-whois-rdap'); ?></h2>
+            <p><?php esc_html_e('Gerenciar configurações específicas do protocolo RDAP (Registration Data Access Protocol).', 'owh-domain-whois-rdap'); ?></p>
             
             <table class="form-table">
                 <tr>
-                    <th scope="row"><?php _e('Ações úteis', 'owh-domain-whois-rdap'); ?></th>
+                    <th scope="row"><?php esc_html_e('Ações úteis', 'owh-domain-whois-rdap'); ?></th>
                     <td>
                         <div id="rdap-status-info" style="margin-bottom: 15px;">
-                            <p><strong><?php _e('Arquivo atual:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-status"><?php _e('Carregando...', 'owh-domain-whois-rdap'); ?></span></p>
-                            <p><strong><?php _e('Última atualização:', 'owh-domain-whois-rdap'); ?></strong> <span id="last-update"><?php _e('Verificando...', 'owh-domain-whois-rdap'); ?></span></p>
-                            <p><strong><?php _e('Tamanho do arquivo:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-size">-</span></p>
+                            <p><strong><?php esc_html_e('Arquivo atual:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-status"><?php esc_html_e('Carregando...', 'owh-domain-whois-rdap'); ?></span></p>
+                            <p><strong><?php esc_html_e('Última atualização:', 'owh-domain-whois-rdap'); ?></strong> <span id="last-update"><?php esc_html_e('Verificando...', 'owh-domain-whois-rdap'); ?></span></p>
+                            <p><strong><?php esc_html_e('Tamanho do arquivo:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-size">-</span></p>
                         </div>
                         
                         <button type="button" id="update-rdap-servers" class="button button-secondary">
-                            <?php _e('Atualizar Lista de Servidores RDAP', 'owh-domain-whois-rdap'); ?>
+                            <?php esc_html_e('Atualizar Lista de Servidores RDAP', 'owh-domain-whois-rdap'); ?>
                         </button>
                         <div id="update-rdap-status" style="margin-top: 10px; display: none;"></div>
                         
                         <p class="description">
-                            <?php _e('O plugin já inclui uma lista de servidores RDAP. Use este botão para baixar a versão mais recente da IANA.', 'owh-domain-whois-rdap'); ?>
+                            <?php esc_html_e('O plugin já inclui uma lista de servidores RDAP. Use este botão para baixar a versão mais recente da IANA.', 'owh-domain-whois-rdap'); ?>
                         </p>
                     </td>
                 </tr>
@@ -69,31 +69,31 @@ defined( 'ABSPATH' ) or exit;
     </div>
     
     <div class="owh-rdap-info" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-left: 4px solid #0073aa;">
-        <h3><?php _e('Como usar', 'owh-domain-whois-rdap'); ?></h3>
+        <h3><?php esc_html_e('Como usar', 'owh-domain-whois-rdap'); ?></h3>
         
-        <h4><?php _e('Shortcodes:', 'owh-domain-whois-rdap'); ?></h4>
-        <p><?php _e('Para exibir o formulário de pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
+        <h4><?php esc_html_e('Shortcodes:', 'owh-domain-whois-rdap'); ?></h4>
+        <p><?php esc_html_e('Para exibir o formulário de pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-search]</code>
         
-        <p style="margin-top: 15px;"><?php _e('Para exibir os resultados da pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
+        <p style="margin-top: 15px;"><?php esc_html_e('Para exibir os resultados da pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-results]</code>
 
-        <p style="margin-top: 15px;"><?php _e('Para exibir detalhes WHOIS completos, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
+        <p style="margin-top: 15px;"><?php esc_html_e('Para exibir detalhes WHOIS completos, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
         <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-details]</code>
         
-        <h4 style="margin-top: 25px;"><?php _e('Blocos do Gutenberg:', 'owh-domain-whois-rdap'); ?></h4>
-        <p><?php _e('Você também pode usar os blocos do Gutenberg no editor de posts/páginas. Procure por:', 'owh-domain-whois-rdap'); ?></p>
+        <h4 style="margin-top: 25px;"><?php esc_html_e('Blocos do Gutenberg:', 'owh-domain-whois-rdap'); ?></h4>
+        <p><?php esc_html_e('Você também pode usar os blocos do Gutenberg no editor de posts/páginas. Procure por:', 'owh-domain-whois-rdap'); ?></p>
         <ul style="margin: 10px 0 0 20px;">
-            <li><strong><?php _e('OWH RDAP Search', 'owh-domain-whois-rdap'); ?></strong> - <?php _e('Formulário de pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
-            <li><strong><?php _e('OWH RDAP Results', 'owh-domain-whois-rdap'); ?></strong> - <?php _e('Resultados da pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
-            <li><strong><?php _e('OWH RDAP Details', 'owh-domain-whois-rdap'); ?></strong> - <?php _e('Detalhes WHOIS completos', 'owh-domain-whois-rdap'); ?></li>
+            <li><strong><?php esc_html_e('OWH RDAP Search', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Formulário de pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
+            <li><strong><?php esc_html_e('OWH RDAP Results', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Resultados da pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
+            <li><strong><?php esc_html_e('OWH RDAP Details', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Detalhes WHOIS completos', 'owh-domain-whois-rdap'); ?></li>
         </ul>
         <div style="margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd;">
-            <h4><?php _e('Template Variables para Custom URL:', 'owh-domain-whois-rdap'); ?></h4>
+            <h4><?php esc_html_e('Template Variables para Custom URL:', 'owh-domain-whois-rdap'); ?></h4>
             <ul style="margin: 0;">
-                <li><code>{domain}</code> - <?php _e('Domínio completo (ex: example.com)', 'owh-domain-whois-rdap'); ?></li>
-                <li><code>{sld}</code> - <?php _e('Nome do domínio (ex: example)', 'owh-domain-whois-rdap'); ?></li>
-                <li><code>{tld}</code> - <?php _e('Extensão do domínio (ex: com)', 'owh-domain-whois-rdap'); ?></li>
+                <li><code>{domain}</code> - <?php esc_html_e('Domínio completo (ex: example.com)', 'owh-domain-whois-rdap'); ?></li>
+                <li><code>{sld}</code> - <?php esc_html_e('Nome do domínio (ex: example)', 'owh-domain-whois-rdap'); ?></li>
+                <li><code>{tld}</code> - <?php esc_html_e('Extensão do domínio (ex: com)', 'owh-domain-whois-rdap'); ?></li>
             </ul>
         </div>
     </div>

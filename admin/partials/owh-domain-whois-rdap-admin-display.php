@@ -35,20 +35,20 @@ if ( ! defined( 'WPINC' ) ) {
 				<tr>
 					<th scope="row">
 						<label for="enable_search">
-							<strong><?php _e( 'Ferramenta de Pesquisa de Domínios', 'owh-domain-whois-rdap' ); ?></strong>
+							<strong><?php esc_html_e( 'Ferramenta de Pesquisa de Domínios', 'owh-domain-whois-rdap' ); ?></strong>
 						</label>
 						<p class="description">
-							<?php _e( 'Ative a ferramenta de pesquisa de domínios (Whois) no seu site.', 'owh-domain-whois-rdap' ); ?>
+							<?php esc_html_e( 'Ative a ferramenta de pesquisa de domínios (Whois) no seu site.', 'owh-domain-whois-rdap' ); ?>
 						</p>
 					</th>
 					<td>
 						<fieldset style="background: #fff; border: 1px solid #DFDFDF; border-radius: 4px; padding: 15px;">
 							<div style="margin-bottom: 20px; border-bottom: 1px solid #CCCCCC; padding-bottom: 15px;">
 								<h3 style="font-size: 16px; margin: 0 0 10px 0; color: #3C434A;">
-									<?php _e( 'Ativar Pesquisa de Domínios (RDAP/WHOIS)', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Ativar Pesquisa de Domínios (RDAP/WHOIS)', 'owh-domain-whois-rdap' ); ?>
 								</h3>
 								<p style="font-size: 14px; margin: 0 0 15px 0; color: #3C434A;">
-									<?php _e( 'Ofereça aos seus visitantes uma ferramenta para pesquisar a disponibilidade de domínios.', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Ofereça aos seus visitantes uma ferramenta para pesquisar a disponibilidade de domínios.', 'owh-domain-whois-rdap' ); ?>
 								</p>
 							</div>
 
@@ -64,7 +64,7 @@ if ( ! defined( 'WPINC' ) ) {
 										<?php checked( 1, $enable_search ); ?>
 										style="margin-right: 8px;"
 									/> 
-									<?php _e( 'Ativar', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Ativar', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								
 								<label style="display: flex; align-items: center; margin-bottom: 15px;">
@@ -75,11 +75,11 @@ if ( ! defined( 'WPINC' ) ) {
 										<?php checked( 0, $enable_search ); ?>
 										style="margin-right: 8px;"
 									/> 
-									<?php _e( 'Desativar', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Desativar', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								
 								<p class="description" style="margin: 15px 0; color: #646970;">
-									<?php _e( 'Ao ativar este recurso, você poderá inserir o formulário de pesquisa em qualquer página ou post através de shortcodes e blocos do WordPress.', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Ao ativar este recurso, você poderá inserir o formulário de pesquisa em qualquer página ou post através de shortcodes e blocos do WordPress.', 'owh-domain-whois-rdap' ); ?>
 								</p>
 							</div>
 						</fieldset>
@@ -87,10 +87,10 @@ if ( ! defined( 'WPINC' ) ) {
 						<fieldset style="background: #fff; border: 1px solid #DFDFDF; border-radius: 4px; padding: 15px; margin-top: 15px;">
 							<div style="margin-bottom: 15px;">
 								<h3 style="font-size: 16px; margin: 0 0 10px 0; color: #3C434A;">
-									<?php _e( 'Página de Resultados da Pesquisa', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Página de Resultados da Pesquisa', 'owh-domain-whois-rdap' ); ?>
 								</h3>
 								<p style="font-size: 14px; margin: 0 0 15px 0; color: #3C434A;">
-									<?php _e( 'Defina para onde o visitante será levado após pesquisar um domínio.', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Defina para onde o visitante será levado após pesquisar um domínio.', 'owh-domain-whois-rdap' ); ?>
 								</p>
 								<hr style="border: 1px solid #CCCCCC; margin: 15px 0;">
 							</div>
@@ -105,7 +105,7 @@ if ( ! defined( 'WPINC' ) ) {
 									name="owh_domain_whois_rdap_results_page" 
 									style="width: 400px; height: 34px; border: 1px solid #8C8F94; border-radius: 3px; background: #fff; padding: 0 10px;"
 								>
-									<option value="0"><?php _e( 'Página Resultado Pesquisa domínios', 'owh-domain-whois-rdap' ); ?></option>
+									<option value="0"><?php esc_html_e( 'Página Resultado Pesquisa domínios', 'owh-domain-whois-rdap' ); ?></option>
 									<?php foreach ( $pages as $page ) : ?>
 									<option value="<?php echo esc_attr( $page->ID ); ?>" <?php selected( $results_page, $page->ID ); ?>>
 										<?php echo esc_html( $page->post_title ); ?>
@@ -116,7 +116,7 @@ if ( ! defined( 'WPINC' ) ) {
 							</div>
 
 							<p class="description" style="color: #646970; margin-top: 20px;">
-								<?php _e( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ); ?>
+								<?php esc_html_e( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ); ?>
 							</p>
 						</fieldset>
 					</td>
@@ -125,13 +125,13 @@ if ( ! defined( 'WPINC' ) ) {
 				<!-- Visual Settings -->
 				<tr>
 					<th scope="row">
-						<label><strong><?php _e( 'Configurações Visuais', 'owh-domain-whois-rdap' ); ?></strong></label>
+						<label><strong><?php esc_html_e( 'Configurações Visuais', 'owh-domain-whois-rdap' ); ?></strong></label>
 					</th>
 					<td>
 						<fieldset style="background: #fff; border: 1px solid #DFDFDF; border-radius: 4px; padding: 15px;">
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_available_text" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Texto para Domínio Disponível', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Texto para Domínio Disponível', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="text" 
@@ -145,7 +145,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_unavailable_text" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Texto para Domínio Indisponível', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Texto para Domínio Indisponível', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="text" 
@@ -159,7 +159,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_placeholder_text" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Placeholder do Campo de Pesquisa', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Placeholder do Campo de Pesquisa', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="text" 
@@ -177,13 +177,13 @@ if ( ! defined( 'WPINC' ) ) {
 				<!-- Buy Button Settings -->
 				<tr>
 					<th scope="row">
-						<label><strong><?php _e( 'Configurações do Botão de Compra', 'owh-domain-whois-rdap' ); ?></strong></label>
+						<label><strong><?php esc_html_e( 'Configurações do Botão de Compra', 'owh-domain-whois-rdap' ); ?></strong></label>
 					</th>
 					<td>
 						<fieldset style="background: #fff; border: 1px solid #DFDFDF; border-radius: 4px; padding: 15px;">
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_buy_button_text" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Texto do Botão', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Texto do Botão', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="text" 
@@ -197,7 +197,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_buy_button_url" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'URL do Botão de Compra', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'URL do Botão de Compra', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="url" 
@@ -208,7 +208,7 @@ if ( ! defined( 'WPINC' ) ) {
 									style="width: 400px;"
 									placeholder="https://exemplo.com/comprar-dominio"
 								/>
-								<p class="description"><?php _e( 'URL para onde o usuário será redirecionado ao clicar no botão de compra.', 'owh-domain-whois-rdap' ); ?></p>
+								<p class="description"><?php esc_html_e( 'URL para onde o usuário será redirecionado ao clicar no botão de compra.', 'owh-domain-whois-rdap' ); ?></p>
 							</div>
 
 							<div style="margin-bottom: 15px;">
@@ -221,7 +221,7 @@ if ( ! defined( 'WPINC' ) ) {
 										<?php checked( 1, $buy_button_new_tab ); ?>
 										style="margin-right: 8px;"
 									/> 
-									<?php _e( 'Abrir link em nova aba', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Abrir link em nova aba', 'owh-domain-whois-rdap' ); ?>
 								</label>
 							</div>
 						</fieldset>
@@ -231,13 +231,13 @@ if ( ! defined( 'WPINC' ) ) {
 				<!-- Cache Settings -->
 				<tr>
 					<th scope="row">
-						<label><strong><?php _e( 'Configurações de Cache', 'owh-domain-whois-rdap' ); ?></strong></label>
+						<label><strong><?php esc_html_e( 'Configurações de Cache', 'owh-domain-whois-rdap' ); ?></strong></label>
 					</th>
 					<td>
 						<fieldset style="background: #fff; border: 1px solid #DFDFDF; border-radius: 4px; padding: 15px;">
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_available_cache_time" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Cache para Domínios Disponíveis (segundos)', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Cache para Domínios Disponíveis (segundos)', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="number" 
@@ -247,12 +247,12 @@ if ( ! defined( 'WPINC' ) ) {
 									min="0"
 									class="small-text"
 								/>
-								<p class="description"><?php _e( 'Tempo em segundos para manter domínios disponíveis em cache. Padrão: 3600 (1 hora).', 'owh-domain-whois-rdap' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Tempo em segundos para manter domínios disponíveis em cache. Padrão: 3600 (1 hora).', 'owh-domain-whois-rdap' ); ?></p>
 							</div>
 
 							<div style="margin-bottom: 15px;">
 								<label for="owh_domain_whois_rdap_unavailable_cache_time" style="display: block; margin-bottom: 5px; font-weight: 600;">
-									<?php _e( 'Cache para Domínios Indisponíveis (segundos)', 'owh-domain-whois-rdap' ); ?>
+									<?php esc_html_e( 'Cache para Domínios Indisponíveis (segundos)', 'owh-domain-whois-rdap' ); ?>
 								</label>
 								<input 
 									type="number" 
@@ -262,7 +262,7 @@ if ( ! defined( 'WPINC' ) ) {
 									min="0"
 									class="small-text"
 								/>
-								<p class="description"><?php _e( 'Tempo em segundos para manter domínios indisponíveis em cache. Padrão: 86400 (24 horas).', 'owh-domain-whois-rdap' ); ?></p>
+								<p class="description"><?php esc_html_e( 'Tempo em segundos para manter domínios indisponíveis em cache. Padrão: 86400 (24 horas).', 'owh-domain-whois-rdap' ); ?></p>
 							</div>
 						</fieldset>
 					</td>
@@ -274,19 +274,19 @@ if ( ! defined( 'WPINC' ) ) {
 	</form>
 
 	<div style="margin-top: 30px; padding: 15px; background: #f9f9f9; border-radius: 4px;">
-		<h3><?php _e( 'Shortcodes Disponíveis', 'owh-domain-whois-rdap' ); ?></h3>
+		<h3><?php esc_html_e( 'Shortcodes Disponíveis', 'owh-domain-whois-rdap' ); ?></h3>
 		<p>
-			<strong>[owh-rdap-whois-search]</strong> - <?php _e( 'Exibe o formulário de pesquisa de domínios', 'owh-domain-whois-rdap' ); ?><br>
-			<strong>[owh-rdap-whois-results]</strong> - <?php _e( 'Exibe os resultados da pesquisa (use na página de resultados)', 'owh-domain-whois-rdap' ); ?>
+			<strong>[owh-rdap-whois-search]</strong> - <?php esc_html_e( 'Exibe o formulário de pesquisa de domínios', 'owh-domain-whois-rdap' ); ?><br>
+			<strong>[owh-rdap-whois-results]</strong> - <?php esc_html_e( 'Exibe os resultados da pesquisa (use na página de resultados)', 'owh-domain-whois-rdap' ); ?>
 		</p>
 	</div>
 
 	<div style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-left: 4px solid #0073aa; border-radius: 4px;">
-		<h4><?php _e( 'Atualizações RDAP', 'owh-domain-whois-rdap' ); ?></h4>
-		<p><?php _e( 'O plugin mantém uma lista atualizada dos servidores RDAP da IANA. Esta lista é atualizada automaticamente a cada 24 horas.', 'owh-domain-whois-rdap' ); ?></p>
+		<h4><?php esc_html_e( 'Atualizações RDAP', 'owh-domain-whois-rdap' ); ?></h4>
+		<p><?php esc_html_e( 'O plugin mantém uma lista atualizada dos servidores RDAP da IANA. Esta lista é atualizada automaticamente a cada 24 horas.', 'owh-domain-whois-rdap' ); ?></p>
 		
 		<button type="button" id="update-rdap-servers" class="button button-secondary">
-			<?php _e( 'Atualizar Lista de Servidores RDAP Agora', 'owh-domain-whois-rdap' ); ?>
+			<?php esc_html_e( 'Atualizar Lista de Servidores RDAP Agora', 'owh-domain-whois-rdap' ); ?>
 		</button>
 		
 		<div id="update-rdap-status" style="margin-top: 10px;"></div>
@@ -299,28 +299,28 @@ jQuery(document).ready(function($) {
 		var button = $(this);
 		var status = $('#update-rdap-status');
 		
-		button.prop('disabled', true).text('<?php _e( 'Atualizando...', 'owh-domain-whois-rdap' ); ?>');
-		status.html('<span style="color: #0073aa;"><?php _e( 'Atualizando lista de servidores RDAP...', 'owh-domain-whois-rdap' ); ?></span>');
+		button.prop('disabled', true).text('<?php esc_html_e( 'Atualizando...', 'owh-domain-whois-rdap' ); ?>');
+		status.html('<span style="color: #0073aa;"><?php esc_html_e( 'Atualizando lista de servidores RDAP...', 'owh-domain-whois-rdap' ); ?></span>');
 		
 		$.ajax({
 			url: ajaxurl,
 			type: 'POST',
 			data: {
 				action: 'owh_update_rdap_servers',
-				nonce: '<?php echo wp_create_nonce( 'owh_rdap_admin_nonce' ); ?>'
+				nonce: '<?php echo esc_attr( wp_create_nonce( 'owh_rdap_admin_nonce' ) ); ?>'
 			},
 			success: function(response) {
 				if (response.success) {
-					status.html('<span style="color: #46b450;"><?php _e( 'Lista de servidores RDAP atualizada com sucesso!', 'owh-domain-whois-rdap' ); ?></span>');
+					status.html('<span style="color: #46b450;"><?php esc_html_e( 'Lista de servidores RDAP atualizada com sucesso!', 'owh-domain-whois-rdap' ); ?></span>');
 				} else {
-					status.html('<span style="color: #dc3232;"><?php _e( 'Erro ao atualizar lista: ', 'owh-domain-whois-rdap' ); ?>' + (response.data || 'Erro desconhecido') + '</span>');
+					status.html('<span style="color: #dc3232;"><?php esc_html_e( 'Erro ao atualizar lista: ', 'owh-domain-whois-rdap' ); ?>' + (response.data || 'Erro desconhecido') + '</span>');
 				}
 			},
 			error: function() {
-				status.html('<span style="color: #dc3232;"><?php _e( 'Erro de conexão ao atualizar lista.', 'owh-domain-whois-rdap' ); ?></span>');
+				status.html('<span style="color: #dc3232;"><?php esc_html_e( 'Erro de conexão ao atualizar lista.', 'owh-domain-whois-rdap' ); ?></span>');
 			},
 			complete: function() {
-				button.prop('disabled', false).text('<?php _e( 'Atualizar Lista de Servidores RDAP Agora', 'owh-domain-whois-rdap' ); ?>');
+				button.prop('disabled', false).text('<?php esc_html_e( 'Atualizar Lista de Servidores RDAP Agora', 'owh-domain-whois-rdap' ); ?>');
 			}
 		});
 	});

@@ -74,20 +74,21 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 </style>
 <?php endif; ?>
 
-<div class="owh-rdap-results-container"<?php echo $container_style_attr; ?>>
+<div class="owh-rdap-results-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( $result ) : ?>
 		<?php if ( isset( $show_title ) && $show_title ) : ?>
 			<div class="owh-rdap-search-header">
 				<?php 
+				// translators: %s is the domain name being searched
 				$title_text = isset( $custom_attributes['custom_title'] ) && ! empty( $custom_attributes['custom_title'] ) 
 					? $custom_attributes['custom_title'] 
 					: __( 'Resultado da pesquisa para: %s', 'owh-domain-whois-rdap' );
 				
 				if ( strpos( $title_text, '{domain}' ) !== false ) {
 					$title_text = str_replace( '{domain}', '<strong>' . esc_html( $result->getDomain() ) . '</strong>', $title_text );
-					echo '<h3>' . $title_text . '</h3>';
+					echo '<h3>' . wp_kses_post( $title_text ) . '</h3>';
 				} else {
-					printf( '<h3>' . $title_text . '</h3>', '<strong>' . esc_html( $result->getDomain() ) . '</strong>' );
+					printf( '<h3>' . esc_html( $title_text ) . '</h3>', '<strong>' . esc_html( $result->getDomain() ) . '</strong>' );
 				}
 				?>
 			</div>

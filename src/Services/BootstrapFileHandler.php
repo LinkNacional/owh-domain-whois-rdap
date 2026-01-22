@@ -164,7 +164,7 @@ class BootstrapFileHandler
         if ($info['has_file']) {
             $info['last_modified'] = \filemtime($bundled_file);
             $info['file_size'] = \filesize($bundled_file);
-            $info['date'] = date('d/m/Y H:i:s', $info['last_modified']);
+            $info['date'] = gmdate('d/m/Y H:i:s', $info['last_modified']);
             
             // Se arquivo foi modificado recentemente, provavelmente foi atualizado
             if (time() - $info['last_modified'] < 300) { // 5 minutos

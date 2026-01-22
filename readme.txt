@@ -4,7 +4,7 @@ Donate link: https://www.linknacional.com.br/wordpress/plugins/
 Tags: domains, whois, rdap, domain search, domain availability, dns, domain checker
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.1.0
+Stable tag: 1.1.1
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -141,13 +141,16 @@ Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/
 
 == Changelog ==
 
-= 1.1.0 - 2024/01/22 =
+= 1.1.1 - 2026/01/22 =
+* Fix wordpress issues.
+
+= 1.1.0 - 2026/01/22 =
 * Added advanced Gutenberg blocks integration
 * Enhanced visual customization options
 * Improved block editor experience
 * Added custom CSS support for blocks
 
-= 1.0.0 - 2024/01/15 =
+= 1.0.0 - 2026/01/15 =
 * Initial plugin release
 * RDAP protocol implementation
 * IANA TLD validation system

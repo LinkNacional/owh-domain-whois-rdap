@@ -150,16 +150,16 @@ if ( isset( $custom_attributes ) ) {
 
 <?php if ( ! empty( $dynamic_css ) ) : ?>
 <style>
-	<?php echo $dynamic_css; ?>
+	<?php echo wp_kses( $dynamic_css, array( 'style' => array() ) ); ?>
 </style>
 <?php endif; ?>
 
-<div class="owh-rdap-search-container"<?php echo $container_style_attr; ?>>
+<div class="owh-rdap-search-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( isset( $show_title ) && $show_title ) : ?>
 		<h3 class="owh-rdap-search-title"><?php echo esc_html( $custom_title ); ?></h3>
 	<?php endif; ?>
 	
-	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . get_permalink( $results_page ) . '"' : ''; ?>>
+	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . esc_url( get_permalink( $results_page ) ) . '"' : ''; ?>>
 		<div class="owh-rdap-search-wrapper">
 			<div class="owh-rdap-search-input-wrapper">
 				<input 

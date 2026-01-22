@@ -1,5 +1,10 @@
 <?php
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -699,13 +704,25 @@ class Owh_Domain_Whois_Rdap_Admin {
 	 * @since    1.0.0
 	 */
 	public function register_plugin_settings() {
-		// Register settings
-		register_setting( 'owh_rdap_settings', 'owh_rdap_enable_search' );
-		register_setting( 'owh_rdap_settings', 'owh_rdap_results_page' );
-		register_setting( 'owh_rdap_settings', 'owh_rdap_whois_details_page' );
-		register_setting( 'owh_rdap_settings', 'owh_rdap_integration_type' );
-		register_setting( 'owh_rdap_settings', 'owh_rdap_custom_url' );
-		register_setting( 'owh_rdap_settings', 'owh_rdap_whmcs_url' );
+		// Register settings with sanitization
+		register_setting( 'owh_rdap_settings', 'owh_rdap_enable_search', array(
+			'sanitize_callback' => 'absint'
+		) );
+		register_setting( 'owh_rdap_settings', 'owh_rdap_results_page', array(
+			'sanitize_callback' => 'absint'
+		) );
+		register_setting( 'owh_rdap_settings', 'owh_rdap_whois_details_page', array(
+			'sanitize_callback' => 'absint'
+		) );
+		register_setting( 'owh_rdap_settings', 'owh_rdap_integration_type', array(
+			'sanitize_callback' => 'sanitize_key'
+		) );
+		register_setting( 'owh_rdap_settings', 'owh_rdap_custom_url', array(
+			'sanitize_callback' => 'esc_url_raw'
+		) );
+		register_setting( 'owh_rdap_settings', 'owh_rdap_whmcs_url', array(
+			'sanitize_callback' => 'esc_url_raw'
+		) );
 		
 		// Main settings section
 		add_settings_section(
@@ -745,8 +762,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 		// Integration section
 		add_settings_section(
 			'owh_rdap_integration_settings',
-			__( '', 'owh-domain-whois-rdap' ),
-			array(  ),
+			__( 'Configurações de Integração', 'owh-domain-whois-rdap' ),
+			array( $this, 'integration_settings_callback' ),
 			'owh_rdap_settings'
 		);
 
@@ -782,7 +799,14 @@ class Owh_Domain_Whois_Rdap_Admin {
 	 * Main settings section callback
 	 */
 	public function main_settings_callback() {
-		echo '<p>' . __( 'Ative a ferramenta de pesquisa de domínios (Whois) no seu site.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p>' . esc_html__( 'Ative a ferramenta de pesquisa de domínios (Whois) no seu site.', 'owh-domain-whois-rdap' ) . '</p>';
+	}
+
+	/**
+	 * Integration settings callback
+	 */
+	public function integration_settings_callback() {
+		echo '<p>' . esc_html__( 'Configure como os domínios disponíveis serão direcionados para compra.', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
@@ -793,10 +817,10 @@ class Owh_Domain_Whois_Rdap_Admin {
 		// Convert to integer to ensure proper comparison
 		$value = (int) $value;
 		echo '<fieldset>';
-		echo '<label><input type="radio" name="owh_rdap_enable_search" value="1"' . checked( 1, $value, false ) . '> ' . __( 'Ativar', 'owh-domain-whois-rdap' ) . '</label><br>';
-		echo '<label><input type="radio" name="owh_rdap_enable_search" value="0"' . checked( 0, $value, false ) . '> ' . __( 'Desativar', 'owh-domain-whois-rdap' ) . '</label>';
+		echo '<label><input type="radio" name="owh_rdap_enable_search" value="1"' . checked( 1, $value, false ) . '> ' . esc_html__( 'Ativar', 'owh-domain-whois-rdap' ) . '</label><br>';
+		echo '<label><input type="radio" name="owh_rdap_enable_search" value="0"' . checked( 0, $value, false ) . '> ' . esc_html__( 'Desativar', 'owh-domain-whois-rdap' ) . '</label>';
 		echo '</fieldset>';
-		echo '<p class="description">' . __( 'Ao ativar este recurso, você poderá inserir o formulário de pesquisa em qualquer página ou post através de shortcodes e blocos do WordPress.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Ao ativar este recurso, você poderá inserir o formulário de pesquisa em qualquer página ou post através de shortcodes e blocos do WordPress.', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
@@ -812,7 +836,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'option_none_value' => '',
 		) );
 		
-		echo '<p class="description">' . __( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
@@ -828,7 +852,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'option_none_value' => '',
 		) );
 		
-		echo '<p class="description">' . __( 'Escolha a página que mostrará os detalhes WHOIS completos dos domínios registrados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-details] no conteúdo desta página.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os detalhes WHOIS completos dos domínios registrados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-details] no conteúdo desta página.', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
@@ -837,10 +861,10 @@ class Owh_Domain_Whois_Rdap_Admin {
 	public function integration_type_callback() {
 		$value = get_option( 'owh_rdap_integration_type', 'custom' );
 		echo '<select name="owh_rdap_integration_type" id="owh_rdap_integration_type">';
-		echo '<option value="custom"' . selected( 'custom', $value, false ) . '>' . __( 'Custom URL', 'owh-domain-whois-rdap' ) . '</option>';
-		echo '<option value="whmcs"' . selected( 'whmcs', $value, false ) . '>' . __( 'WHMCS', 'owh-domain-whois-rdap' ) . '</option>';
+		echo '<option value="custom"' . selected( 'custom', $value, false ) . '>' . esc_html__( 'Custom URL', 'owh-domain-whois-rdap' ) . '</option>';
+		echo '<option value="whmcs"' . selected( 'whmcs', $value, false ) . '>' . esc_html__( 'WHMCS', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '</select>';
-		echo '<p class="description">' . __( 'Selecione o seu sistema de vendas de domínios para criar a integração. Após selecionar e savar siga com as configurações da integração.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Selecione o seu sistema de vendas de domínios para criar a integração. Após selecionar e savar siga com as configurações da integração.', 'owh-domain-whois-rdap' ) . '</p>';
 		?>
 		<script>
 		jQuery(document).ready(function($) {
@@ -876,11 +900,11 @@ class Owh_Domain_Whois_Rdap_Admin {
 		
 		$style = $integration_type === 'custom' ? '' : 'style="display: none;"';
 		
-		echo '<div id="custom_url_section" ' . $style . '>';
-		echo '<p>' . __( 'Configurar os parâmetros da URL para seguir com o registro do domínio', 'owh-domain-whois-rdap' ) . '</p>';
-		echo '<p>' . __( 'Configure um URL personalizado para registrar domínios', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<div id="custom_url_section" ' . esc_attr( $style ) . '>';
+		echo '<p>' . esc_html__( 'Configurar os parâmetros da URL para seguir com o registro do domínio', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure um URL personalizado para registrar domínios', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '<input type="url" name="owh_rdap_custom_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
-		echo '<p class="description">' . __( 'Tags de template disponíveis: {domain}, {sld}, {tld} exemplo: https://who.linknacional.com/whois/?domain={domain}', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Tags de template disponíveis: {domain}, {sld}, {tld} exemplo: https://who.linknacional.com/whois/?domain={domain}', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '</div>';
 	}
 
@@ -893,11 +917,11 @@ class Owh_Domain_Whois_Rdap_Admin {
 		
 		$style = $integration_type === 'whmcs' ? '' : 'style="display: none;"';
 		
-		echo '<div id="whmcs_url_section" ' . $style . '>';
-		echo '<p>' . __( 'Configurar os parâmetros da URL para seguir com o registro do domínio no WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
-		echo '<p>' . __( 'Configure o URL do WHMCS para o registro de domínios.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<div id="whmcs_url_section" ' . esc_attr( $style ) . '>';
+		echo '<p>' . esc_html__( 'Configurar os parâmetros da URL para seguir com o registro do domínio no WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p>' . esc_html__( 'Configure o URL do WHMCS para o registro de domínios.', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '<input type="url" name="owh_rdap_whmcs_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
-		echo '<p class="description">' . __( 'Informe o URL de instalação do seu WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Informe o URL de instalação do seu WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '</div>';
 	}
 
