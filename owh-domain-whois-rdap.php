@@ -21,7 +21,7 @@
  * Author URI:        https://owhgroup.com.br
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
- * Text Domain:       lknaci-owh-domain-whois-rdap
+ * Text Domain:       owh-domain-whois-rdap
  * Domain Path:       /languages
  */
 
@@ -35,37 +35,38 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.1.0' );
+define( 'OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.1.0' );
 
 /**
  * Plugin path and URL
  */
-define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_PATH', plugin_dir_path( __FILE__ ) );
-define( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_URL', plugin_dir_url( __FILE__ ) );
+define( 'OWH_DOMAIN_WHOIS_RDAP_PATH', plugin_dir_path( __FILE__ ) );
+define( 'OWH_DOMAIN_WHOIS_RDAP_URL', plugin_dir_url( __FILE__ ) );
 
 /**
  * Composer Autoloader
  */
 require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
 
+
 /**
  * The code that runs during plugin activation.
- * This action is documented in includes/class-lknaci-owh-domain-whois-rdap-activator.php
+ * This action is documented in includes/class-owh-domain-whois-rdap-activator.php
  */
-function lknaci_activate_owh_domain_whois_rdap() {
-	Lknaci_Owh_Domain_Whois_Rdap_Activator::activate();
+function owh_activate_domain_whois_rdap() {
+	Owh_Domain_Whois_Rdap_Activator::activate();
 }
 
 /**
  * The code that runs during plugin deactivation.
- * This action is documented in includes/class-lknaci-owh-domain-whois-rdap-deactivator.php
+ * This action is documented in includes/class-owh-domain-whois-rdap-deactivator.php
  */
-function lknaci_deactivate_owh_domain_whois_rdap() {
-	Lknaci_Owh_Domain_Whois_Rdap_Deactivator::deactivate();
+function owh_deactivate_domain_whois_rdap() {
+	Owh_Domain_Whois_Rdap_Deactivator::deactivate();
 }
 
-register_activation_hook( __FILE__, 'lknaci_activate_owh_domain_whois_rdap' );
-register_deactivation_hook( __FILE__, 'lknaci_deactivate_owh_domain_whois_rdap' );
+register_activation_hook( __FILE__, 'owh_activate_domain_whois_rdap' );
+register_deactivation_hook( __FILE__, 'owh_deactivate_domain_whois_rdap' );
 
 /**
  * Begins execution of the plugin.
@@ -76,8 +77,8 @@ register_deactivation_hook( __FILE__, 'lknaci_deactivate_owh_domain_whois_rdap' 
  *
  * @since    1.0.0
  */
-function lknaci_run_owh_domain_whois_rdap() {
-	$plugin = new Lknaci_Owh_Domain_Whois_Rdap();
+function owh_run_domain_whois_rdap() {
+	$plugin = new Owh_Domain_Whois_Rdap();
 	$plugin->run();
 }
-lknaci_run_owh_domain_whois_rdap();
+owh_run_domain_whois_rdap();

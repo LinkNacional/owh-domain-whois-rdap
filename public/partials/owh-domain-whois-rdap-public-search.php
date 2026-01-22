@@ -19,10 +19,10 @@ if ( ! defined( 'WPINC' ) ) {
 
 // Set default values for custom attributes
 $defaults = array(
-	'custom_title' => __( 'Pesquisar Domínio', 'lknaci-owh-domain-whois-rdap' ),
-	'placeholder_text' => __( 'Digite o nome do domínio...', 'lknaci-owh-domain-whois-rdap' ),
-	'search_button_text' => __( 'Pesquisar', 'lknaci-owh-domain-whois-rdap' ),
-	'examples_text' => __( 'Exemplos:', 'lknaci-owh-domain-whois-rdap' ),
+	'custom_title' => __( 'Pesquisar Domínio', 'owh-domain-whois-rdap' ),
+	'placeholder_text' => __( 'Digite o nome do domínio...', 'owh-domain-whois-rdap' ),
+	'search_button_text' => __( 'Pesquisar', 'owh-domain-whois-rdap' ),
+	'examples_text' => __( 'Exemplos:', 'owh-domain-whois-rdap' ),
 	'example1' => 'exemplo.com',
 	'example2' => 'meusite.com.br',
 	'example3' => 'minhaempresa.org'

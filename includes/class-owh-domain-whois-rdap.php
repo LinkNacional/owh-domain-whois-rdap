@@ -17,6 +17,7 @@
  * The core plugin class.
  *
  * This is used to define internationalization, admin-specific hooks, and
+/**
  * public-facing site hooks.
  *
  * Also maintains the unique identifier of this plugin as well as the current
@@ -27,7 +28,7 @@
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Lknaci_Owh_Domain_Whois_Rdap {
+class Owh_Domain_Whois_Rdap {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -76,15 +77,14 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'LKNACI_OWH_DOMAIN_WHOIS_RDAP_VERSION' ) ) {
-			$this->version = LKNACI_OWH_DOMAIN_WHOIS_RDAP_VERSION;
+		if ( defined( 'OWH_DOMAIN_WHOIS_RDAP_VERSION' ) ) {
+			$this->version = OWH_DOMAIN_WHOIS_RDAP_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
-		$this->plugin_name = 'lknaci-owh-domain-whois-rdap';
+		$this->plugin_name = 'owh-domain-whois-rdap';
 
 		$this->load_dependencies();
-		$this->set_locale();
 		$this->define_admin_hooks();
 		$this->define_public_hooks();
 	}
@@ -95,9 +95,8 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 	 * Include the following files that make up the plugin:
 	 *
 	 * - Owh_Domain_Whois_Rdap_Loader. Orchestrates the hooks of the plugin.
-	 * - Lknaci_Owh_Domain_Whois_Rdap_i18n. Defines internationalization functionality.
-	 * - Lknaci_Owh_Domain_Whois_Rdap_Admin. Defines all hooks for the admin area.
-	 * - Lknaci_Owh_Domain_Whois_Rdap_Public. Defines all hooks for the public side of the site.
+	 * - Owh_Domain_Whois_Rdap_Admin. Defines all hooks for the admin area.
+	 * - Owh_Domain_Whois_Rdap_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -113,21 +112,7 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 		$this->service_container = new \OwhDomainWhoisRdap\Services\ServiceContainer();
 	}
 
-	/**
-	 * Define the locale for this plugin for internationalization.
-	 *
-	 * Uses the Lknaci_Owh_Domain_Whois_Rdap_i18n class in order to set the domain and to register the hook
-	 * with WordPress.
-	 *
-	 * @since    1.0.0
-	 * @access   private
-	 */
-	private function set_locale() {
-		$plugin_i18n = new Lknaci_Owh_Domain_Whois_Rdap_i18n();
-
-		$this->loader->add_action( 'plugins_loaded', $plugin_i18n, 'load_plugin_textdomain' );
-	}
-
+	
 	/**
 	 * Register all of the hooks related to the admin area functionality
 	 * of the plugin.
@@ -136,13 +121,16 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
-		$plugin_admin = new Lknaci_Owh_Domain_Whois_Rdap_Admin( $this->get_plugin_name(), $this->get_version(), $this->service_container );
+		$plugin_admin = new Owh_Domain_Whois_Rdap_Admin( $this->get_plugin_name(), $this->get_version(), $this->service_container );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
 		$this->loader->add_action( 'admin_menu', $plugin_admin, 'add_plugin_admin_menu' );
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_plugin_settings' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_gutenberg_blocks' );
+		
+		// REST API endpoints
+		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_rest_routes' );
 	}
 
 	/**
@@ -153,13 +141,13 @@ class Lknaci_Owh_Domain_Whois_Rdap {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-		$plugin_public = new Lknaci_Owh_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
+		$plugin_public = new Owh_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		$this->loader->add_action( 'wp_ajax_lknaci_check_domain', $plugin_public, 'ajax_check_domain' );
-		$this->loader->add_action( 'wp_ajax_nopriv_lknaci_check_domain', $plugin_public, 'ajax_check_domain' );
+		$this->loader->add_action( 'wp_ajax_owh_check_domain', $plugin_public, 'ajax_check_domain' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owh_check_domain', $plugin_public, 'ajax_check_domain' );
 	}
 
 	/**

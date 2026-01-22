@@ -1,5 +1,5 @@
 Diretrizes de Arquitetura e Design: OWH Domain WHOIS RDAP
-Versão: 1.0.0 Contexto: Plugin WordPress para verificação de disponibilidade de domínios via protocolo RDAP. Slug do Plugin: lknaci-owh-domain-whois-rdap
+Versão: 1.0.0 Contexto: Plugin WordPress para verificação de disponibilidade de domínios via protocolo RDAP. Slug do Plugin: owh-domain-whois-rdap
 1. Visão Geral e Escopo
 Este projeto segue uma Arquitetura Híbrida. O objetivo é criar um verificador de domínios robusto, seguro e escalável, utilizando exclusivamente o protocolo RDAP (Registration Data Access Protocol) e abandonando o protocolo WHOIS legado.
 Restrições Funcionais Iniciais
@@ -16,7 +16,7 @@ Esta camada comunica-se com o WordPress. Deve seguir estritamente os WordPress C
 
 
 Padrão: Snake Case e Studly Caps com underscores.
-Classes: Owh_Domain_Whois_Rdap_Admin (Prefixo de arquivo: class-lknaci—owh-domain-whois-rdap-admin.php).
+Classes: Owh_Domain_Whois_Rdap_Admin (Prefixo de arquivo: class-owh-domain-whois-rdap-admin.php).
 Métodos/Funções: register_styles(), enqueue_scripts().
 Hooks: Registrados via classe Loader do Wordpress.
 Regras Específicas: 
@@ -25,16 +25,16 @@ class Class_name()
 function function_name()
 {
 }
-function lknaci_owh_domain_whois_rdap_function_run() (global)
+function owh_domain_whois_rdap_function_run() (global)
 {
 }
 $slug_name_variable; (global for templates/partials)
 Nome dos arquivos:
-lknaci—owh-domain-whois-rdap.php (main)
-lknaci—owh-domain-whois-rdap-file.php (versão IONCUBE ou PRO)
-class-lknaci—owh-domain-whois-rdap.php
-lknaci—owh-domain-whois-rdap-script.js
-lknaci—owh-domain-whois-rdap-style.css		
+owh-domain-whois-rdap.php (main)
+owh-domain-whois-rdap-file.php (versão IONCUBE ou PRO)
+class-owh-domain-whois-rdap.php
+owh-domain-whois-rdap-script.js
+owh-domain-whois-rdap-style.css		
 2.2. Camada de Lógica de Negócio (src/)
 Esta camada contém a inteligência do domínio, desacoplada do WordPress. Deve seguir PSR-4 e PSR-12.
 Padrão: Camel Case e PascalCase (Sem underscores em nomes de classes).
@@ -47,27 +47,27 @@ Injeção de Dependência: Obrigatória via construtor. Não usar funções glob
 3. Estrutura de Diretórios e Arquivos
 A estrutura abaixo substitui os placeholders do documento original pelo slug do projeto atual.
 Plaintext
-/lknaci—owh-domain-whois-rdap/
+/owh-domain-whois-rdap/
 |-- admin/
 |   |-- css/
 |   |-- js/
 |   |-- partials/ (Templates de configurações e metaboxes)
-|   |   |-- lknaci—owh-domain-whois-rdap-admin-display.php
-|   |-- class-lknaci—owh-domain-whois-rdap-admin.php (Controlador das telas de admin [cite: 141, 236])
+|   |   |-- owh-domain-whois-rdap-admin-display.php
+|   |-- class-owh-domain-whois-rdap-admin.php (Controlador das telas de admin [cite: 141, 236])
 |
 |-- public/
 |   |-- css/
 |   |-- js/
 |   |-- partials/
-|   |   |-- lknaci—owh-domain-whois-rdap-public-search.php (Template do shortcode de busca)
-|   |-- class-lknaci—owh-domain-whois-rdap-public.php (Controlador do frontend e shortcodes)
+|   |   |-- owh-domain-whois-rdap-public-search.php (Template do shortcode de busca)
+|   |-- class-owh-domain-whois-rdap-public.php (Controlador do frontend e shortcodes)
 |
 |-- includes/
-|   |-- class-lknaci—owh-domain-whois-rdap.php (Classe Principal - Boot do ServiceContainer)
+|   |-- class-owh-domain-whois-rdap.php (Classe Principal - Boot do ServiceContainer)
 |   |-- class-owh-domain-whois-rdap-loader.php (Registrador de Hooks)
-|   |-- class-lknaci—owh-domain-whois-rdap-activator.php
-|   |-- class-lknaci—owh-domain-whois-rdap-deactivator.php
-|   |-- class-lknaci—owh-domain-whois-rdap-i18n.php
+|   |-- class-owh-domain-whois-rdap-activator.php
+|   |-- class-owh-domain-whois-rdap-deactivator.php
+|   |-- class-owh-domain-whois-rdap-i18n.php
 |
 |-- src/ (Lógica de Negócio - Namespace: OwhDomainWhoisRdap)
 |   |-- Services/
@@ -106,7 +106,7 @@ Cache: Deve consultar o CacheManager antes de fazer a requisição externa para 
 5. Regras de Implementação Estritas
 5.1. Registro de Hooks (Loader)
 NENHUM add_action ou add_filter deve ser colocado nos construtores das classes Admin ou Public.
-Correto: Registrar tudo no método define_admin_hooks() ou define_public_hooks()  da classe principal includes/class-lknaci—owh-domain-whois-rdap.php, delegando a execução para a instância de Admin/Public.
+Correto: Registrar tudo no método define_admin_hooks() ou define_public_hooks()  da classe principal includes/class-owh-domain-whois-rdap.php, delegando a execução para a instância de Admin/Public.
 5.2. Manipulação de JSON e TLDs
 O sistema deve suportar a atualização da lista de extensões (TLDs).
 A busca deve identificar a extensão do domínio digitado (ex: .com, .br) e buscar o endpoint RDAP correspondente no arquivo dns.json local.

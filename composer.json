@@ -1,5 +1,5 @@
 {
-    "name": "lknaci/owh-domain-whois-rdap",
+    "name": "owh/owh-domain-whois-rdap",
     "type": "wordpress-plugin",
     "license": "Proprietary",
     "description": "WordPress plugin para verificação de disponibilidade de domínios via protocolo RDAP",

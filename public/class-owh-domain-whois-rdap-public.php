@@ -20,7 +20,7 @@
  * @subpackage OWH_Domain_WHOIS_RDAP/public
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Lknaci_Owh_Domain_Whois_Rdap_Public {
+class Owh_Domain_Whois_Rdap_Public {
 
 	/**
 	 * The ID of this plugin.
@@ -71,7 +71,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	public function enqueue_styles() {
 		wp_enqueue_style( 
 			$this->plugin_name, 
-			plugin_dir_url( __FILE__ ) . 'css/lknaci-owh-domain-whois-rdap-public.css', 
+			plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-public.css', 
 			array(), 
 			$this->version, 
 			'all' 
@@ -86,7 +86,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	public function enqueue_scripts() {
 		wp_enqueue_script( 
 			$this->plugin_name, 
-			plugin_dir_url( __FILE__ ) . 'js/lknaci-owh-domain-whois-rdap-public.js', 
+			plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-public.js', 
 			array( 'jquery' ), 
 			$this->version, 
 			false 
@@ -139,7 +139,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 
 		// Check if search is enabled
 		if ( ! $settings_manager->isSearchEnabled() ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
 		}
 
 		$show_title = $atts['show_title'] === 'true';
@@ -169,7 +169,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 		);
 
 		ob_start();
-		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-search.php';
+		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-search.php';
 		return ob_get_clean();
 	}
 
@@ -210,7 +210,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 
 		// Check if search is enabled
 		if ( ! $settings_manager->isSearchEnabled() ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
 		}
 
 		$show_title = $atts['show_title'] === 'true';
@@ -251,7 +251,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 		);
 
 		ob_start();
-		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-results.php';
+		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-results.php';
 		return ob_get_clean();
 	}
 
@@ -262,14 +262,14 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function ajax_check_domain() {
 		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'lknaci_owh_rdap_public_nonce' ) ) {
+		if ( ! wp_verify_nonce( $_POST['nonce'], 'owh_rdap_public_nonce' ) ) {
 			wp_die( 'Security check failed', 'Security Check', array( 'response' => 403 ) );
 		}
 
 		$domain = isset( $_POST['domain'] ) ? sanitize_text_field( $_POST['domain'] ) : '';
 
 		if ( empty( $domain ) ) {
-			wp_send_json_error( __( 'Domínio não informado.', 'lknaci-owh-domain-whois-rdap' ) );
+			wp_send_json_error( __( 'Domínio não informado.', 'owh-domain-whois-rdap' ) );
 			return;
 		}
 
@@ -278,7 +278,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 
 			// Check if search is enabled
 			if ( ! $settings_manager->isSearchEnabled() ) {
-				wp_send_json_error( __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) );
+				wp_send_json_error( __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) );
 				return;
 			}
 
@@ -312,7 +312,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 						$response_data['integration'] = array(
 							'type' => 'custom',
 							'url' => $buy_url,
-							'text' => __( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ),
+							'text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
 						);
 					}
 				} elseif ( $integration_type === 'whmcs' ) {
@@ -333,7 +333,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 								$result->getDomain(),
 								$result->getDomain()
 							),
-							'text' => __( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ),
+							'text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
 						);
 					}
 				}
@@ -346,7 +346,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 			}
 
 		} catch ( Exception $e ) {
-			wp_send_json_error( __( 'Erro interno do servidor.', 'lknaci-owh-domain-whois-rdap' ) );
+			wp_send_json_error( __( 'Erro interno do servidor.', 'owh-domain-whois-rdap' ) );
 		}
 	}
 
@@ -397,7 +397,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 
 		// Check if search is enabled
 		if ( ! get_option( 'owh_rdap_enable_search', false ) ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'lknaci-owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
 		}
 
 		// Get domain from URL parameter
@@ -450,7 +450,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Public {
 		ob_start();
 
 		// Include the WHOIS details template
-		include plugin_dir_path( __FILE__ ) . 'partials/lknaci-owh-domain-whois-rdap-public-whois-details.php';
+		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-whois-details.php';
 
 		return ob_get_clean();
 	}
