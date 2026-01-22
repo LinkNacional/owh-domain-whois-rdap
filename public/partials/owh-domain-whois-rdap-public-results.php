@@ -19,14 +19,14 @@ if ( ! defined( 'WPINC' ) ) {
 
 // Set default values for custom attributes
 $defaults = array(
-	'no_result_text' => __( 'Aguardando Pesquisa', 'lknaci-owh-domain-whois-rdap' ),
-	'no_result_description' => __( 'Os resultados da pesquisa de domínios aparecerão aqui.', 'lknaci-owh-domain-whois-rdap' ),
-	'available_title' => __( 'Domínio Disponível', 'lknaci-owh-domain-whois-rdap' ),
-	'available_text' => __( 'Este domínio está disponível para registro!', 'lknaci-owh-domain-whois-rdap' ),
-	'unavailable_title' => __( 'Domínio Indisponível', 'lknaci-owh-domain-whois-rdap' ),
-	'unavailable_text' => __( 'Este domínio já está registrado e não está disponível.', 'lknaci-owh-domain-whois-rdap' ),
-	'buy_button_text' => __( 'Registrar Domínio', 'lknaci-owh-domain-whois-rdap' ),
-	'details_button_text' => __( 'Ver detalhes completos do WHOIS', 'lknaci-owh-domain-whois-rdap' ),
+	'no_result_text' => __( 'Aguardando Pesquisa', 'owh-domain-whois-rdap' ),
+	'no_result_description' => __( 'Os resultados da pesquisa de domínios aparecerão aqui.', 'owh-domain-whois-rdap' ),
+	'available_title' => __( 'Domínio Disponível', 'owh-domain-whois-rdap' ),
+	'available_text' => __( 'Este domínio está disponível para registro!', 'owh-domain-whois-rdap' ),
+	'unavailable_title' => __( 'Domínio Indisponível', 'owh-domain-whois-rdap' ),
+	'unavailable_text' => __( 'Este domínio já está registrado e não está disponível.', 'owh-domain-whois-rdap' ),
+	'buy_button_text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
+	'details_button_text' => __( 'Ver detalhes completos do WHOIS', 'owh-domain-whois-rdap' ),
 	'show_icons' => true,
 	'search_icon' => '🔍',
 	'available_icon' => '✅',
@@ -74,20 +74,21 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 </style>
 <?php endif; ?>
 
-<div class="owh-rdap-results-container"<?php echo $container_style_attr; ?>>
+<div class="owh-rdap-results-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( $result ) : ?>
 		<?php if ( isset( $show_title ) && $show_title ) : ?>
 			<div class="owh-rdap-search-header">
 				<?php 
+				// translators: %s is the domain name being searched
 				$title_text = isset( $custom_attributes['custom_title'] ) && ! empty( $custom_attributes['custom_title'] ) 
 					? $custom_attributes['custom_title'] 
-					: __( 'Resultado da pesquisa para: %s', 'lknaci-owh-domain-whois-rdap' );
+					: __( 'Resultado da pesquisa para: %s', 'owh-domain-whois-rdap' );
 				
 				if ( strpos( $title_text, '{domain}' ) !== false ) {
 					$title_text = str_replace( '{domain}', '<strong>' . esc_html( $result->getDomain() ) . '</strong>', $title_text );
-					echo '<h3>' . $title_text . '</h3>';
+					echo '<h3>' . wp_kses_post( $title_text ) . '</h3>';
 				} else {
-					printf( '<h3>' . $title_text . '</h3>', '<strong>' . esc_html( $result->getDomain() ) . '</strong>' );
+					printf( '<h3>' . esc_html( $title_text ) . '</h3>', '<strong>' . esc_html( $result->getDomain() ) . '</strong>' );
 				}
 				?>
 			</div>

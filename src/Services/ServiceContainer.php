@@ -105,7 +105,7 @@ class ServiceContainer
     public function get(string $name)
     {
         if (!isset($this->services[$name])) {
-            throw new \Exception("Service {$name} not found in container");
+            throw new \Exception('Service not found in container');
         }
 
         $service = $this->services[$name];

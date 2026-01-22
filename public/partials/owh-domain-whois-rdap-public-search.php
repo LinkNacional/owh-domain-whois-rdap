@@ -19,10 +19,10 @@ if ( ! defined( 'WPINC' ) ) {
 
 // Set default values for custom attributes
 $defaults = array(
-	'custom_title' => __( 'Pesquisar Domínio', 'lknaci-owh-domain-whois-rdap' ),
-	'placeholder_text' => __( 'Digite o nome do domínio...', 'lknaci-owh-domain-whois-rdap' ),
-	'search_button_text' => __( 'Pesquisar', 'lknaci-owh-domain-whois-rdap' ),
-	'examples_text' => __( 'Exemplos:', 'lknaci-owh-domain-whois-rdap' ),
+	'custom_title' => __( 'Pesquisar Domínio', 'owh-domain-whois-rdap' ),
+	'placeholder_text' => __( 'Digite o nome do domínio...', 'owh-domain-whois-rdap' ),
+	'search_button_text' => __( 'Pesquisar', 'owh-domain-whois-rdap' ),
+	'examples_text' => __( 'Exemplos:', 'owh-domain-whois-rdap' ),
 	'example1' => 'exemplo.com',
 	'example2' => 'meusite.com.br',
 	'example3' => 'minhaempresa.org'
@@ -150,16 +150,16 @@ if ( isset( $custom_attributes ) ) {
 
 <?php if ( ! empty( $dynamic_css ) ) : ?>
 <style>
-	<?php echo $dynamic_css; ?>
+	<?php echo wp_kses( $dynamic_css, array( 'style' => array() ) ); ?>
 </style>
 <?php endif; ?>
 
-<div class="owh-rdap-search-container"<?php echo $container_style_attr; ?>>
+<div class="owh-rdap-search-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( isset( $show_title ) && $show_title ) : ?>
 		<h3 class="owh-rdap-search-title"><?php echo esc_html( $custom_title ); ?></h3>
 	<?php endif; ?>
 	
-	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . get_permalink( $results_page ) . '"' : ''; ?>>
+	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . esc_url( get_permalink( $results_page ) ) . '"' : ''; ?>>
 		<div class="owh-rdap-search-wrapper">
 			<div class="owh-rdap-search-input-wrapper">
 				<input 

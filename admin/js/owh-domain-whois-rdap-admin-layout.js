@@ -71,7 +71,7 @@
                     break;
                 default:
                     newContent = fieldName || 'Configuração';
-                    subtitle = 'Configure esta opção conforme necessário.';
+                    subtitle = 'Clique para executar ações de manutenção e diagnóstico.';
             }
             
             $th.html(`

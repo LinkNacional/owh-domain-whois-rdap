@@ -43,7 +43,7 @@ if ( ! empty( $container_styles ) ) {
 $custom_css_output = '';
 if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 	// Clean and validate CSS - remove any malicious content
-	$clean_css = strip_tags( $custom_css );
+	$clean_css = wp_strip_all_tags( $custom_css );
 	$clean_css = str_replace( array( '<script', '</script>', 'javascript:' ), '', $clean_css );
 	
 	// Apply with higher specificity to override plugin styles
@@ -65,13 +65,13 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 ?>
 
 <?php if ( ! empty( $custom_css_output ) ) : ?>
-	<?php echo $custom_css_output; ?>
+	<?php echo wp_kses( $custom_css_output, array( 'style' => array() ) ); ?>
 <?php endif; ?>
 
-<div class="owh-rdap-whois-details-container"<?php echo $inline_styles; ?>>
+<div class="owh-rdap-whois-details-container"<?php echo esc_attr( $inline_styles ); ?>>
 	<?php if ( isset( $show_title ) && $show_title ) : ?>
 		<div class="owh-rdap-whois-details-header">
-			<h3><?php echo esc_html( isset( $custom_title ) ? $custom_title : __( 'Detalhes WHOIS/RDAP', 'lknaci-owh-domain-whois-rdap' ) ); ?></h3>
+			<h3><?php echo esc_html( isset( $custom_title ) ? $custom_title : __( 'Detalhes WHOIS/RDAP', 'owh-domain-whois-rdap' ) ); ?></h3>
 		</div>
 	<?php endif; ?>
 
@@ -80,7 +80,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 			<div class="owh-rdap-result-error">
 				<div class="owh-rdap-error-icon">⚠️</div>
 				<div class="owh-rdap-error-content">
-					<h4><?php echo esc_html( isset( $error_text ) ? $error_text : __( 'Erro na Pesquisa', 'lknaci-owh-domain-whois-rdap' ) ); ?></h4>
+					<h4><?php echo esc_html( isset( $error_text ) ? $error_text : __( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ) ); ?></h4>
 					<p><?php echo esc_html( $result->getError() ); ?></p>
 				</div>
 			</div>
@@ -88,14 +88,16 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 			<div class="owh-rdap-whois-available">
 				<div class="owh-rdap-available-icon">✅</div>
 				<div class="owh-rdap-available-content">
-					<h4><?php printf( __( 'Domínio %s', 'lknaci-owh-domain-whois-rdap' ), esc_html( $domain ) ); ?></h4>
-					<p><?php echo esc_html( isset( $available_text ) ? $available_text : __( 'Este domínio está disponível para registro e não possui informações WHOIS.', 'lknaci-owh-domain-whois-rdap' ) ); ?></p>
+					<!-- translators: %s is the domain name -->
+					<h4><?php printf( esc_html__( 'Domínio %s', 'owh-domain-whois-rdap' ), esc_html( $domain ) ); ?></h4>
+					<p><?php echo esc_html( isset( $available_text ) ? $available_text : __( 'Este domínio está disponível para registro e não possui informações WHOIS.', 'owh-domain-whois-rdap' ) ); ?></p>
 				</div>
 			</div>
 		<?php else : ?>
 			<div class="owh-rdap-whois-registered">
 				<div class="owh-rdap-domain-header">
-					<h4><?php printf( __( 'Detalhes WHOIS para %s', 'lknaci-owh-domain-whois-rdap' ), '<strong>' . esc_html( $domain ) . '</strong>' ); ?></h4>
+					<!-- translators: %s is the domain name -->
+					<h4><?php printf( esc_html__( 'Detalhes WHOIS para %s', 'owh-domain-whois-rdap' ), '<strong>' . esc_html( $domain ) . '</strong>' ); ?></h4>
 				</div>
 
 				<?php 
@@ -104,7 +106,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 					
 					<?php if ( isset( $show_events ) && $show_events && isset( $rdap_data['events'] ) && is_array( $rdap_data['events'] ) ) : ?>
 					<div class="owh-rdap-domain-events">
-						<h5><?php echo esc_html( isset( $events_title ) ? $events_title : __( 'Histórico de Eventos', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
+						<h5><?php echo esc_html( isset( $events_title ) ? $events_title : __( 'Histórico de Eventos', 'owh-domain-whois-rdap' ) ); ?></h5>
 						<div class="owh-rdap-events-list">
 							<?php 
 							// Mapeamento de traduções para eventos RDAP
@@ -139,7 +141,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 
 					<?php if ( isset( $show_entities ) && $show_entities && isset( $rdap_data['entities'] ) && is_array( $rdap_data['entities'] ) ) : ?>
 					<div class="owh-rdap-domain-entities">
-						<h5><?php echo esc_html( isset( $entities_title ) ? $entities_title : __( 'Entidades Relacionadas', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
+						<h5><?php echo esc_html( isset( $entities_title ) ? $entities_title : __( 'Entidades Relacionadas', 'owh-domain-whois-rdap' ) ); ?></h5>
 						<div class="owh-rdap-entities-list">
 							<?php foreach ( $rdap_data['entities'] as $entity ) : ?>
 								<?php if ( isset( $entity['roles'] ) && is_array( $entity['roles'] ) ) : ?>
@@ -208,7 +210,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 
 					<?php if ( isset( $show_nameservers ) && $show_nameservers && isset( $rdap_data['nameservers'] ) && is_array( $rdap_data['nameservers'] ) ) : ?>
 					<div class="owh-rdap-nameservers">
-						<h5><?php echo esc_html( isset( $nameservers_title ) ? $nameservers_title : __( 'Servidores DNS (Nameservers)', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
+						<h5><?php echo esc_html( isset( $nameservers_title ) ? $nameservers_title : __( 'Servidores DNS (Nameservers)', 'owh-domain-whois-rdap' ) ); ?></h5>
 						<div class="owh-rdap-nameserver-list">
 							<ul>
 								<?php foreach ( $rdap_data['nameservers'] as $ns ) : ?>
@@ -223,7 +225,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 
 					<?php if ( isset( $show_status ) && $show_status && isset( $rdap_data['status'] ) && is_array( $rdap_data['status'] ) ) : ?>
 					<div class="owh-rdap-domain-status">
-						<h5><?php echo esc_html( isset( $status_title ) ? $status_title : __( 'Status do Domínio', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
+						<h5><?php echo esc_html( isset( $status_title ) ? $status_title : __( 'Status do Domínio', 'owh-domain-whois-rdap' ) ); ?></h5>
 						<div class="owh-rdap-status-list">
 							<ul>
 								<?php foreach ( $rdap_data['status'] as $status ) : ?>
@@ -236,13 +238,13 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 
 					<?php if ( isset( $show_dnssec ) && $show_dnssec && isset( $rdap_data['secureDNS'] ) ) : ?>
 					<div class="owh-rdap-secure-dns">
-						<h5><?php echo esc_html( isset( $dnssec_title ) ? $dnssec_title : __( 'DNSSEC', 'lknaci-owh-domain-whois-rdap' ) ); ?></h5>
+						<h5><?php echo esc_html( isset( $dnssec_title ) ? $dnssec_title : __( 'DNSSEC', 'owh-domain-whois-rdap' ) ); ?></h5>
 						<p>
-							<strong><?php _e( 'Status:', 'lknaci-owh-domain-whois-rdap' ); ?></strong>
+							<strong><?php esc_html_e( 'Status:', 'owh-domain-whois-rdap' ); ?></strong>
 							<?php 
 							$secure_dns_status = isset( $rdap_data['secureDNS']['delegationSigned'] ) && $rdap_data['secureDNS']['delegationSigned'] 
-								? __( 'Habilitado', 'lknaci-owh-domain-whois-rdap' )
-								: __( 'Desabilitado', 'lknaci-owh-domain-whois-rdap' );
+								? __( 'Habilitado', 'owh-domain-whois-rdap' )
+								: __( 'Desabilitado', 'owh-domain-whois-rdap' );
 							echo esc_html( $secure_dns_status );
 							?>
 						</p>
@@ -251,7 +253,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 
 				<?php else : ?>
 					<div class="owh-rdap-no-data">
-						<p><?php _e( 'Não foi possível obter informações detalhadas WHOIS/RDAP para este domínio.', 'lknaci-owh-domain-whois-rdap' ); ?></p>
+						<p><?php esc_html_e( 'Não foi possível obter informações detalhadas WHOIS/RDAP para este domínio.', 'owh-domain-whois-rdap' ); ?></p>
 					</div>
 				<?php endif; ?>
 
@@ -261,8 +263,8 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 		<div class="owh-rdap-domain-error">
 			<div class="owh-rdap-error-icon">⚠️</div>
 			<div class="owh-rdap-error-content">
-				<h4><?php echo esc_html( isset( $error_text ) ? $error_text : __( 'Erro na Pesquisa', 'lknaci-owh-domain-whois-rdap' ) ); ?></h4>
-				<p><?php _e( 'Não foi possível buscar informações para o domínio informado.', 'lknaci-owh-domain-whois-rdap' ); ?></p>
+				<h4><?php echo esc_html( isset( $error_text ) ? $error_text : __( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ) ); ?></h4>
+				<p><?php esc_html_e( 'Não foi possível buscar informações para o domínio informado.', 'owh-domain-whois-rdap' ); ?></p>
 			</div>
 		</div>
 	<?php else : ?>
@@ -271,8 +273,8 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 				<?php if ( isset( $show_icon ) && $show_icon ) : ?>
 					<div style="font-size: 48px; margin-bottom: 15px;"><?php echo esc_html( isset( $custom_icon ) ? $custom_icon : '📋' ); ?></div>
 				<?php endif; ?>
-				<h4><?php echo esc_html( isset( $no_domain_text ) ? $no_domain_text : __( 'Nenhum Domínio Informado', 'lknaci-owh-domain-whois-rdap' ) ); ?></h4>
-				<p><?php echo esc_html( isset( $no_domain_description ) ? $no_domain_description : __( 'Para visualizar os detalhes WHOIS, acesse esta página através do link "Ver detalhes completos" nos resultados da pesquisa.', 'lknaci-owh-domain-whois-rdap' ) ); ?></p>
+				<h4><?php echo esc_html( isset( $no_domain_text ) ? $no_domain_text : __( 'Nenhum Domínio Informado', 'owh-domain-whois-rdap' ) ); ?></h4>
+				<p><?php echo esc_html( isset( $no_domain_description ) ? $no_domain_description : __( 'Para visualizar os detalhes WHOIS, acesse esta página através do link "Ver detalhes completos" nos resultados da pesquisa.', 'owh-domain-whois-rdap' ) ); ?></p>
 			</div>
 		</div>
 	<?php endif; ?>

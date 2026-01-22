@@ -17,7 +17,7 @@ class CacheManager
     /**
      * Cache prefix
      */
-    private const CACHE_PREFIX = 'lknaci_owh_domain_';
+    private const CACHE_PREFIX = 'owh_domain_';
 
     /**
      * Get cached domain result

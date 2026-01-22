@@ -17,7 +17,7 @@ class SettingsManager
     /**
      * Option prefix
      */
-    private const OPTION_PREFIX = 'lknaci_owh_domain_whois_rdap_';
+    private const OPTION_PREFIX = 'owh_domain_whois_rdap_';
 
     /**
      * Get option value

@@ -20,7 +20,7 @@
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Lknaci_Owh_Domain_Whois_Rdap_Activator {
+class Owh_Domain_Whois_Rdap_Activator {
 
 	/**
 	 * Short Description. (use period)
@@ -47,7 +47,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Activator {
 		);
 
 		foreach ( $default_options as $option_name => $default_value ) {
-			$full_option_name = 'lknaci_owh_domain_whois_rdap_' . $option_name;
+			$full_option_name = 'owh_domain_whois_rdap_' . $option_name;
 			if ( get_option( $full_option_name ) === false ) {
 				add_option( $full_option_name, $default_value );
 			}
@@ -55,7 +55,7 @@ class Lknaci_Owh_Domain_Whois_Rdap_Activator {
 
 		// Create uploads directory for storing dns.json
 		$upload_dir = wp_upload_dir();
-		$plugin_upload_dir = $upload_dir['basedir'] . '/lknaci-owh-domain-whois-rdap';
+		$plugin_upload_dir = $upload_dir['basedir'] . '/owh-domain-whois-rdap';
 		
 		if ( ! file_exists( $plugin_upload_dir ) ) {
 			wp_mkdir_p( $plugin_upload_dir );
