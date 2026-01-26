@@ -199,4 +199,88 @@ class SettingsManager
     {
         return $this->getWhoisDetailsPageId() > 0;
     }
+
+    /**
+     * Get custom TLDs configuration
+     *
+     * @return array
+     */
+    public function getCustomTlds(): array
+    {
+        $custom_tlds = $this->get('custom_tlds', []);
+        
+        // Ensure we always return an array
+        if (!is_array($custom_tlds)) {
+            return [];
+        }
+        
+        return $custom_tlds;
+    }
+
+    /**
+     * Set custom TLDs configuration
+     *
+     * @param array $custom_tlds
+     * @return bool
+     */
+    public function setCustomTlds(array $custom_tlds): bool
+    {
+        // Debug log
+        error_log('OWH RDAP Debug - SettingsManager::setCustomTlds called with: ' . print_r($custom_tlds, true));
+        
+        // Filter out empty entries - be more lenient with validation
+        $filtered_tlds = array_filter($custom_tlds, function($tld) {
+            $is_valid = !empty($tld['tld']) && !empty($tld['rdap_url']);
+            if (!$is_valid) {
+                error_log('OWH RDAP Debug - Filtering out TLD: ' . print_r($tld, true));
+            }
+            return $is_valid;
+        });
+        
+        error_log('OWH RDAP Debug - Filtered TLDs: ' . print_r($filtered_tlds, true));
+        
+        // Use direct WordPress function to avoid potential issues
+        $wp_option_name = self::OPTION_PREFIX . 'custom_tlds';
+        $result = \update_option($wp_option_name, $filtered_tlds);
+        
+        error_log('OWH RDAP Debug - update_option result: ' . ($result ? 'true' : 'false'));
+        error_log('OWH RDAP Debug - Option name: ' . $wp_option_name);
+        
+        return $result;
+    }
+
+    /**
+     * Get RDAP URL for a specific TLD
+     *
+     * @param string $tld
+     * @return string|null
+     */
+    public function getCustomRdapUrl(string $tld): ?string
+    {
+        $custom_tlds = $this->getCustomTlds();
+        
+        // Remove dot from TLD if present
+        $tld = ltrim($tld, '.');
+        
+        foreach ($custom_tlds as $custom_tld) {
+            $custom_tld_clean = ltrim($custom_tld['tld'], '.');
+            
+            if (strcasecmp($custom_tld_clean, $tld) === 0) {
+                return rtrim($custom_tld['rdap_url'], '/');
+            }
+        }
+        
+        return null;
+    }
+
+    /**
+     * Check if a TLD has custom RDAP configuration
+     *
+     * @param string $tld
+     * @return bool
+     */
+    public function hasCustomTld(string $tld): bool
+    {
+        return $this->getCustomRdapUrl($tld) !== null;
+    }
 }

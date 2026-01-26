@@ -107,7 +107,17 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 	<?php endif; ?>
 
 	<?php if ( $result ) : ?>
-		<?php if ( $result->isAvailable() ) : ?>
+		<?php if ( $result->hasError() ) : ?>
+			<div class="owh-rdap-result-error">
+				<?php if ( $show_icons ) : ?>
+					<div class="owh-rdap-error-icon">⚠️</div>
+				<?php endif; ?>
+				<div class="owh-rdap-error-content">
+					<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
+					<p><?php echo esc_html( $result->getError() ); ?></p>
+				</div>
+			</div>
+		<?php elseif ( $result->isAvailable() ) : ?>
 			<div class="owh-rdap-result-available">
 				<?php if ( $show_icons ) : ?>
 					<div class="owh-rdap-available-icon"><?php echo esc_html( $available_icon ); ?></div>
@@ -224,20 +234,23 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 }
 
 .owh-rdap-result-available,
-.owh-rdap-result-unavailable {
+.owh-rdap-result-unavailable,
+.owh-rdap-result-error {
 	display: flex;
 	align-items: flex-start;
 	gap: 20px;
 }
 
 .owh-rdap-available-icon,
-.owh-rdap-unavailable-icon {
+.owh-rdap-unavailable-icon,
+.owh-rdap-error-icon {
 	font-size: 48px;
 	line-height: 1;
 }
 
 .owh-rdap-available-content h4,
-.owh-rdap-unavailable-content h4 {
+.owh-rdap-unavailable-content h4,
+.owh-rdap-error-content h4 {
 	margin: 0 0 10px 0;
 	font-size: 20px;
 }
@@ -250,8 +263,13 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 	color: #dc3232;
 }
 
+.owh-rdap-error-content h4 {
+	color: #dc3232;
+}
+
 .owh-rdap-available-content p,
-.owh-rdap-unavailable-content p {
+.owh-rdap-unavailable-content p,
+.owh-rdap-error-content p {
 	margin: 0 0 20px 0;
 	color: #666;
 	font-size: 16px;
@@ -347,7 +365,8 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 
 @media (max-width: 600px) {
 	.owh-rdap-result-available,
-	.owh-rdap-result-unavailable {
+	.owh-rdap-result-unavailable,
+	.owh-rdap-result-error {
 		flex-direction: column;
 		align-items: center;
 		text-align: center;
@@ -355,7 +374,8 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 	}
 	
 	.owh-rdap-available-icon,
-	.owh-rdap-unavailable-icon {
+	.owh-rdap-unavailable-icon,
+	.owh-rdap-error-icon {
 		font-size: 36px;
 	}
 }

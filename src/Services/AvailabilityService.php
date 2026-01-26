@@ -66,7 +66,7 @@ class AvailabilityService
     }
 
     /**
-     * Check domain availability using universal RDAP.org endpoint
+     * Check domain availability using universal RDAP.org endpoint or custom TLD configuration
      *
      * @param string $domain
      * @return DomainResult
@@ -98,27 +98,28 @@ class AvailabilityService
             );
         }
 
-        // Validate TLD using IANA list
-        if (!$this->bootstrapHandler->isValidTld($tld)) {
-            return new DomainResult(
-                $domain,
-                false,
-                'TLD não suportado',
-                null,
-                sprintf('A extensão "%s" não está na lista oficial da IANA', $tld)
-            );
+        // Check for custom TLD configuration first
+        $customRdapUrl = $this->settingsManager->getCustomRdapUrl($tld);
+        if ($customRdapUrl) {
+            // Use custom RDAP URL for this TLD
+            $rdapServer = $customRdapUrl;
+        } else {
+            // Validate TLD using IANA list
+            if (!$this->bootstrapHandler->isValidTld($tld)) {
+                return new DomainResult(
+                    $domain,
+                    false,
+                    'TLD não suportado',
+                    null,
+                    sprintf('A extensão "%s" não está na lista oficial da IANA', $tld)
+                );
+            }
+            
+            // Use universal RDAP.org endpoint for standard TLDs
+            $rdapServer = 'https://rdap.org/domain/';
         }
 
-        // Check cache first
-        $cached_result = $this->cacheManager->get($domain);
-        if ($cached_result !== false) {
-            return DomainResult::fromArray($cached_result);
-        }
-
-        // Use universal RDAP.org endpoint for all domains
-        $rdapServer = 'https://rdap.org';
-
-        // Query universal RDAP server
+        // Query RDAP server (custom or universal)
         $rdapResponse = $this->rdapClient->queryDomain($domain, $rdapServer);
         if (!$rdapResponse) {
             return new DomainResult(
@@ -250,12 +251,12 @@ class AvailabilityService
      */
     private function extractTld(string $domain): ?string
     {
-        $parts = explode('.', $domain);
+        $dotPosition = strpos($domain, '.');
         
-        if (count($parts) < 2) {
+        if ($dotPosition === false) {
             return null;
         }
 
-        return end($parts);
+        return substr($domain, $dotPosition + 1);
     }
 }

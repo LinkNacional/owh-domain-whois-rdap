@@ -99,6 +99,16 @@
                         status.removeClass('loading error').addClass('success')
                             .html('<span style="color: #46b450;">' + response.message + '</span>');
                         
+                        // Update the last update date in the description
+                        var currentDate = new Date();
+                        var formattedDate = currentDate.toLocaleDateString('pt-BR') + ' ' + currentDate.toLocaleTimeString('pt-BR');
+                        var descriptionElement = $('.description').last();
+                        var descriptionText = descriptionElement.html();
+                        
+                        // Replace the last update date in the description
+                        var updatedText = descriptionText.replace(/Última atualização: [^.]+\./, 'Última atualização: ' + formattedDate + '.');
+                        descriptionElement.html(updatedText);
+                        
                         // Reload server status after successful update
                         setTimeout(function() {
                             loadRdapServerStatus();

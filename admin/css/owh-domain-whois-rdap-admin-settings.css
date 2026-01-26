@@ -1,0 +1,137 @@
+/**
+ * Admin Settings CSS
+ * 
+ * Styles for the OWH Domain WHOIS RDAP admin settings page
+ *
+ * @since      1.0.0
+ * @package    Owh_Domain_Whois_Rdap
+ * @subpackage Owh_Domain_Whois_Rdap/admin/css
+ */
+
+/* Form table styles */
+.form-table th {
+    width: 200px;
+}
+
+/* RDAP info section styles */
+.owh-rdap-info h3 {
+    margin-top: 0;
+    color: #0073aa;
+}
+
+.owh-rdap-info code {
+    font-size: 14px;
+}
+
+/* Tab Styles */
+.owh-tab-wrapper {
+    margin-bottom: 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.owh-tab {
+    position: relative;
+    text-decoration: none;
+    background: transparent;
+    border: 1px solid transparent;
+    border-bottom: 0;
+    margin-bottom: -1px;
+    padding: 10px 15px;
+    color: #0073aa;
+    transition: all 0.3s ease;
+}
+
+.owh-tab:hover {
+    color: #005a87;
+    background-color: #f9f9f9;
+}
+
+.owh-tab.nav-tab-active {
+    background-color: #fff;
+    border-color: #ccc;
+    border-bottom-color: #fff;
+    color: #000;
+}
+
+.owh-tab-content {
+    background: #fff;
+    border: 1px solid #ccc;
+    border-top: 0;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.owh-tab-panel {
+    display: none;
+}
+
+.owh-tab-panel.active {
+    display: block;
+}
+
+.owh-tab-panel h2 {
+    margin-top: 0;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+/* Custom TLDs styles */
+.custom-tlds-header {
+    display: flex;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.custom-tld-row {
+    display: flex;
+    margin-bottom: 5px;
+    align-items: center;
+}
+
+.custom-tld-row > div {
+    padding: 5px;
+}
+
+.custom-tld-row input[type="text"] {
+    width: 100%;
+    max-width: 400px;
+    padding: 8px 12px;
+    border: 1px solid rgb(140, 143, 148);
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#update-rdap-servers{
+    width: fit-content;
+}
+
+.custom-tld-row input[type="text"]:focus {
+    border-color: #0073aa;
+    outline: none;
+    box-shadow: 0 0 0 1px #0073aa;
+}
+
+#add-tld-row {
+    margin-top: 10px;
+    min-width: 120px;
+    cursor: pointer;
+}
+
+/* Notice styles for inline messages */
+.notice.inline {
+    margin: 5px 0 0 0;
+    padding: 8px 12px;
+}
+
+.notice.inline p {
+    margin: 0;
+}
+
+/* RDAP status info styles */
+#rdap-status-info {
+    margin-bottom: 15px;
+}
+
+#rdap-status-info p {
+    margin-bottom: 5px;
+}

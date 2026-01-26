@@ -138,6 +138,11 @@ class BootstrapFileHandler
         // Write new data to bundled file
         $result = \file_put_contents($bundled_file, json_encode($dns_data, JSON_PRETTY_PRINT));
 
+        // Update last update date in WordPress options if successful
+        if ($result !== false) {
+            \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+        }
+
         return $result !== false;
     }
 

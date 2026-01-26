@@ -69,6 +69,10 @@
                     newContent = 'Integração WHMCS';
                     subtitle = 'Configure a integração com o sistema WHMCS.';
                     break;
+                case fieldName.includes('Ações úteis'):
+                    newContent = 'Ações úteis';
+                    subtitle = 'Estas são ações de manutenção para manter o plugin atualizado e para fins de diagnóstico.';
+                    break;
                 default:
                     newContent = fieldName || 'Configuração';
                     subtitle = 'Clique para executar ações de manutenção e diagnóstico.';
@@ -111,7 +115,7 @@
             
             // Extrair descrição do conteúdo original
             const $temp = $('<div>').html(originalContent);
-            const originalDesc = $temp.find('.description').text().trim();
+            const originalDesc = $temp.find('.description').html(); // Usar .html() para preservar <br>
             
             switch(true) {
                 case fieldName.includes('Ativar Pesquisa'):
@@ -133,6 +137,11 @@
                 case fieldName.includes('WHMCS'):
                     headerText = 'WHMCS';
                     description = 'Configure a integração com o sistema WHMCS.';
+                    break;
+                case fieldName.includes('Ações úteis'):
+                    headerText = 'Ações úteis';
+                    // Para "Ações úteis", usar a descrição original que já tem quebras de linha
+                    description = originalDesc || 'Estas são ações de manutenção para manter o plugin atualizado e para fins de diagnóstico.';
                     break;
                 default:
                     headerText = fieldName || 'Configuração';
@@ -167,6 +176,12 @@
             const $input = $temp.find('input[type="url"], input[type="text"]');
             if ($input.length) {
                 return createInputBody($temp);
+            }
+            
+            // Verificar se contém botão (seção Ações úteis)
+            const $button = $temp.find('button');
+            if ($button.length) {
+                return createActionButtonBody($temp);
             }
             
             // Padrão para outros tipos
@@ -271,9 +286,31 @@
             `;
         }
         
+        function createActionButtonBody($temp) {
+            const $description = $temp.find('.description');
+            const descHtml = $description.html(); // Preservar HTML com <br>
+            
+            // Remove a descrição original para evitar duplicação
+            $description.remove();
+            
+            // Estilizar botões
+            $temp.find('button').css({
+                'padding': '8px 16px',
+                'border-radius': '4px',
+                'margin-bottom': '10px'
+            });
+            
+            return `
+                <div class="woo-forminp-body" style="display: flex; flex-direction: column; justify-content: center; padding: 0px 0px 10px 6px; min-height: 50px;">
+                    ${$temp.html()}
+                    <p class="description" style="color: #646970;">${descHtml}</p>
+                </div>
+            `;
+        }
+
         function createDefaultBody($temp) {
             const $description = $temp.find('.description');
-            const descText = $description.text().trim();
+            const descText = $description.html().trim(); // Usar .html() para preservar <br>
             
             // Remove a descrição original para evitar duplicação
             $description.remove();

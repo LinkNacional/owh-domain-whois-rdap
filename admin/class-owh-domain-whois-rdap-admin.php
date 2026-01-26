@@ -76,6 +76,18 @@ class Owh_Domain_Whois_Rdap_Admin {
 
 		wp_enqueue_style( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin.css', array(), $this->version, 'all' );
 
+		// Carregar CSS específico das configurações na página de configurações do plugin
+		global $pagenow;
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && $_GET['page'] === 'owh-rdap' ) {
+			wp_enqueue_style( 
+				$this->plugin_name . '-settings', 
+				plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin-settings.css', 
+				array( $this->plugin_name ), // Dependente do CSS principal
+				$this->version, 
+				'all' 
+			);
+		}
+
 	}
 
 	/**
@@ -99,14 +111,24 @@ class Owh_Domain_Whois_Rdap_Admin {
 			)
 		) );
 
-		// Carregar script de layout na página de configurações do plugin
+		// Carregar scripts específicos na página de configurações do plugin
 		global $pagenow;
 		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && $_GET['page'] === 'owh-rdap' ) {
+			// Script de layout
 			wp_enqueue_script( 
 				$this->plugin_name . '-layout', 
 				plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-admin-layout.js', 
 				array( 'jquery', $this->plugin_name ), // Dependente do script principal
-				$this->version . '-' . time(), // Force refresh
+				$this->version, 
+				true 
+			);
+			
+			// Script das configurações
+			wp_enqueue_script( 
+				$this->plugin_name . '-settings', 
+				plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-admin-settings.js', 
+				array( 'jquery', $this->plugin_name ), // Dependente do script principal
+				$this->version, 
 				true 
 			);
 		}
@@ -998,6 +1020,77 @@ class Owh_Domain_Whois_Rdap_Admin {
 			), 200 );
 		} catch ( Exception $e ) {
 			return new \WP_Error( 'server_error', __( 'Erro interno: ', 'owh-domain-whois-rdap' ) . $e->getMessage(), array( 'status' => 500 ) );
+		}
+	}
+
+	/**
+	 * AJAX handler for saving custom TLDs
+	 *
+	 * @since    1.0.0
+	 */
+	public function ajax_save_custom_tlds() {
+		// Check user capabilities
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( array(
+				'message' => 'Você não tem permissão para executar esta ação.'
+			) );
+			return;
+		}
+
+		try {
+			// Get the custom TLDs data
+			$custom_tlds = isset( $_POST['custom_tlds'] ) ? $_POST['custom_tlds'] : array();
+			
+			// Simple validation and processing
+			$processed_tlds = array();
+			
+			foreach ( $custom_tlds as $tld_data ) {
+				if ( is_array( $tld_data ) && 
+					 isset( $tld_data['tld'] ) && 
+					 isset( $tld_data['rdap_url'] ) ) {
+					
+					$tld = trim( $tld_data['tld'] );
+					$rdap_url = trim( $tld_data['rdap_url'] );
+					
+					if ( ! empty( $tld ) && ! empty( $rdap_url ) ) {
+						// Ensure TLD starts with dot
+						if ( substr( $tld, 0, 1 ) !== '.' ) {
+							$tld = '.' . $tld;
+						}
+						
+						$processed_tlds[] = array(
+							'tld' => $tld,
+							'rdap_url' => $rdap_url
+						);
+					}
+				}
+			}
+			
+			// Save directly using WordPress function
+			$option_name = 'owh_domain_whois_rdap_custom_tlds';
+			
+			// Get current value to check if it's actually changing
+			$current_value = get_option( $option_name, array() );
+			$save_result = update_option( $option_name, $processed_tlds );
+			
+			// update_option returns false if the value didn't change, so we need to handle that
+			$verification = get_option( $option_name, array() );
+			$actually_saved = ( $verification === $processed_tlds );
+			
+			if ( $save_result || $actually_saved ) {
+				wp_send_json_success( array(
+					'message' => sprintf( 'TLDs customizadas salvas com sucesso! %d TLD(s) configurada(s).', count( $processed_tlds ) )
+				) );
+			} else {
+				wp_send_json_error( array(
+					'message' => 'Erro ao salvar no banco de dados. Dados processados: ' . count( $processed_tlds ) . ' TLDs'
+				) );
+			}
+
+		} catch ( Exception $e ) {
+			wp_send_json_error( array(
+				'message' => 'Erro interno: ' . $e->getMessage()
+			) );
 		}
 	}
 }

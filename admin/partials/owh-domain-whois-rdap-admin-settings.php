@@ -48,23 +48,82 @@ defined( 'ABSPATH' ) or exit;
                 <tr>
                     <th scope="row"><?php esc_html_e('Ações úteis', 'owh-domain-whois-rdap'); ?></th>
                     <td>
-                        <div id="rdap-status-info" style="margin-bottom: 15px;">
-                            <p><strong><?php esc_html_e('Arquivo atual:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-status"><?php esc_html_e('Carregando...', 'owh-domain-whois-rdap'); ?></span></p>
-                            <p><strong><?php esc_html_e('Última atualização:', 'owh-domain-whois-rdap'); ?></strong> <span id="last-update"><?php esc_html_e('Verificando...', 'owh-domain-whois-rdap'); ?></span></p>
-                            <p><strong><?php esc_html_e('Tamanho do arquivo:', 'owh-domain-whois-rdap'); ?></strong> <span id="file-size">-</span></p>
-                        </div>
-                        
-                        <button type="button" id="update-rdap-servers" class="button button-secondary">
-                            <?php esc_html_e('Atualizar Lista de Servidores RDAP', 'owh-domain-whois-rdap'); ?>
+                        <button type="button" id="update-rdap-servers" class="button button-primary">
+                            <?php esc_html_e('Atualizar Lista de Extensões (TLDs)', 'owh-domain-whois-rdap'); ?>
                         </button>
                         <div id="update-rdap-status" style="margin-top: 10px; display: none;"></div>
                         
                         <p class="description">
-                            <?php esc_html_e('O plugin já inclui uma lista de servidores RDAP. Use este botão para baixar a versão mais recente da IANA.', 'owh-domain-whois-rdap'); ?>
+                            <?php esc_html_e('Sincroniza a lista de extensões de domínio (.com, .br, .net) com o registro oficial.', 'owh-domain-whois-rdap'); ?><br>
+                            <?php esc_html_e('É importante executar esta ação periodicamente para que a pesquisa inclua novos sufixos.', 'owh-domain-whois-rdap'); ?><br>
+                            <?php 
+                            $last_update = get_option('owh_domain_whois_rdap_last_update', '2024-10-21');
+                            printf(esc_html__('Última atualização: %s.', 'owh-domain-whois-rdap'), esc_html($last_update)); 
+                            ?>
                         </p>
                     </td>
                 </tr>
+                <tr>
+                    <th scope="row"><?php esc_html_e('Subdomínios Customizados', 'owh-domain-whois-rdap'); ?></th>
+                    <td>
+                        <p class="description" style="margin-bottom: 15px;">
+                            <?php esc_html_e('Para disponibilizar subdomínios nas pesquisas de domínios defina os na lista abaixo seguindo rigorosamente a estrutura do JSON.', 'owh-domain-whois-rdap'); ?>
+                        </p>
+                        
+                        <div id="custom-tlds-container">
+                            <div class="custom-tlds-header" style="display: flex; margin-bottom: 10px; font-weight: bold;">
+                                <div style="width: 200px; padding: 5px;"><?php esc_html_e('Subdomínio', 'owh-domain-whois-rdap'); ?></div>
+                                <div style="width: 300px; padding: 5px;"><?php esc_html_e('RDAP URL', 'owh-domain-whois-rdap'); ?></div>
+                                <div style="width: 100px; padding: 5px;"><?php esc_html_e('Ações', 'owh-domain-whois-rdap'); ?></div>
+                            </div>
+                            
+                            <div id="custom-tlds-list">
+                                <?php 
+                                $custom_tlds = get_option('owh_domain_whois_rdap_custom_tlds', []);
+                                echo '<!-- Debug: Custom TLDs from DB: ' . esc_html(print_r($custom_tlds, true)) . ' -->';
+                                
+                                if (empty($custom_tlds)) {
+                                    $custom_tlds = [['tld' => '', 'rdap_url' => '']]; // Pelo menos uma linha em branco
+                                }
+                                foreach ($custom_tlds as $index => $tld_config): ?>
+                                    <div class="custom-tld-row" style="display: flex; margin-bottom: 5px; align-items: center;">
+                                        <div style="width: 200px; padding: 5px;">
+                                            <input type="text" 
+                                                   name="custom_tlds[<?php echo $index; ?>][tld]" 
+                                                   value="<?php echo esc_attr($tld_config['tld']); ?>" 
+                                                   placeholder=".com" />
+                                        </div>
+                                        <div style="width: 300px; padding: 5px;">
+                                            <input type="text" 
+                                                   name="custom_tlds[<?php echo $index; ?>][rdap_url]" 
+                                                   value="<?php echo esc_attr($tld_config['rdap_url']); ?>" 
+                                                   placeholder="https://rdap.example.com" />
+                                        </div>
+                                        <div style="width: 100px; padding: 5px;">
+                                            <button type="button" class="button remove-tld-row" <?php echo count($custom_tlds) === 1 ? 'style="display:none;"' : ''; ?>>
+                                                <?php esc_html_e('Remover', 'owh-domain-whois-rdap'); ?>
+                                            </button>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                            
+                            <button type="button" id="add-tld-row" class="button button-secondary" style="margin-top: 10px; min-width: 120px; cursor: pointer;">
+                                <?php esc_html_e('Adicionar TLD', 'owh-domain-whois-rdap'); ?>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
             </table>
+            
+            <div style="margin-top: 20px;">
+                <input type="hidden" name="action" value="save_custom_tlds" />
+                <?php wp_nonce_field('save_custom_tlds_nonce', 'custom_tlds_nonce'); ?>
+                <button type="button" id="save-custom-tlds" class="button button-primary">
+                    <?php esc_html_e('Salvar TLDs Customizadas', 'owh-domain-whois-rdap'); ?>
+                </button>
+                <div id="save-custom-tlds-status" style="margin-top: 10px; display: none;"></div>
+            </div>
         </div>
     </div>
     
@@ -98,114 +157,3 @@ defined( 'ABSPATH' ) or exit;
         </div>
     </div>
 </div>
-
-<script>
-jQuery(document).ready(function($) {
-    // Tab Navigation System
-    $('.owh-tab').on('click', function(e) {
-        e.preventDefault();
-        
-        var targetTab = $(this).data('tab');
-        
-        // Remove active class from all tabs and panels
-        $('.owh-tab').removeClass('nav-tab-active');
-        $('.owh-tab-panel').removeClass('active').hide();
-        
-        // Add active class to clicked tab
-        $(this).addClass('nav-tab-active');
-        
-        // Show corresponding panel with fade effect
-        $('#tab-' + targetTab).addClass('active').fadeIn(300);
-    });
-    
-    // Initialize tabs on page load
-    function initializeTabs() {
-        // Check if there's a hash in URL
-        var hash = window.location.hash.substring(1);
-        var targetTab = hash || 'general';
-        
-        // Activate the correct tab
-        $('.owh-tab[data-tab="' + targetTab + '"]').trigger('click');
-    }
-    
-    // Initialize tabs
-    initializeTabs();
-    
-    // Update URL hash when tab changes (optional - for bookmarkable URLs)
-    $('.owh-tab').on('click', function() {
-        var tabName = $(this).data('tab');
-        if (history.pushState) {
-            history.pushState(null, null, '#' + tabName);
-        } else {
-            window.location.hash = '#' + tabName;
-        }
-    });
-});
-</script>
-
-<style>
-.form-table th {
-    width: 200px;
-}
-
-.owh-rdap-info h3 {
-    margin-top: 0;
-    color: #0073aa;
-}
-
-.owh-rdap-info code {
-    font-size: 14px;
-}
-
-/* Tab Styles */
-.owh-tab-wrapper {
-    margin-bottom: 0;
-    border-bottom: 1px solid #ccc;
-}
-
-.owh-tab {
-    position: relative;
-    text-decoration: none;
-    background: transparent;
-    border: 1px solid transparent;
-    border-bottom: 0;
-    margin-bottom: -1px;
-    padding: 10px 15px;
-    color: #0073aa;
-    transition: all 0.3s ease;
-}
-
-.owh-tab:hover {
-    color: #005a87;
-    background-color: #f9f9f9;
-}
-
-.owh-tab.nav-tab-active {
-    background-color: #fff;
-    border-color: #ccc;
-    border-bottom-color: #fff;
-    color: #000;
-}
-
-.owh-tab-content {
-    background: #fff;
-    border: 1px solid #ccc;
-    border-top: 0;
-    padding: 20px;
-    min-height: 300px;
-}
-
-.owh-tab-panel {
-    display: none;
-}
-
-.owh-tab-panel.active {
-    display: block;
-}
-
-.owh-tab-panel h2 {
-    margin-top: 0;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #eee;
-}
-</style>
