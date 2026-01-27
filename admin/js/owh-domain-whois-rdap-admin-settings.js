@@ -56,6 +56,12 @@
         $(document).on('click', '.remove-tld-row', function(e) {
             e.preventDefault();
             console.log('[OWH-RDAP] Remove TLD row clicked');
+            
+            // Add confirmation dialog
+            if (!confirm('Tem certeza que deseja remover este TLD customizado?')) {
+                return;
+            }
+            
             $(this).closest('.custom-tld-row').remove();
             updateRemoveButtons();
             reindexRows();
@@ -63,12 +69,8 @@
 
         // Update remove button visibility
         function updateRemoveButtons() {
-            var rows = $('.custom-tld-row');
-            if (rows.length <= 1) {
-                $('.remove-tld-row').hide();
-            } else {
-                $('.remove-tld-row').show();
-            }
+            // Always show remove buttons - allow removing even when there's only 1 TLD
+            $('.remove-tld-row').show();
         }
 
         // Reindex row names after removal

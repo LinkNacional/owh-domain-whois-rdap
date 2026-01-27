@@ -40,7 +40,7 @@ defined( 'ABSPATH' ) or exit;
         </div>
         
         <!-- RDAP Tab -->
-        <div id="tab-rdap" class="owh-tab-panel" style="display: none;">
+        <div id="tab-rdap" class="owh-tab-panel">
             <h2><?php esc_html_e('Configurações RDAP', 'owh-domain-whois-rdap'); ?></h2>
             <p><?php esc_html_e('Gerenciar configurações específicas do protocolo RDAP (Registration Data Access Protocol).', 'owh-domain-whois-rdap'); ?></p>
             
@@ -51,7 +51,7 @@ defined( 'ABSPATH' ) or exit;
                         <button type="button" id="update-rdap-servers" class="button button-primary">
                             <?php esc_html_e('Atualizar Lista de Extensões (TLDs)', 'owh-domain-whois-rdap'); ?>
                         </button>
-                        <div id="update-rdap-status" style="margin-top: 10px; display: none;"></div>
+                        <div id="update-rdap-status" class="update-rdap-status"></div>
                         
                         <p class="description">
                             <?php esc_html_e('Sincroniza a lista de extensões de domínio (.com, .br, .net) com o registro oficial.', 'owh-domain-whois-rdap'); ?><br>
@@ -66,15 +66,15 @@ defined( 'ABSPATH' ) or exit;
                 <tr>
                     <th scope="row"><?php esc_html_e('Subdomínios Customizados', 'owh-domain-whois-rdap'); ?></th>
                     <td>
-                        <p class="description" style="margin-bottom: 15px;">
+                        <p class="description">
                             <?php esc_html_e('Para disponibilizar subdomínios nas pesquisas de domínios defina os na lista abaixo seguindo rigorosamente a estrutura do JSON.', 'owh-domain-whois-rdap'); ?>
                         </p>
                         
-                        <div id="custom-tlds-container">
-                            <div class="custom-tlds-header" style="display: flex; margin-bottom: 10px; font-weight: bold;">
-                                <div style="width: 200px; padding: 5px;"><?php esc_html_e('Subdomínio', 'owh-domain-whois-rdap'); ?></div>
-                                <div style="width: 300px; padding: 5px;"><?php esc_html_e('RDAP URL', 'owh-domain-whois-rdap'); ?></div>
-                                <div style="width: 100px; padding: 5px;"><?php esc_html_e('Ações', 'owh-domain-whois-rdap'); ?></div>
+                        <div id="custom-tlds-container" class="custom-tlds-container">
+                            <div class="custom-tlds-header">
+                                <div><?php esc_html_e('Subdomínio', 'owh-domain-whois-rdap'); ?></div>
+                                <div><?php esc_html_e('RDAP URL', 'owh-domain-whois-rdap'); ?></div>
+                                <div><?php esc_html_e('Ações', 'owh-domain-whois-rdap'); ?></div>
                             </div>
                             
                             <div id="custom-tlds-list">
@@ -86,20 +86,20 @@ defined( 'ABSPATH' ) or exit;
                                     $custom_tlds = [['tld' => '', 'rdap_url' => '']]; // Pelo menos uma linha em branco
                                 }
                                 foreach ($custom_tlds as $index => $tld_config): ?>
-                                    <div class="custom-tld-row" style="display: flex; margin-bottom: 5px; align-items: center;">
-                                        <div style="width: 200px; padding: 5px;">
+                                    <div class="custom-tld-row">
+                                        <div>
                                             <input type="text" 
                                                    name="custom_tlds[<?php echo $index; ?>][tld]" 
                                                    value="<?php echo esc_attr($tld_config['tld']); ?>" 
                                                    placeholder=".com" />
                                         </div>
-                                        <div style="width: 300px; padding: 5px;">
+                                        <div>
                                             <input type="text" 
                                                    name="custom_tlds[<?php echo $index; ?>][rdap_url]" 
                                                    value="<?php echo esc_attr($tld_config['rdap_url']); ?>" 
                                                    placeholder="https://rdap.example.com" />
                                         </div>
-                                        <div style="width: 100px; padding: 5px;">
+                                        <div>
                                             <button type="button" class="button remove-tld-row" <?php echo count($custom_tlds) === 1 ? 'style="display:none;"' : ''; ?>>
                                                 <?php esc_html_e('Remover', 'owh-domain-whois-rdap'); ?>
                                             </button>
@@ -108,7 +108,7 @@ defined( 'ABSPATH' ) or exit;
                                 <?php endforeach; ?>
                             </div>
                             
-                            <button type="button" id="add-tld-row" class="button button-secondary" style="margin-top: 10px; min-width: 120px; cursor: pointer;">
+                            <button type="button" id="add-tld-row" class="button button-secondary add-tld-button">
                                 <?php esc_html_e('Adicionar TLD', 'owh-domain-whois-rdap'); ?>
                             </button>
                         </div>
@@ -122,34 +122,34 @@ defined( 'ABSPATH' ) or exit;
                 <button type="button" id="save-custom-tlds" class="button button-primary">
                     <?php esc_html_e('Salvar TLDs Customizadas', 'owh-domain-whois-rdap'); ?>
                 </button>
-                <div id="save-custom-tlds-status" style="margin-top: 10px; display: none;"></div>
+                <div id="save-custom-tlds-status" class="save-custom-tlds-status"></div>
             </div>
         </div>
     </div>
     
-    <div class="owh-rdap-info" style="margin-top: 30px; padding: 20px; background: #f9f9f9; border-left: 4px solid #0073aa;">
+    <div class="owh-rdap-info">
         <h3><?php esc_html_e('Como usar', 'owh-domain-whois-rdap'); ?></h3>
         
         <h4><?php esc_html_e('Shortcodes:', 'owh-domain-whois-rdap'); ?></h4>
         <p><?php esc_html_e('Para exibir o formulário de pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
-        <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-search]</code>
+        <code class="owh-shortcode">[owh-rdap-whois-search]</code>
         
-        <p style="margin-top: 15px;"><?php esc_html_e('Para exibir os resultados da pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
-        <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-results]</code>
+        <p class="shortcode-description"><?php esc_html_e('Para exibir os resultados da pesquisa, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
+        <code class="owh-shortcode">[owh-rdap-whois-results]</code>
 
-        <p style="margin-top: 15px;"><?php esc_html_e('Para exibir detalhes WHOIS completos, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
-        <code style="padding: 5px; background: #fff; border: 1px solid #ddd;">[owh-rdap-whois-details]</code>
+        <p class="shortcode-description"><?php esc_html_e('Para exibir detalhes WHOIS completos, use o shortcode:', 'owh-domain-whois-rdap'); ?></p>
+        <code class="owh-shortcode">[owh-rdap-whois-details]</code>
         
-        <h4 style="margin-top: 25px;"><?php esc_html_e('Blocos do Gutenberg:', 'owh-domain-whois-rdap'); ?></h4>
+        <h4 class="section-title"><?php esc_html_e('Blocos do Gutenberg:', 'owh-domain-whois-rdap'); ?></h4>
         <p><?php esc_html_e('Você também pode usar os blocos do Gutenberg no editor de posts/páginas. Procure por:', 'owh-domain-whois-rdap'); ?></p>
-        <ul style="margin: 10px 0 0 20px;">
+        <ul class="gutenberg-blocks-list">
             <li><strong><?php esc_html_e('OWH RDAP Search', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Formulário de pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
             <li><strong><?php esc_html_e('OWH RDAP Results', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Resultados da pesquisa de domínio', 'owh-domain-whois-rdap'); ?></li>
             <li><strong><?php esc_html_e('OWH RDAP Details', 'owh-domain-whois-rdap'); ?></strong> - <?php esc_html_e('Detalhes WHOIS completos', 'owh-domain-whois-rdap'); ?></li>
         </ul>
-        <div style="margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd;">
+        <div class="template-variables">
             <h4><?php esc_html_e('Template Variables para Custom URL:', 'owh-domain-whois-rdap'); ?></h4>
-            <ul style="margin: 0;">
+            <ul>
                 <li><code>{domain}</code> - <?php esc_html_e('Domínio completo (ex: example.com)', 'owh-domain-whois-rdap'); ?></li>
                 <li><code>{sld}</code> - <?php esc_html_e('Nome do domínio (ex: example)', 'owh-domain-whois-rdap'); ?></li>
                 <li><code>{tld}</code> - <?php esc_html_e('Extensão do domínio (ex: com)', 'owh-domain-whois-rdap'); ?></li>

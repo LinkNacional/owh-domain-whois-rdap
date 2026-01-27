@@ -14,6 +14,13 @@
 }
 
 /* RDAP info section styles */
+.owh-rdap-info {
+    margin-top: 30px;
+    padding: 20px;
+    background: #f9f9f9;
+    border-left: 4px solid #0073aa;
+}
+
 .owh-rdap-info h3 {
     margin-top: 0;
     color: #0073aa;
@@ -23,10 +30,174 @@
     font-size: 14px;
 }
 
+/* Shortcode styles */
+.owh-shortcode {
+    padding: 5px;
+    background: #fff;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.shortcode-description {
+    margin-top: 15px;
+}
+
+.section-title {
+    margin-top: 25px;
+}
+
+.gutenberg-blocks-list {
+    margin: 10px 0 0 20px;
+}
+
+.template-variables {
+    margin-top: 20px;
+    padding: 15px;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.template-variables ul {
+    margin: 0;
+}
+
+.template-variables h4 {
+    margin-top: 0;
+}
+
+/* Description with margin */
+.description {
+    margin-bottom: 15px;
+}
+
 /* Tab Styles */
 .owh-tab-wrapper {
     margin-bottom: 0;
     border-bottom: 1px solid #ccc;
+}
+
+.owh-tab-panel {
+    display: none;
+}
+
+.owh-tab-panel.active {
+    display: block;
+}
+
+/* Custom TLDs Container */
+.custom-tlds-container {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.custom-tlds-header {
+    display: flex;
+    margin-bottom: 10px;
+    font-weight: bold;
+    min-width: 600px;
+}
+
+.custom-tlds-header > div {
+    padding: 5px;
+}
+
+.custom-tlds-header > div:nth-child(1) {
+    width: 200px;
+}
+
+.custom-tlds-header > div:nth-child(2) {
+    width: 300px;
+}
+
+.custom-tlds-header > div:nth-child(3) {
+    width: 100px;
+}
+
+/* Custom TLD Rows */
+.custom-tld-row {
+    display: flex;
+    margin-bottom: 5px;
+    align-items: center;
+    min-width: 600px;
+}
+
+.custom-tld-row > div {
+    padding: 5px;
+}
+
+.custom-tld-row > div:nth-child(1) {
+    width: 200px;
+}
+
+.custom-tld-row > div:nth-child(2) {
+    width: 300px;
+}
+
+.custom-tld-row > div:nth-child(3) {
+    width: 100px;
+}
+
+.custom-tld-row input[type="text"] {
+    width: 100%;
+    max-width: 100%;
+}
+
+.add-tld-button {
+    margin-top: 10px;
+    min-width: 120px;
+    cursor: pointer;
+}
+
+/* Update Status */
+.update-rdap-status {
+    margin-top: 10px;
+    display: none;
+}
+
+.save-custom-tlds-status {
+    margin-top: 10px;
+    display: none;
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+    .custom-tlds-header,
+    .custom-tld-row {
+        flex-direction: column;
+        min-width: auto;
+    }
+    
+    .custom-tlds-header > div,
+    .custom-tld-row > div {
+        width: 100% !important;
+        margin-bottom: 10px;
+    }
+    
+    .custom-tlds-header > div:last-child,
+    .custom-tld-row > div:last-child {
+        margin-bottom: 0;
+    }
+    
+    .custom-tlds-container {
+        overflow-x: visible;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .form-table th {
+        width: auto;
+    }
+    
+    .form-table th,
+    .form-table td {
+        display: block;
+        width: 100%;
+        padding: 10px 0;
+    }
+    
+    .add-tld-button {
+        width: 100%;
+    }
 }
 
 .owh-tab {

@@ -985,16 +985,16 @@ class Owh_Domain_Whois_Rdap_Admin {
 			// Get the BootstrapFileHandler service from container
 			$bootstrap_handler = $this->service_container->get( 'BootstrapFileHandler' );
 			
-			// Update DNS data
-			$result = $bootstrap_handler->updateDnsData();
+			// Update DNS data with detailed error information
+			$result = $bootstrap_handler->updateDnsDataWithDetails();
 			
-			if ( $result ) {
+			if ( $result['success'] ) {
 				return new \WP_REST_Response( array(
 					'success' => true,
-					'message' => __( 'Servidores RDAP atualizados com sucesso!', 'owh-domain-whois-rdap' )
+					'message' => $result['message']
 				), 200 );
 			} else {
-				return new \WP_Error( 'update_failed', __( 'Falha ao atualizar servidores RDAP. Tente novamente.', 'owh-domain-whois-rdap' ), array( 'status' => 500 ) );
+				return new \WP_Error( 'update_failed', $result['message'], array( 'status' => 500 ) );
 			}
 		} catch ( Exception $e ) {
 			return new \WP_Error( 'server_error', __( 'Erro interno: ', 'owh-domain-whois-rdap' ) . $e->getMessage(), array( 'status' => 500 ) );
