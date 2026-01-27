@@ -1,3 +1,7 @@
+# 1.2.0
+* Adição de configuração para adicionar subdomnios;
+* Adição de botão para atualizar TLDs.
+
 # 1.1.1
 * Corrigindo erros do plugin checker.
 
