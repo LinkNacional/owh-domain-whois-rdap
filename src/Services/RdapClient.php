@@ -25,8 +25,7 @@ class RdapClient
      */
     public function queryDomain(string $domain, string $rdapServer): ?array
     {
-        $url = $rdapServer . '/domain/' . $domain;
-
+        $url = $rdapServer . '/' . $domain;
         $response = \wp_remote_get($url, [
             'timeout' => 15,
             'headers' => [

@@ -131,6 +131,11 @@ class BootstrapFileHandler
             return false;
         }
 
+        // Validate JSON structure
+        if (!$this->validateDnsDataStructure($dns_data)) {
+            return false;
+        }
+
         // Replace the bundled file directly
         $plugin_dir = dirname(dirname(__DIR__)) . '/';
         $bundled_file = $plugin_dir . 'data/dns.json';
@@ -138,7 +143,97 @@ class BootstrapFileHandler
         // Write new data to bundled file
         $result = \file_put_contents($bundled_file, json_encode($dns_data, JSON_PRETTY_PRINT));
 
+        // Update last update date in WordPress options if successful
+        if ($result !== false) {
+            \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+        }
+
         return $result !== false;
+    }
+
+    /**
+     * Update DNS data from IANA with detailed error information
+     *
+     * @return array Array with 'success' boolean and 'message' string
+     */
+    public function updateDnsDataWithDetails(): array
+    {
+        // Download new data from IANA
+        $response = \wp_remote_get(self::IANA_DNS_JSON_URL, [
+            'timeout' => 30,
+            'headers' => [
+                'User-Agent' => 'OWH Domain WHOIS RDAP Plugin/1.0.0'
+            ]
+        ]);
+
+        if (\is_wp_error($response)) {
+            return [
+                'success' => false,
+                'message' => 'Erro ao conectar com a IANA: ' . $response->get_error_message()
+            ];
+        }
+
+        $http_code = \wp_remote_retrieve_response_code($response);
+        if ($http_code !== 200) {
+            return [
+                'success' => false,
+                'message' => 'Erro HTTP ao acessar IANA. Código: ' . $http_code
+            ];
+        }
+
+        $body = \wp_remote_retrieve_body($response);
+        if (empty($body)) {
+            return [
+                'success' => false,
+                'message' => 'Resposta vazia da IANA'
+            ];
+        }
+
+        $dns_data = json_decode($body, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return [
+                'success' => false,
+                'message' => 'JSON inválido da IANA: ' . json_last_error_msg()
+            ];
+        }
+
+        if (empty($dns_data)) {
+            return [
+                'success' => false,
+                'message' => 'Dados vazios recebidos da IANA'
+            ];
+        }
+
+        // Validate JSON structure
+        if (!$this->validateDnsDataStructure($dns_data)) {
+            return [
+                'success' => false,
+                'message' => 'Estrutura JSON inválida: o arquivo da IANA não possui a estrutura esperada (services array com TLDs e URLs RDAP)'
+            ];
+        }
+
+        // Replace the bundled file directly
+        $plugin_dir = dirname(dirname(__DIR__)) . '/';
+        $bundled_file = $plugin_dir . 'data/dns.json';
+
+        // Write new data to bundled file
+        $result = \file_put_contents($bundled_file, json_encode($dns_data, JSON_PRETTY_PRINT));
+
+        if ($result === false) {
+            return [
+                'success' => false,
+                'message' => 'Erro ao salvar arquivo dns.json. Verifique permissões de escrita'
+            ];
+        }
+
+        // Update last update date in WordPress options if successful
+        \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+
+        return [
+            'success' => true,
+            'message' => 'Servidores RDAP atualizados com sucesso! Arquivo contém ' . count($dns_data['services']) . ' serviços'
+        ];
     }
 
     /**
@@ -300,5 +395,58 @@ class BootstrapFileHandler
         }
 
         return \copy($bundled_file, $target_file);
+    }
+
+    /**
+     * Validate DNS data structure
+     *
+     * @param array $dns_data
+     * @return bool
+     */
+    private function validateDnsDataStructure(array $dns_data): bool
+    {
+        // Check if 'services' key exists
+        if (!isset($dns_data['services']) || !is_array($dns_data['services'])) {
+            return false;
+        }
+
+        // Check if services array is not empty
+        if (empty($dns_data['services'])) {
+            return false;
+        }
+
+        // Validate each service entry
+        foreach ($dns_data['services'] as $service) {
+            // Each service should be an array with at least 2 elements
+            if (!is_array($service) || count($service) < 2) {
+                return false;
+            }
+
+            // First element should be array of TLDs
+            if (!is_array($service[0]) || empty($service[0])) {
+                return false;
+            }
+
+            // Second element should be array of RDAP servers
+            if (!is_array($service[1]) || empty($service[1])) {
+                return false;
+            }
+
+            // Check if TLDs are strings
+            foreach ($service[0] as $tld) {
+                if (!is_string($tld) || empty(trim($tld))) {
+                    return false;
+                }
+            }
+
+            // Check if RDAP servers are valid URLs
+            foreach ($service[1] as $server) {
+                if (!is_string($server) || !filter_var($server, FILTER_VALIDATE_URL)) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
     }
 }

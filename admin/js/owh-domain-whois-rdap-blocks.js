@@ -268,27 +268,31 @@ registerBlockType('owh-rdap/domain-search', {
       className: "owh-rdap-block-tabs",
       activeClass: "is-active",
       tabs: [{
-        name: 'general',
-        title: '⚙️ Geral',
-        className: 'tab-general'
+        name: 'titulo',
+        title: '📝 Título',
+        className: 'tab-titulo'
       }, {
-        name: 'texts',
-        title: '📝 Textos',
-        className: 'tab-texts'
+        name: 'input',
+        title: '📝 Campo de Input',
+        className: 'tab-input'
+      }, {
+        name: 'botao',
+        title: '🔘 Botão',
+        className: 'tab-botao'
+      }, {
+        name: 'descricao',
+        title: '📄 Descrição/Exemplos',
+        className: 'tab-descricao'
       }, {
         name: 'visual',
-        title: '🎨 Visual',
+        title: '🎨 Visual Geral',
         className: 'tab-visual'
-      }, {
-        name: 'colors',
-        title: '🌈 Cores',
-        className: 'tab-colors'
       }]
     }, tab => {
-      // Tab: Configurações Gerais
-      if (tab.name === 'general') {
+      // Tab: Título
+      if (tab.name === 'titulo') {
         return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações Principais', 'owh-domain-whois-rdap'),
+          title: __('Configurações do Título', 'owh-domain-whois-rdap'),
           initialOpen: true
         }, /*#__PURE__*/React.createElement(ToggleControl, {
           label: __('Exibir título', 'owh-domain-whois-rdap'),
@@ -304,7 +308,136 @@ registerBlockType('owh-rdap/domain-search', {
             customTitle: value
           }),
           placeholder: __('Pesquisar Domínio', 'owh-domain-whois-rdap')
-        }), /*#__PURE__*/React.createElement(ToggleControl, {
+        }));
+      }
+
+      // Tab: Campo de Input
+      if (tab.name === 'input') {
+        return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Configurações do Campo', 'owh-domain-whois-rdap'),
+          initialOpen: true
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Placeholder do campo', 'owh-domain-whois-rdap'),
+          value: placeholderText,
+          onChange: value => setAttributes({
+            placeholderText: value
+          }),
+          help: __('Texto de dica exibido dentro do campo de entrada', 'owh-domain-whois-rdap')
+        })), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Cores do Campo', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor da Borda do Campo', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: inputBorderColor,
+          onChangeComplete: color => setAttributes({
+            inputBorderColor: color.hex
+          }),
+          disableAlpha: true
+        })), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor de Foco do Campo', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: inputFocusColor,
+          onChangeComplete: color => setAttributes({
+            inputFocusColor: color.hex
+          }),
+          disableAlpha: true
+        }))));
+      }
+
+      // Tab: Botão
+      if (tab.name === 'botao') {
+        return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Configurações do Botão', 'owh-domain-whois-rdap'),
+          initialOpen: true
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Texto do botão', 'owh-domain-whois-rdap'),
+          value: searchButtonText,
+          onChange: value => setAttributes({
+            searchButtonText: value
+          })
+        }), /*#__PURE__*/React.createElement(SelectControl, {
+          label: __('Layout do Botão', 'owh-domain-whois-rdap'),
+          value: buttonLayout,
+          options: [{
+            label: __('Externo (ao lado do campo)', 'owh-domain-whois-rdap'),
+            value: 'external'
+          }, {
+            label: __('Interno (dentro do campo)', 'owh-domain-whois-rdap'),
+            value: 'internal'
+          }],
+          onChange: value => setAttributes({
+            buttonLayout: value
+          }),
+          help: __('Controla a posição do botão em relação ao campo de pesquisa', 'owh-domain-whois-rdap')
+        })), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Cores do Botão', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor Primária (Botão)', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: primaryColor,
+          onChangeComplete: color => setAttributes({
+            primaryColor: color.hex
+          }),
+          disableAlpha: true
+        })), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor Hover do Botão', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: buttonHoverColor,
+          onChangeComplete: color => setAttributes({
+            buttonHoverColor: color.hex
+          }),
+          disableAlpha: true
+        }))));
+      }
+
+      // Tab: Descrição/Exemplos
+      if (tab.name === 'descricao') {
+        return /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Configurações dos Exemplos', 'owh-domain-whois-rdap'),
+          initialOpen: true
+        }, /*#__PURE__*/React.createElement(ToggleControl, {
           label: __('Exibir exemplos', 'owh-domain-whois-rdap'),
           checked: showExamples,
           onChange: value => setAttributes({
@@ -338,28 +471,7 @@ registerBlockType('owh-rdap/domain-search', {
         })));
       }
 
-      // Tab: Textos Personalizados
-      if (tab.name === 'texts') {
-        return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Textos do Formulário', 'owh-domain-whois-rdap'),
-          initialOpen: true
-        }, /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Placeholder do campo', 'owh-domain-whois-rdap'),
-          value: placeholderText,
-          onChange: value => setAttributes({
-            placeholderText: value
-          }),
-          help: __('Texto de dica exibido dentro do campo de entrada', 'owh-domain-whois-rdap')
-        }), /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Texto do botão', 'owh-domain-whois-rdap'),
-          value: searchButtonText,
-          onChange: value => setAttributes({
-            searchButtonText: value
-          })
-        })));
-      }
-
-      // Tab: Estilização Visual
+      // Tab: Visual Geral
       if (tab.name === 'visual') {
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Configurações de Borda', 'owh-domain-whois-rdap'),
@@ -401,23 +513,9 @@ registerBlockType('owh-rdap/domain-search', {
           max: 50,
           step: 1
         })), /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Layout e Cores', 'owh-domain-whois-rdap'),
+          title: __('Layout e Cores Gerais', 'owh-domain-whois-rdap'),
           initialOpen: false
-        }, /*#__PURE__*/React.createElement(SelectControl, {
-          label: __('Layout do Botão', 'owh-domain-whois-rdap'),
-          value: buttonLayout,
-          options: [{
-            label: __('Externo (ao lado do campo)', 'owh-domain-whois-rdap'),
-            value: 'external'
-          }, {
-            label: __('Interno (dentro do campo)', 'owh-domain-whois-rdap'),
-            value: 'internal'
-          }],
-          onChange: value => setAttributes({
-            buttonLayout: value
-          }),
-          help: __('Controla a posição do botão em relação ao campo de pesquisa', 'owh-domain-whois-rdap')
-        }), /*#__PURE__*/React.createElement("div", {
+        }, /*#__PURE__*/React.createElement("div", {
           style: {
             marginBottom: '20px'
           }
@@ -461,86 +559,6 @@ registerBlockType('owh-rdap/domain-search', {
           placeholder: "Ex: background: linear-gradient(45deg, #f0f0f0, #fff); box-shadow: 0 2px 4px rgba(0,0,0,0.1);",
           rows: 4,
           help: __('Digite CSS sem as chaves {}. Este CSS terá prioridade sobre os controles visuais.', 'owh-domain-whois-rdap')
-        })));
-      }
-
-      // Tab: Cores
-      if (tab.name === 'colors') {
-        return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Esquema de Cores', 'owh-domain-whois-rdap'),
-          initialOpen: true
-        }, /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor Primária (Botão)', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: primaryColor,
-          onChangeComplete: color => setAttributes({
-            primaryColor: color.hex
-          }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor Hover do Botão', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: buttonHoverColor,
-          onChangeComplete: color => setAttributes({
-            buttonHoverColor: color.hex
-          }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor da Borda do Campo', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: inputBorderColor,
-          onChangeComplete: color => setAttributes({
-            inputBorderColor: color.hex
-          }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor de Foco do Campo', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: inputFocusColor,
-          onChangeComplete: color => setAttributes({
-            inputFocusColor: color.hex
-          }),
-          disableAlpha: true
         })));
       }
       return null;
@@ -864,60 +882,35 @@ registerBlockType('owh-rdap/domain-results', {
       className: "owh-rdap-block-tabs",
       activeClass: "is-active",
       tabs: [{
+        name: 'titulo',
+        title: '📝 Título',
+        className: 'tab-titulo'
+      }, {
+        name: 'botao',
+        title: '🔘 Botões',
+        className: 'tab-botao'
+      }, {
+        name: 'icones',
+        title: '🎭 Ícones',
+        className: 'tab-icones'
+      }, {
+        name: 'descricoes',
+        title: '📄 Descrições/Textos',
+        className: 'tab-descricoes'
+      }, {
+        name: 'visual',
+        title: '🎨 Visual Geral',
+        className: 'tab-visual'
+      }, {
         name: 'preview',
         title: '👁️ Preview',
         className: 'tab-preview'
-      }, {
-        name: 'general',
-        title: '⚙️ Geral',
-        className: 'tab-general'
-      }, {
-        name: 'texts',
-        title: '📝 Textos',
-        className: 'tab-texts'
-      }, {
-        name: 'icons',
-        title: '🎭 Ícones',
-        className: 'tab-icons'
-      }, {
-        name: 'visual',
-        title: '🎨 Visual',
-        className: 'tab-visual'
-      }, {
-        name: 'colors',
-        title: '🌈 Cores',
-        className: 'tab-colors'
       }]
     }, tab => {
-      // Tab: Preview
-      if (tab.name === 'preview') {
+      // Tab: Título
+      if (tab.name === 'titulo') {
         return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações de Preview', 'owh-domain-whois-rdap'),
-          initialOpen: true
-        }, /*#__PURE__*/React.createElement(SelectControl, {
-          label: __('Modo de Preview', 'owh-domain-whois-rdap'),
-          value: previewMode,
-          options: [{
-            label: __('Sem Resultado', 'owh-domain-whois-rdap'),
-            value: 'no-result'
-          }, {
-            label: __('Domínio Disponível', 'owh-domain-whois-rdap'),
-            value: 'available'
-          }, {
-            label: __('Domínio Indisponível', 'owh-domain-whois-rdap'),
-            value: 'unavailable'
-          }],
-          onChange: value => setAttributes({
-            previewMode: value
-          }),
-          help: __('Escolha como visualizar o bloco no editor', 'owh-domain-whois-rdap')
-        }));
-      }
-
-      // Tab: Configurações Gerais
-      if (tab.name === 'general') {
-        return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações Principais', 'owh-domain-whois-rdap'),
+          title: __('Configurações do Título', 'owh-domain-whois-rdap'),
           initialOpen: true
         }, /*#__PURE__*/React.createElement(ToggleControl, {
           label: __('Exibir título principal', 'owh-domain-whois-rdap'),
@@ -937,73 +930,67 @@ registerBlockType('owh-rdap/domain-results', {
         }));
       }
 
-      // Tab: Textos Personalizados
-      if (tab.name === 'texts') {
+      // Tab: Botões
+      if (tab.name === 'botao') {
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Aguardando Pesquisa', 'owh-domain-whois-rdap'),
+          title: __('Botão de Compra (Domínio Disponível)', 'owh-domain-whois-rdap'),
           initialOpen: true
         }, /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Título "Sem Resultado"', 'owh-domain-whois-rdap'),
-          value: noResultText,
-          onChange: value => setAttributes({
-            noResultText: value
-          })
-        }), /*#__PURE__*/React.createElement(TextareaControl, {
-          label: __('Descrição "Sem Resultado"', 'owh-domain-whois-rdap'),
-          value: noResultDescription,
-          onChange: value => setAttributes({
-            noResultDescription: value
-          }),
-          rows: 2
-        })), /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Domínio Disponível', 'owh-domain-whois-rdap'),
-          initialOpen: false
-        }, /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Título "Disponível"', 'owh-domain-whois-rdap'),
-          value: availableTitle,
-          onChange: value => setAttributes({
-            availableTitle: value
-          })
-        }), /*#__PURE__*/React.createElement(TextareaControl, {
-          label: __('Texto "Disponível"', 'owh-domain-whois-rdap'),
-          value: availableText,
-          onChange: value => setAttributes({
-            availableText: value
-          }),
-          rows: 2
-        }), /*#__PURE__*/React.createElement(TextControl, {
           label: __('Texto do Botão de Compra', 'owh-domain-whois-rdap'),
           value: buyButtonText,
           onChange: value => setAttributes({
             buyButtonText: value
           })
-        })), /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Domínio Indisponível', 'owh-domain-whois-rdap'),
+        }), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor do Botão - Disponível', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: availableColor,
+          onChangeComplete: color => setAttributes({
+            availableColor: color.hex
+          }),
+          disableAlpha: true
+        }))), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Botão de Detalhes (Domínio Indisponível)', 'owh-domain-whois-rdap'),
           initialOpen: false
         }, /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Título "Indisponível"', 'owh-domain-whois-rdap'),
-          value: unavailableTitle,
-          onChange: value => setAttributes({
-            unavailableTitle: value
-          })
-        }), /*#__PURE__*/React.createElement(TextareaControl, {
-          label: __('Texto "Indisponível"', 'owh-domain-whois-rdap'),
-          value: unavailableText,
-          onChange: value => setAttributes({
-            unavailableText: value
-          }),
-          rows: 2
-        }), /*#__PURE__*/React.createElement(TextControl, {
           label: __('Texto do Botão de Detalhes', 'owh-domain-whois-rdap'),
           value: detailsButtonText,
           onChange: value => setAttributes({
             detailsButtonText: value
           })
-        })));
+        }), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor do Botão - Indisponível', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: unavailableColor,
+          onChangeComplete: color => setAttributes({
+            unavailableColor: color.hex
+          }),
+          disableAlpha: true
+        }))));
       }
 
       // Tab: Ícones
-      if (tab.name === 'icons') {
+      if (tab.name === 'icones') {
         return /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Configurações de Ícones', 'owh-domain-whois-rdap'),
           initialOpen: true
@@ -1038,7 +1025,60 @@ registerBlockType('owh-rdap/domain-results', {
         })));
       }
 
-      // Tab: Estilização Visual
+      // Tab: Descrições/Textos
+      if (tab.name === 'descricoes') {
+        return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Aguardando Pesquisa', 'owh-domain-whois-rdap'),
+          initialOpen: true
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Título "Sem Resultado"', 'owh-domain-whois-rdap'),
+          value: noResultText,
+          onChange: value => setAttributes({
+            noResultText: value
+          })
+        }), /*#__PURE__*/React.createElement(TextareaControl, {
+          label: __('Descrição "Sem Resultado"', 'owh-domain-whois-rdap'),
+          value: noResultDescription,
+          onChange: value => setAttributes({
+            noResultDescription: value
+          }),
+          rows: 2
+        })), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Domínio Disponível', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Título "Disponível"', 'owh-domain-whois-rdap'),
+          value: availableTitle,
+          onChange: value => setAttributes({
+            availableTitle: value
+          })
+        }), /*#__PURE__*/React.createElement(TextareaControl, {
+          label: __('Texto "Disponível"', 'owh-domain-whois-rdap'),
+          value: availableText,
+          onChange: value => setAttributes({
+            availableText: value
+          }),
+          rows: 2
+        })), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Domínio Indisponível', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Título "Indisponível"', 'owh-domain-whois-rdap'),
+          value: unavailableTitle,
+          onChange: value => setAttributes({
+            unavailableTitle: value
+          })
+        }), /*#__PURE__*/React.createElement(TextareaControl, {
+          label: __('Texto "Indisponível"', 'owh-domain-whois-rdap'),
+          value: unavailableText,
+          onChange: value => setAttributes({
+            unavailableText: value
+          }),
+          rows: 2
+        })));
+      }
+
+      // Tab: Visual Geral
       if (tab.name === 'visual') {
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Configurações de Borda', 'owh-domain-whois-rdap'),
@@ -1080,7 +1120,7 @@ registerBlockType('owh-rdap/domain-results', {
           max: 50,
           step: 1
         })), /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Layout e Cores', 'owh-domain-whois-rdap'),
+          title: __('Layout e Cores Gerais', 'owh-domain-whois-rdap'),
           initialOpen: false
         }, /*#__PURE__*/React.createElement(SelectControl, {
           label: __('Layout do Botão', 'owh-domain-whois-rdap'),
@@ -1143,48 +1183,29 @@ registerBlockType('owh-rdap/domain-results', {
         })));
       }
 
-      // Tab: Cores
-      if (tab.name === 'colors') {
+      // Tab: Preview
+      if (tab.name === 'preview') {
         return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Esquema de Cores', 'owh-domain-whois-rdap'),
+          title: __('Configurações de Preview', 'owh-domain-whois-rdap'),
           initialOpen: true
-        }, /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor Domínio Disponível', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: availableColor,
-          onChangeComplete: color => setAttributes({
-            availableColor: color.hex
+        }, /*#__PURE__*/React.createElement(SelectControl, {
+          label: __('Modo de Preview', 'owh-domain-whois-rdap'),
+          value: previewMode,
+          options: [{
+            label: __('Sem Resultado', 'owh-domain-whois-rdap'),
+            value: 'no-result'
+          }, {
+            label: __('Domínio Disponível', 'owh-domain-whois-rdap'),
+            value: 'available'
+          }, {
+            label: __('Domínio Indisponível', 'owh-domain-whois-rdap'),
+            value: 'unavailable'
+          }],
+          onChange: value => setAttributes({
+            previewMode: value
           }),
-          disableAlpha: true
-        })), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginBottom: '20px'
-          }
-        }, /*#__PURE__*/React.createElement("label", {
-          style: {
-            display: 'block',
-            marginBottom: '8px',
-            fontSize: '11px',
-            fontWeight: '500',
-            textTransform: 'uppercase'
-          }
-        }, __('Cor Domínio Indisponível', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
-          color: unavailableColor,
-          onChangeComplete: color => setAttributes({
-            unavailableColor: color.hex
-          }),
-          disableAlpha: true
-        })));
+          help: __('Escolha como visualizar o bloco no editor', 'owh-domain-whois-rdap')
+        }));
       }
       return null;
     })), /*#__PURE__*/React.createElement(PreviewComponent, null));
@@ -1446,57 +1467,35 @@ registerBlockType('owh-rdap/whois-details', {
       className: "owh-rdap-block-tabs",
       activeClass: "is-active",
       tabs: [{
+        name: 'titulo',
+        title: '📝 Título',
+        className: 'tab-titulo'
+      }, {
+        name: 'icone',
+        title: '🔧 Ícone',
+        className: 'tab-icone'
+      }, {
+        name: 'secoes',
+        title: '📋 Seções',
+        className: 'tab-secoes'
+      }, {
+        name: 'descricoes',
+        title: '📄 Descrições',
+        className: 'tab-descricoes'
+      }, {
+        name: 'visual',
+        title: '🎨 Visual Geral',
+        className: 'tab-visual'
+      }, {
         name: 'preview',
         title: '👁️ Preview',
         className: 'tab-preview'
-      }, {
-        name: 'general',
-        title: '⚙️ Geral',
-        className: 'tab-general'
-      }, {
-        name: 'sections',
-        title: '📋 Seções',
-        className: 'tab-sections'
-      }, {
-        name: 'texts',
-        title: '📝 Textos',
-        className: 'tab-texts'
-      }, {
-        name: 'visual',
-        title: '🎨 Visual',
-        className: 'tab-visual'
-      }, {
-        name: 'icon',
-        title: '🔧 Ícone',
-        className: 'tab-icon'
       }]
     }, tab => {
-      // Tab: Preview
-      if (tab.name === 'preview') {
+      // Tab: Título
+      if (tab.name === 'titulo') {
         return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações de Preview', 'owh-domain-whois-rdap'),
-          initialOpen: true
-        }, /*#__PURE__*/React.createElement(SelectControl, {
-          label: __('Modo de Preview', 'owh-domain-whois-rdap'),
-          value: previewMode,
-          options: [{
-            label: __('Sem Domínio', 'owh-domain-whois-rdap'),
-            value: 'no-domain'
-          }, {
-            label: __('Com Domínio (Exemplo)', 'owh-domain-whois-rdap'),
-            value: 'with-domain'
-          }],
-          onChange: value => setAttributes({
-            previewMode: value
-          }),
-          help: __('Escolha como visualizar o bloco no editor', 'owh-domain-whois-rdap')
-        }));
-      }
-
-      // Tab: Configurações Gerais
-      if (tab.name === 'general') {
-        return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações Principais', 'owh-domain-whois-rdap'),
+          title: __('Configurações do Título', 'owh-domain-whois-rdap'),
           initialOpen: true
         }, /*#__PURE__*/React.createElement(ToggleControl, {
           label: __('Exibir título principal', 'owh-domain-whois-rdap'),
@@ -1515,8 +1514,54 @@ registerBlockType('owh-rdap/whois-details', {
         }));
       }
 
+      // Tab: Ícone
+      if (tab.name === 'icone') {
+        return /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Configurações de Ícone', 'owh-domain-whois-rdap'),
+          initialOpen: true
+        }, /*#__PURE__*/React.createElement(ToggleControl, {
+          label: __('Mostrar Ícone', 'owh-domain-whois-rdap'),
+          checked: showIcon,
+          onChange: value => setAttributes({
+            showIcon: value
+          }),
+          help: __('Exibe ou oculta o ícone quando nenhum domínio foi especificado.', 'owh-domain-whois-rdap')
+        }), showIcon && /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Ícone Personalizado', 'owh-domain-whois-rdap'),
+          value: customIcon,
+          onChange: value => setAttributes({
+            customIcon: value
+          }),
+          placeholder: "\uD83D\uDCCB",
+          help: __('Insira um emoji ou texto que será usado como ícone.', 'owh-domain-whois-rdap')
+        }), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginTop: '20px',
+            padding: '15px',
+            background: '#f0f0f0',
+            borderRadius: '4px',
+            border: '1px solid #ddd'
+          }
+        }, /*#__PURE__*/React.createElement("h4", {
+          style: {
+            marginTop: 0,
+            fontSize: '13px'
+          }
+        }, __('Preview do Ícone:', 'owh-domain-whois-rdap')), showIcon ? /*#__PURE__*/React.createElement("div", {
+          style: {
+            fontSize: '32px',
+            textAlign: 'center'
+          }
+        }, customIcon) : /*#__PURE__*/React.createElement("p", {
+          style: {
+            margin: 0,
+            fontStyle: 'italic'
+          }
+        }, __('Ícone desabilitado', 'owh-domain-whois-rdap'))));
+      }
+
       // Tab: Seções de Informações
-      if (tab.name === 'sections') {
+      if (tab.name === 'secoes') {
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Histórico de Eventos', 'owh-domain-whois-rdap'),
           initialOpen: true
@@ -1592,8 +1637,8 @@ registerBlockType('owh-rdap/whois-details', {
         })));
       }
 
-      // Tab: Textos Personalizados
-      if (tab.name === 'texts') {
+      // Tab: Descrições
+      if (tab.name === 'descricoes') {
         return /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Mensagens Personalizadas', 'owh-domain-whois-rdap'),
           initialOpen: true
@@ -1622,7 +1667,7 @@ registerBlockType('owh-rdap/whois-details', {
         }));
       }
 
-      // Tab: Estilização Visual
+      // Tab: Visual Geral
       if (tab.name === 'visual') {
         return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(PanelBody, {
           title: __('Configurações de Borda', 'owh-domain-whois-rdap'),
@@ -1664,7 +1709,7 @@ registerBlockType('owh-rdap/whois-details', {
           max: 50,
           step: 1
         })), /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Layout e Cores', 'owh-domain-whois-rdap'),
+          title: __('Layout e Cores Gerais', 'owh-domain-whois-rdap'),
           initialOpen: false
         }, /*#__PURE__*/React.createElement(SelectControl, {
           label: __('Layout do Botão', 'owh-domain-whois-rdap'),
@@ -1727,50 +1772,26 @@ registerBlockType('owh-rdap/whois-details', {
         })));
       }
 
-      // Tab: Customização do Ícone
-      if (tab.name === 'icon') {
+      // Tab: Preview
+      if (tab.name === 'preview') {
         return /*#__PURE__*/React.createElement(PanelBody, {
-          title: __('Configurações de Ícone', 'owh-domain-whois-rdap'),
+          title: __('Configurações de Preview', 'owh-domain-whois-rdap'),
           initialOpen: true
-        }, /*#__PURE__*/React.createElement(ToggleControl, {
-          label: __('Mostrar Ícone', 'owh-domain-whois-rdap'),
-          checked: showIcon,
+        }, /*#__PURE__*/React.createElement(SelectControl, {
+          label: __('Modo de Preview', 'owh-domain-whois-rdap'),
+          value: previewMode,
+          options: [{
+            label: __('Sem Domínio', 'owh-domain-whois-rdap'),
+            value: 'no-domain'
+          }, {
+            label: __('Com Domínio (Exemplo)', 'owh-domain-whois-rdap'),
+            value: 'with-domain'
+          }],
           onChange: value => setAttributes({
-            showIcon: value
+            previewMode: value
           }),
-          help: __('Exibe ou oculta o ícone quando nenhum domínio foi especificado.', 'owh-domain-whois-rdap')
-        }), showIcon && /*#__PURE__*/React.createElement(TextControl, {
-          label: __('Ícone Personalizado', 'owh-domain-whois-rdap'),
-          value: customIcon,
-          onChange: value => setAttributes({
-            customIcon: value
-          }),
-          placeholder: "\uD83D\uDCCB",
-          help: __('Insira um emoji ou texto que será usado como ícone.', 'owh-domain-whois-rdap')
-        }), /*#__PURE__*/React.createElement("div", {
-          style: {
-            marginTop: '20px',
-            padding: '15px',
-            background: '#f0f0f0',
-            borderRadius: '4px',
-            border: '1px solid #ddd'
-          }
-        }, /*#__PURE__*/React.createElement("h4", {
-          style: {
-            marginTop: 0,
-            fontSize: '13px'
-          }
-        }, __('Preview do Ícone:', 'owh-domain-whois-rdap')), showIcon ? /*#__PURE__*/React.createElement("div", {
-          style: {
-            fontSize: '32px',
-            textAlign: 'center'
-          }
-        }, customIcon) : /*#__PURE__*/React.createElement("p", {
-          style: {
-            margin: 0,
-            fontStyle: 'italic'
-          }
-        }, __('Ícone desabilitado', 'owh-domain-whois-rdap'))));
+          help: __('Escolha como visualizar o bloco no editor', 'owh-domain-whois-rdap')
+        }));
       }
       return null;
     })), /*#__PURE__*/React.createElement(PreviewComponent, null));

@@ -99,23 +99,46 @@
                         status.removeClass('loading error').addClass('success')
                             .html('<span style="color: #46b450;">' + response.message + '</span>');
                         
+                        // Update the last update date in the description
+                        var currentDate = new Date();
+                        var formattedDate = currentDate.toLocaleDateString('pt-BR') + ' ' + currentDate.toLocaleTimeString('pt-BR');
+                        var descriptionElement = $('.description').last();
+                        var descriptionText = descriptionElement.html();
+                        
+                        // Replace the last update date in the description
+                        var updatedText = descriptionText.replace(/Última atualização: [^.]+\./, 'Última atualização: ' + formattedDate + '.');
+                        descriptionElement.html(updatedText);
+                        
                         // Reload server status after successful update
                         setTimeout(function() {
                             loadRdapServerStatus();
                         }, 1000);
                     } else {
                         status.removeClass('loading success').addClass('error')
-                            .html('<span style="color: #dc3232;">' + owh_rdap_admin.strings.error + '</span>');
+                            .html('<span style="color: #dc3232;">' + (response.message || owh_rdap_admin.strings.error) + '</span>');
                     }
                 },
                 error: function(xhr, status, error) {
-                    var errorMessage = owh_rdap_admin.strings.error;
+                    var errorMessage = '';
+                    
                     if (status === 'timeout') {
-                        errorMessage += ': Timeout na requisição.';
+                        errorMessage = 'Timeout: A atualização demorou mais que 30 segundos. Tente novamente.';
                     } else if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage += ': ' + xhr.responseJSON.message;
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseText) {
+                        // Try to parse error from responseText
+                        try {
+                            var errorData = JSON.parse(xhr.responseText);
+                            if (errorData.message) {
+                                errorMessage = errorData.message;
+                            } else {
+                                errorMessage = 'Erro na comunicação com o servidor: ' + xhr.responseText.substring(0, 100);
+                            }
+                        } catch (e) {
+                            errorMessage = 'Erro na comunicação com o servidor (Status: ' + xhr.status + ')';
+                        }
                     } else {
-                        errorMessage += ': ' + error;
+                        errorMessage = 'Erro desconhecido na atualização. Status: ' + xhr.status;
                     }
                     
                     $('#update-rdap-status').removeClass('loading success').addClass('error')
