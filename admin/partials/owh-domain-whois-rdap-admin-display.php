@@ -292,37 +292,3 @@ if ( ! defined( 'WPINC' ) ) {
 		<div id="update-rdap-status" style="margin-top: 10px;"></div>
 	</div>
 </div>
-
-<script type="text/javascript">
-jQuery(document).ready(function($) {
-	$('#update-rdap-servers').on('click', function() {
-		var button = $(this);
-		var status = $('#update-rdap-status');
-		
-		button.prop('disabled', true).text('<?php esc_html_e( 'Atualizando...', 'owh-domain-whois-rdap' ); ?>');
-		status.html('<span style="color: #0073aa;"><?php esc_html_e( 'Atualizando lista de servidores RDAP...', 'owh-domain-whois-rdap' ); ?></span>');
-		
-		$.ajax({
-			url: ajaxurl,
-			type: 'POST',
-			data: {
-				action: 'owh_update_rdap_servers',
-				nonce: '<?php echo esc_attr( wp_create_nonce( 'owh_rdap_admin_nonce' ) ); ?>'
-			},
-			success: function(response) {
-				if (response.success) {
-					status.html('<span style="color: #46b450;"><?php esc_html_e( 'Lista de servidores RDAP atualizada com sucesso!', 'owh-domain-whois-rdap' ); ?></span>');
-				} else {
-					status.html('<span style="color: #dc3232;"><?php esc_html_e( 'Erro ao atualizar lista: ', 'owh-domain-whois-rdap' ); ?>' + (response.data || 'Erro desconhecido') + '</span>');
-				}
-			},
-			error: function() {
-				status.html('<span style="color: #dc3232;"><?php esc_html_e( 'Erro de conexão ao atualizar lista.', 'owh-domain-whois-rdap' ); ?></span>');
-			},
-			complete: function() {
-				button.prop('disabled', false).text('<?php esc_html_e( 'Atualizar Lista de Servidores RDAP Agora', 'owh-domain-whois-rdap' ); ?>');
-			}
-		});
-	});
-});
-</script>

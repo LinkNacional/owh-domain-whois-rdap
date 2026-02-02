@@ -1,7 +1,6 @@
 (function($) {
     $(document).ready(function() {
         setTimeout(function() {
-            console.log('Iniciando transformação das tabelas...');
             transformFormTables();
         }, 500);
         
@@ -392,6 +391,11 @@
                     $customUrlRow.hide();
                     $whmcsSection.show();
                     $customUrlSection.hide();
+                }else if (integrationType == 'none'){
+                    $customUrlRow.hide();
+                    $customUrlSection.hide();
+                    $whmcsSection.hide();
+                    $whmcsRow.hide();
                 }
             };
             

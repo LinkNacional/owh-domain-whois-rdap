@@ -105,7 +105,8 @@ class AvailabilityService
             $rdapServer = $customRdapUrl;
         } else {
             // Validate TLD using IANA list
-            if (!$this->bootstrapHandler->isValidTld($tld)) {
+            $isValidTld = $this->bootstrapHandler->isValidTld($tld);
+            if (!$isValidTld) {
                 return new DomainResult(
                     $domain,
                     false,
@@ -244,19 +245,46 @@ class AvailabilityService
     }
 
     /**
-     * Extract TLD from domain
+     * Extract TLD from domain, checking custom TLDs first
      *
      * @param string $domain
      * @return string|null
      */
     private function extractTld(string $domain): ?string
     {
-        $dotPosition = strpos($domain, '.');
+        $parts = explode('.', $domain);
         
-        if ($dotPosition === false) {
+        if (count($parts) < 2) {
             return null;
         }
 
-        return substr($domain, $dotPosition + 1);
+        // For multi-part domains, check if there's a custom TLD configuration for longer TLD combinations
+        if (count($parts) >= 3) {
+            // Check for custom configurations starting from the longest possible TLD
+            for ($i = 2; $i <= count($parts); $i++) {
+                $potentialTld = implode('.', array_slice($parts, -$i));
+                
+                // Check if this potential TLD has a custom configuration
+                if ($this->settingsManager && $this->settingsManager->hasCustomTld($potentialTld)) {
+                    return $potentialTld;
+                }
+            }
+            
+            // No custom TLD found, check standard IANA logic
+            // Try the top-level domain first (e.g., 'br' from 'example.com.br')
+            $topLevel = end($parts);
+            if ($this->bootstrapHandler && $this->bootstrapHandler->isValidTld($topLevel)) {
+                return $topLevel;
+            }
+            
+            // If top-level doesn't work, try the full last two parts (e.g., 'com.br')
+            $fullTld = implode('.', array_slice($parts, -2));
+            if ($this->bootstrapHandler && $this->bootstrapHandler->isValidTld($fullTld)) {
+                return $fullTld;
+            }
+        }
+        
+        // For standard domains or fallback, return the last part
+        return end($parts);
     }
 }

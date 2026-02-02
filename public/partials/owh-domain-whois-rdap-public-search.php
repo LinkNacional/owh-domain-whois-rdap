@@ -142,17 +142,7 @@ if ( isset( $custom_attributes ) ) {
 
 ?>
 
-<?php if ( isset( $custom_attributes['custom_css'] ) && ! empty( $custom_attributes['custom_css'] ) ) : ?>
-<style>
-	.owh-rdap-search-container { <?php echo esc_html( $custom_attributes['custom_css'] ); ?> }
-</style>
-<?php endif; ?>
-
-<?php if ( ! empty( $dynamic_css ) ) : ?>
-<style>
-	<?php echo wp_kses( $dynamic_css, array( 'style' => array() ) ); ?>
-</style>
-<?php endif; ?>
+<!-- Custom CSS and Dynamic CSS are now handled through wp_add_inline_style in the shortcode method -->
 
 <div class="owh-rdap-search-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( isset( $show_title ) && $show_title ) : ?>
@@ -168,7 +158,7 @@ if ( isset( $custom_attributes ) ) {
 					name="domain" 
 					class="owh-rdap-domain-input" 
 					placeholder="<?php echo esc_attr( $placeholder_text ); ?>" 
-					value="<?php echo isset( $_GET['domain'] ) ? esc_attr( sanitize_text_field( $_GET['domain'] ) ) : ''; ?>"
+					value="<?php echo isset( $_GET['domain'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['domain'] ) ) ) : ''; ?>"
 					required 
 				/>
 				<button type="submit" id="owh-rdap-search-button" class="owh-rdap-search-button">
@@ -195,6 +185,10 @@ if ( isset( $custom_attributes ) ) {
 </div>
 
 	<?php if ( ! $results_page ) : ?>
+	<div class="owh-rdap-config-warning" style="margin-top: 15px; padding: 12px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; color: #856404;">
+		<strong>⚠️ Configuração Necessária:</strong> 
+		Para que a pesquisa funcione corretamente, o administrador precisa configurar uma "Página de Resultados da Pesquisa" nas configurações do plugin.
+	</div>
 	<div id="owh-rdap-search-results" class="owh-rdap-search-results" style="display: none;"></div>
 	<?php endif; ?>
 

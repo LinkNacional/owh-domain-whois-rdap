@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
-  DEPLOY_TAG: "1.2.0"
+  DEPLOY_TAG: "1.2.1"
 jobs:
   release-build:
     runs-on: ubuntu-latest
@@ -59,10 +59,12 @@ jobs:
         [ -d ./includes ] && mv ./includes ./build/${{ env.PLUGIN_NAME }}/ || echo "includes not found"
         [ -d ./public ] && mv ./public ./build/${{ env.PLUGIN_NAME }}/ || echo "public not found"
         [ -d ./src ] && mv ./src ./build/${{ env.PLUGIN_NAME }}/ || echo "src not found"
+        [ -d ./data ] && mv ./data ./build/${{ env.PLUGIN_NAME }}/ || echo "data not found"
         
         # Move optional directories if they exist
         [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
         [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
+        [ -d ./languages ] && mv ./languages ./build/${{ env.PLUGIN_NAME }}/ || echo "languages not found"
         
         # Copy composer files and vendor directory (using cp to avoid permission issues)
         if [ -d ./vendor ]; then
@@ -76,6 +78,9 @@ jobs:
         
         # Move PHP files
         find . -maxdepth 1 -name "*.php" -exec cp {} ./build/${{ env.PLUGIN_NAME }}/ \; 2>/dev/null || echo "No PHP files found"
+        
+        # Copy documentation files
+        [ -f ./readme.txt ] && cp ./readme.txt ./build/${{ env.PLUGIN_NAME }}/ || echo "readme.txt not found"
         
         # Set proper permissions
         sudo find ./build -type f -exec chmod 0644 {} + || true

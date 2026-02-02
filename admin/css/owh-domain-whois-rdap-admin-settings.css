@@ -13,6 +13,11 @@
     width: 200px;
 }
 
+/* Save section styles */
+.owh-rdap-save-section {
+    margin-top: 20px;
+}
+
 /* RDAP info section styles */
 .owh-rdap-info {
     margin-top: 30px;

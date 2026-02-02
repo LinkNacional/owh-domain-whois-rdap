@@ -8,8 +8,6 @@
             return;
         }
         
-        console.log('owh_rdap_admin object:', owh_rdap_admin);
-        
         // Tab Navigation System
         $('.owh-tab').on('click', function(e) {
             e.preventDefault();
@@ -40,10 +38,6 @@
         // Initialize tabs
         initializeTabs();
         
-        // Check if elements exist (debug)
-        console.log('Update button exists:', $('#update-rdap-servers').length > 0);
-        console.log('RDAP tab exists:', $('#tab-rdap').length > 0);
-        
         // Load RDAP server status on page load
         loadRdapServerStatus();
         
@@ -66,13 +60,9 @@
         
         // Admin update RDAP servers button (using event delegation)
         $(document).on('click', '#update-rdap-servers', function() {
-            console.log('Update RDAP servers button clicked!');
             var button = $(this);
             var status = $('#update-rdap-status');
             var originalText = button.text();
-            
-            console.log('Button element:', button);
-            console.log('Status element:', status);
             
             // Check if localized object is available
             if (typeof owh_rdap_admin === 'undefined') {
@@ -81,7 +71,6 @@
                 return;
             }
             
-            console.log('REST URL:', owh_rdap_admin.rest_url);
             
             button.prop('disabled', true).text(owh_rdap_admin.strings.updating);
             status.removeClass('success error').addClass('loading').show()
@@ -295,5 +284,45 @@
             }
         });
     }
+    
+    // RDAP Server Update Handler
+    $(document).on('click', '#update-rdap-servers', function() {
+        var button = $(this);
+        var status = $('#update-rdap-status');
+        
+        // Get localized strings
+        var strings = owh_rdap_admin.strings || {};
+        var updatingText = strings.updating || 'Atualizando...';
+        var originalText = button.text();
+        
+        button.prop('disabled', true).text(updatingText);
+        status.html('<span style="color: #0073aa;">Atualizando lista de servidores RDAP...</span>');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'owh_update_rdap_servers',
+                nonce: owh_rdap_admin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    status.html('<span style="color: #46b450;">Lista de servidores RDAP atualizada com sucesso!</span>');
+                    // Reload server status after successful update
+                    setTimeout(function() {
+                        loadRdapServerStatus();
+                    }, 1000);
+                } else {
+                    status.html('<span style="color: #dc3232;">Erro ao atualizar lista: ' + (response.data || 'Erro desconhecido') + '</span>');
+                }
+            },
+            error: function() {
+                status.html('<span style="color: #dc3232;">Erro de conexão ao atualizar lista.</span>');
+            },
+            complete: function() {
+                button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
     
 })(jQuery);
