@@ -68,11 +68,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 
 ?>
 
-<?php if ( isset( $custom_attributes['custom_css'] ) && ! empty( $custom_attributes['custom_css'] ) ) : ?>
-<style>
-	.owh-rdap-results-container { <?php echo esc_html( $custom_attributes['custom_css'] ); ?> }
-</style>
-<?php endif; ?>
+<!-- Custom CSS is now handled through wp_add_inline_style in the shortcode method -->
 
 <div class="owh-rdap-results-container"<?php echo esc_attr( $container_style_attr ); ?>>
 	<?php if ( $result ) : ?>
@@ -128,12 +124,15 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					
 					<?php 
 					// New integration logic
-					$integration_type = get_option( 'owh_rdap_integration_type', 'custom' );
-					$domain_parts = explode( '.', $result->getDomain() );
-					$sld = $domain_parts[0];
-					$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+					$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+					
+					// Only show buy button if integration type is not 'none'
+					if ( $integration_type !== 'none' ) {
+						$domain_parts = explode( '.', $result->getDomain() );
+						$sld = $domain_parts[0];
+						$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
 
-					if ( $integration_type === 'custom' ) {
+						if ( $integration_type === 'custom' ) {
 						$custom_url = get_option( 'owh_rdap_custom_url', '' );
 						if ( ! empty( $custom_url ) ) {
 							$buy_url = str_replace(
@@ -175,6 +174,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 							<?php
 						}
 					}
+					} // Close the if ( $integration_type !== 'none' ) block
 					?>
 				</div>
 			</div>
@@ -216,167 +216,4 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 	<?php endif; ?>
 </div>
 
-<style>
-.owh-rdap-results-container {
-	max-width: 600px;
-	margin: 0 auto;
-}
-
-.owh-rdap-search-header {
-	text-align: center;
-	margin-bottom: 30px;
-}
-
-.owh-rdap-search-header h3 {
-	color: #333;
-	font-size: 24px;
-	margin: 0;
-}
-
-.owh-rdap-result-available,
-.owh-rdap-result-unavailable,
-.owh-rdap-result-error {
-	display: flex;
-	align-items: flex-start;
-	gap: 20px;
-}
-
-.owh-rdap-available-icon,
-.owh-rdap-unavailable-icon,
-.owh-rdap-error-icon {
-	font-size: 48px;
-	line-height: 1;
-}
-
-.owh-rdap-available-content h4,
-.owh-rdap-unavailable-content h4,
-.owh-rdap-error-content h4 {
-	margin: 0 0 10px 0;
-	font-size: 20px;
-}
-
-.owh-rdap-available-content h4 {
-	color: #46b450;
-}
-
-.owh-rdap-unavailable-content h4 {
-	color: #dc3232;
-}
-
-.owh-rdap-error-content h4 {
-	color: #dc3232;
-}
-
-.owh-rdap-available-content p,
-.owh-rdap-unavailable-content p,
-.owh-rdap-error-content p {
-	margin: 0 0 20px 0;
-	color: #666;
-	font-size: 16px;
-	line-height: 1.5;
-}
-
-.owh-rdap-buy-section {
-	margin-top: 20px;
-}
-
-.owh-rdap-buy-button {
-	display: inline-flex;
-	align-items: center;
-	padding: 12px 24px;
-	background: #46b450;
-	color: white !important;
-	text-decoration: none;
-	border-radius: 6px;
-	font-weight: 600;
-	font-size: 16px;
-	transition: background-color 0.3s ease;
-	gap: 8px;
-	border: none;
-	cursor: pointer;
-	font-family: inherit;
-}
-
-.owh-rdap-buy-button:hover {
-	background: #3ba943;
-	color: white !important;
-	text-decoration: none;
-}
-
-.owh-rdap-whmcs-button {
-	background: #007cba;
-}
-
-.owh-rdap-whmcs-button:hover {
-	background: #005177;
-}
-
-.owh-rdap-buy-button .dashicons {
-	font-size: 18px;
-	width: 18px;
-	height: 18px;
-}
-
-.owh-rdap-domain-info {
-	margin-top: 20px;
-	padding: 15px;
-	background: #f9f9f9;
-	border-radius: 6px;
-}
-
-.owh-rdap-domain-info h5 {
-	margin: 0 0 15px 0;
-	color: #333;
-	font-size: 16px;
-}
-
-.owh-rdap-domain-details {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-}
-
-.owh-rdap-domain-details li {
-	padding: 5px 0;
-	border-bottom: 1px solid #eee;
-	color: #666;
-}
-
-.owh-rdap-domain-details li:last-child {
-	border-bottom: none;
-}
-
-.owh-rdap-domain-details strong {
-	color: #333;
-}
-
-.owh-rdap-search-again {
-	text-align: center;
-	padding: 20px;
-	background: #f9f9f9;
-	border-radius: 8px;
-}
-
-.owh-rdap-search-again p {
-	margin: 0 0 20px 0;
-	color: #666;
-	font-size: 16px;
-}
-
-@media (max-width: 600px) {
-	.owh-rdap-result-available,
-	.owh-rdap-result-unavailable,
-	.owh-rdap-result-error {
-		flex-direction: column;
-		align-items: center;
-		text-align: center;
-		gap: 15px;
-	}
-	
-	.owh-rdap-available-icon,
-	.owh-rdap-unavailable-icon,
-	.owh-rdap-error-icon {
-		font-size: 36px;
-	}
-}
-</style>
+<!-- Inline styles moved to CSS file: public/css/owh-domain-whois-rdap-public.css -->

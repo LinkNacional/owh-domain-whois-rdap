@@ -8,17 +8,17 @@
  * registers the activation and deactivation functions, and defines a function
  * that starts the plugin.
  *
- * @link              https://owhgroup.com.br
+ * @link              https://linknacional.com.br
  * @since             1.0.0
  * @package           OWH_Domain_WHOIS_RDAP
  *
  * @wordpress-plugin
  * Plugin Name:       OWH Domain WHOIS RDAP
- * Plugin URI:        https://github.com/owhgroup/owh-domain-whois-rdap
+ * Plugin URI:        https://github.com/linknacional/owh-domain-whois-rdap
  * Description:       Verificação de disponibilidade de domínios via protocolo RDAP.
- * Version:           1.2.0
- * Author:            OWH Group
- * Author URI:        https://owhgroup.com.br
+ * Version:           1.2.1
+ * Author:            Link Nacional
+ * Author URI:        https://linknacional.com.br
  * License:           GPL-2.0+
  * License URI:       http://www.gnu.org/licenses/gpl-2.0.txt
  * Text Domain:       owh-domain-whois-rdap
@@ -35,7 +35,7 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.2.0' );
+define( 'OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.2.1' );
 
 /**
  * Plugin path and URL

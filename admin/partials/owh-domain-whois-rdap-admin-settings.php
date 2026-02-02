@@ -80,7 +80,6 @@ defined( 'ABSPATH' ) or exit;
                             <div id="custom-tlds-list">
                                 <?php 
                                 $custom_tlds = get_option('owh_domain_whois_rdap_custom_tlds', []);
-                                echo '<!-- Debug: Custom TLDs from DB: ' . esc_html(print_r($custom_tlds, true)) . ' -->';
                                 
                                 if (empty($custom_tlds)) {
                                     $custom_tlds = [['tld' => '', 'rdap_url' => '']]; // Pelo menos uma linha em branco
@@ -89,14 +88,14 @@ defined( 'ABSPATH' ) or exit;
                                     <div class="custom-tld-row">
                                         <div>
                                             <input type="text" 
-                                                   name="custom_tlds[<?php echo $index; ?>][tld]" 
-                                                   value="<?php echo esc_attr($tld_config['tld']); ?>" 
+                                                   name="custom_tlds[<?php echo esc_attr( $index ); ?>][tld]" 
+                                                   value="<?php echo esc_attr( $tld_config['tld'] ); ?>" 
                                                    placeholder=".com" />
                                         </div>
                                         <div>
                                             <input type="text" 
-                                                   name="custom_tlds[<?php echo $index; ?>][rdap_url]" 
-                                                   value="<?php echo esc_attr($tld_config['rdap_url']); ?>" 
+                                                   name="custom_tlds[<?php echo esc_attr( $index ); ?>][rdap_url]" 
+                                                   value="<?php echo esc_attr( $tld_config['rdap_url'] ); ?>" 
                                                    placeholder="https://rdap.example.com" />
                                         </div>
                                         <div>
@@ -116,7 +115,7 @@ defined( 'ABSPATH' ) or exit;
                 </tr>
             </table>
             
-            <div style="margin-top: 20px;">
+            <div class="owh-rdap-save-section">
                 <input type="hidden" name="action" value="save_custom_tlds" />
                 <?php wp_nonce_field('save_custom_tlds_nonce', 'custom_tlds_nonce'); ?>
                 <button type="button" id="save-custom-tlds" class="button button-primary">

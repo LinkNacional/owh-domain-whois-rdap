@@ -1,3 +1,7 @@
+# 1.2.1
+* Adição de alerta informando que é preciso configurar a página de resultados;
+* Correção de erros do wordpress.
+
 # 1.2.0
 * Adição de configuração para adicionar subdomnios;
 * Adição de botão para atualizar TLDs.

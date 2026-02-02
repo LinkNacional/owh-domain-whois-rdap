@@ -55,7 +55,6 @@
         // Remove TLD row (using event delegation for dynamically added elements)
         $(document).on('click', '.remove-tld-row', function(e) {
             e.preventDefault();
-            console.log('[OWH-RDAP] Remove TLD row clicked');
             
             // Add confirmation dialog
             if (!confirm('Tem certeza que deseja remover este TLD customizado?')) {
@@ -86,6 +85,12 @@
             var button = $(this);
             var statusDiv = $('#save-custom-tlds-status');
             
+            // Check if nonce is available
+            if (typeof owh_rdap_admin === 'undefined' || !owh_rdap_admin.nonce) {
+                statusDiv.html('<div class="notice notice-error inline"><p>Erro: Token de segurança não disponível. Recarregue a página.</p></div>').show();
+                return;
+            }
+            
             button.prop('disabled', true).text('Salvando...');
             statusDiv.hide();
             
@@ -95,7 +100,6 @@
                 var tld = $(this).find('input[name*="[tld]"]').val().trim();
                 var rdapUrl = $(this).find('input[name*="[rdap_url]"]').val().trim();
                 
-                console.log('[OWH-RDAP] Processing TLD:', tld, 'URL:', rdapUrl);
                 
                 if (tld && rdapUrl) {
                     customTlds.push({
@@ -105,7 +109,6 @@
                 }
             });
             
-            console.log('[OWH-RDAP] Custom TLDs to save:', customTlds);
             
             // Send AJAX request
             $.ajax({
@@ -113,10 +116,10 @@
                 type: 'POST',
                 data: {
                     action: 'save_custom_tlds',
-                    custom_tlds: customTlds
+                    custom_tlds: customTlds,
+                    nonce: owh_rdap_admin.nonce
                 },
                 success: function(response) {
-                    console.log('[OWH-RDAP] AJAX response:', response);
                     if (response.success) {
                         statusDiv.html('<div class="notice notice-success inline"><p>' + response.data.message + '</p></div>').show();
                     } else {
@@ -138,7 +141,6 @@
         
         // Custom TLDs Management - Robust event delegation approach
         var tldRowIndex = $('.custom-tld-row').length;
-        console.log('[OWH-RDAP] Initial TLD row index:', tldRowIndex);
         
         // Bind add button click handler with namespace to avoid conflicts
         $(document).off('click.owh-tld-manager', '#add-tld-row');
@@ -148,7 +150,6 @@
             
             // Always recalculate to ensure accuracy
             var currentIndex = $('.custom-tld-row').length;
-            console.log('[OWH-RDAP] Add TLD row clicked, current index:', currentIndex);
             
             var newRowHtml = [
                 '<div class="custom-tld-row" style="display: flex; margin-bottom: 5px; align-items: center;">',
@@ -166,29 +167,8 @@
             
             $('#custom-tlds-list').append(newRowHtml);
             updateRemoveButtons();
-            console.log('[OWH-RDAP] New row added successfully');
         });
         
-        // Debug: Check button state multiple times
-        function checkButtonState() {
-            var $button = $('#add-tld-row');
-            console.log('[OWH-RDAP] Button Debug - Exists:', $button.length > 0);
-            console.log('[OWH-RDAP] Button Debug - Visible:', $button.is(':visible'));
-            console.log('[OWH-RDAP] Button Debug - Parent tab active:', $('#tab-rdap').hasClass('active') || $('#tab-rdap').is(':visible'));
-        }
-        
-        // Check immediately and after delays
-        checkButtonState();
-        setTimeout(checkButtonState, 500);
-        setTimeout(checkButtonState, 1000);
-        
-        // Re-bind when switching to RDAP tab
-        $('.owh-tab[data-tab="rdap"]').on('click', function() {
-            setTimeout(function() {
-                console.log('[OWH-RDAP] RDAP tab activated - ensuring button works');
-                checkButtonState();
-            }, 100);
-        });
     });
 
 })(jQuery);

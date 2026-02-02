@@ -3,7 +3,7 @@
 /**
  * The public-facing functionality of the plugin.
  *
- * @link       https://owhgroup.com.br
+ * @link       https://linknacional.com.br
  * @since      1.0.0
  *
  * @package    OWH_Domain_WHOIS_RDAP
@@ -18,7 +18,7 @@
  *
  * @package    OWH_Domain_WHOIS_RDAP
  * @subpackage OWH_Domain_WHOIS_RDAP/public
- * @author     OWH Group <dev@owhgroup.com.br>
+ * @author     Link Nacional <dev@linknacional.com.br>
  */
 class Owh_Domain_Whois_Rdap_Public {
 
@@ -78,6 +78,12 @@ class Owh_Domain_Whois_Rdap_Public {
 		);
 	}
 
+	public function add_inline_styles( $custom_css ) {
+		if ( ! empty( $custom_css ) ) {
+			wp_add_inline_style( $this->plugin_name, $custom_css );
+		}
+	}
+
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
 	 *
@@ -91,6 +97,17 @@ class Owh_Domain_Whois_Rdap_Public {
 			$this->version, 
 			false 
 		);
+
+		// Localize script with plugin settings
+		$results_page_id = get_option( 'owh_domain_whois_rdap_results_page', '' );
+
+		wp_localize_script( $this->plugin_name, 'owhRdapPublic', array(
+			'hasResultsPage' => !empty($results_page_id),
+			'strings' => array(
+				'configRequired' => __( 'Para realizar pesquisas, é necessário configurar uma "Página de Resultados" nas configurações do plugin. Entre em contato com o administrador.', 'owh-domain-whois-rdap' ),
+				'configTitle' => __( 'Configuração Necessária', 'owh-domain-whois-rdap' )
+			)
+		) );
 	}
 
 	/**
@@ -168,6 +185,36 @@ class Owh_Domain_Whois_Rdap_Public {
 			'button_layout' => ! empty( $atts['button_layout'] ) ? $atts['button_layout'] : 'external'
 		);
 
+		// Ensure styles are enqueued
+		$this->enqueue_styles();
+
+		// Build and add inline styles
+		$inline_css = '';
+		
+		if ( ! empty( $custom_attributes['custom_css'] ) ) {
+			$inline_css .= '.owh-rdap-search-container { ' . esc_html( $custom_attributes['custom_css'] ) . ' }' . "\n";
+		}
+
+		// Add dynamic styles from attributes
+		$dynamic_css_parts = array();
+		
+		if ( ! empty( $atts['primary_color'] ) ) {
+			$dynamic_css_parts[] = '.owh-rdap-search-container .owh-rdap-search-button { background-color: ' . esc_attr( $atts['primary_color'] ) . '; border-color: ' . esc_attr( $atts['primary_color'] ) . '; }';
+		}
+		
+		if ( ! empty( $atts['button_hover_color'] ) ) {
+			$dynamic_css_parts[] = '.owh-rdap-search-container .owh-rdap-search-button:hover { background-color: ' . esc_attr( $atts['button_hover_color'] ) . '; }';
+		}
+
+		if ( ! empty( $dynamic_css_parts ) ) {
+			$inline_css .= implode( "\n", $dynamic_css_parts );
+		}
+
+		// Add inline styles through WordPress
+		if ( ! empty( $inline_css ) ) {
+			wp_add_inline_style( $this->plugin_name, $inline_css );
+		}
+
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-search.php';
 		return ob_get_clean();
@@ -216,7 +263,7 @@ class Owh_Domain_Whois_Rdap_Public {
 		$show_title = $atts['show_title'] === 'true';
 
 		// Get domain from URL parameter
-		$domain = isset( $_GET['domain'] ) ? sanitize_text_field( $_GET['domain'] ) : '';
+		$domain = isset( $_GET['domain'] ) ? sanitize_text_field( wp_unslash( $_GET['domain'] ) ) : '';
 
 		// Perform the search only if we have a domain
 		$result = null;
@@ -250,6 +297,21 @@ class Owh_Domain_Whois_Rdap_Public {
 			'unavailable_color' => ! empty( $atts['unavailable_color'] ) ? $atts['unavailable_color'] : ''
 		);
 
+		// Ensure styles are enqueued
+		$this->enqueue_styles();
+
+		// Build and add inline styles for results
+		$inline_css = '';
+		
+		if ( ! empty( $custom_attributes['custom_css'] ) ) {
+			$inline_css .= '.owh-rdap-results-container { ' . esc_html( $custom_attributes['custom_css'] ) . ' }' . "\n";
+		}
+
+		// Add inline styles through WordPress
+		if ( ! empty( $inline_css ) ) {
+			wp_add_inline_style( $this->plugin_name, $inline_css );
+		}
+
 		ob_start();
 		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-results.php';
 		return ob_get_clean();
@@ -262,11 +324,14 @@ class Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function ajax_check_domain() {
 		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['nonce'], 'owh_rdap_public_nonce' ) ) {
-			wp_die( 'Security check failed', 'Security Check', array( 'response' => 403 ) );
+		if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'owh_rdap_public_nonce' ) ) {
+			wp_send_json_error( array( 
+				'message' => __( 'Verificação de segurança falhou.', 'owh-domain-whois-rdap' )
+			) );
+			return;
 		}
 
-		$domain = isset( $_POST['domain'] ) ? sanitize_text_field( $_POST['domain'] ) : '';
+		$domain = isset( $_POST['domain'] ) ? sanitize_text_field( wp_unslash( $_POST['domain'] ) ) : '';
 
 		if ( empty( $domain ) ) {
 			wp_send_json_error( __( 'Domínio não informado.', 'owh-domain-whois-rdap' ) );
@@ -295,12 +360,15 @@ class Owh_Domain_Whois_Rdap_Public {
 
 			// Add integration info if domain is available
 			if ( $result->isAvailable() ) {
-				$integration_type = get_option( 'owh_rdap_integration_type', 'custom' );
-				$domain_parts = explode( '.', $result->getDomain() );
-				$sld = $domain_parts[0];
-				$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+				$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+				
+				// Only add integration if type is not 'none'
+				if ( $integration_type !== 'none' ) {
+					$domain_parts = explode( '.', $result->getDomain() );
+					$sld = $domain_parts[0];
+					$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
 
-				if ( $integration_type === 'custom' ) {
+					if ( $integration_type === 'custom' ) {
 					$custom_url = get_option( 'owh_rdap_custom_url', '' );
 					if ( ! empty( $custom_url ) ) {
 						$buy_url = str_replace(
@@ -337,6 +405,7 @@ class Owh_Domain_Whois_Rdap_Public {
 						);
 					}
 				}
+				} // Close the if ( $integration_type !== 'none' ) block
 			}
 
 			if ( $result->hasError() ) {
@@ -401,7 +470,7 @@ class Owh_Domain_Whois_Rdap_Public {
 		}
 
 		// Get domain from URL parameter
-		$domain = isset( $_GET['domain'] ) ? sanitize_text_field( $_GET['domain'] ) : '';
+		$domain = isset( $_GET['domain'] ) ? sanitize_text_field( wp_unslash( $_GET['domain'] ) ) : '';
 		
 		// Convert string booleans to actual booleans
 		$show_title = filter_var( $atts['show_title'], FILTER_VALIDATE_BOOLEAN );
@@ -444,6 +513,24 @@ class Owh_Domain_Whois_Rdap_Public {
 				// Handle error silently or return error message
 				$result = null;
 			}
+		}
+
+		// Ensure styles are enqueued
+		$this->enqueue_styles();
+
+		// Build and add inline styles for whois details
+		$inline_css = '';
+		
+		if ( ! empty( $custom_css ) ) {
+			$clean_css = wp_strip_all_tags( $custom_css );
+			$clean_css = str_replace( array( '<script', '</script>', 'javascript:' ), '', $clean_css );
+			
+			$inline_css .= '.owh-rdap-whois-details-container { ' . esc_attr( $clean_css ) . ' }' . "\n";
+		}
+
+		// Add inline styles through WordPress
+		if ( ! empty( $inline_css ) ) {
+			wp_add_inline_style( $this->plugin_name, $inline_css );
 		}
 
 		// Start output buffering
