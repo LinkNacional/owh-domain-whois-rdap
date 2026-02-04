@@ -27,15 +27,25 @@ class BootstrapFileHandler
      */
     public function getRdapServerForTld(string $tld): ?string
     {
+        $tld = strtolower($tld);
+        if (strpos($tld, '.') === 0) {
+            $tld = substr($tld, 1); // Remove leading dot
+        }
+
+        // Check custom TLDs first
+        $customTlds = $this->getCustomTlds();
+        foreach ($customTlds as $customTld) {
+            $customTldClean = ltrim(strtolower($customTld['tld']), '.');
+            if ($customTldClean === $tld && !empty($customTld['rdap_url'])) {
+                return rtrim($customTld['rdap_url'], '/');
+            }
+        }
+
+        // Check standard DNS data
         $dns_data = $this->getDnsData();
         
         if (!$dns_data || !isset($dns_data['services'])) {
             return null;
-        }
-
-        $tld = strtolower($tld);
-        if (strpos($tld, '.') === 0) {
-            $tld = substr($tld, 1); // Remove leading dot
         }
 
         foreach ($dns_data['services'] as $service) {
@@ -59,16 +69,27 @@ class BootstrapFileHandler
      */
     public function getSupportedTlds(): array
     {
+        $tlds = [];
+
+        // Get TLDs from DNS data
         $dns_data = $this->getDnsData();
         
-        if (!$dns_data || !isset($dns_data['services'])) {
-            return [];
+        if ($dns_data && isset($dns_data['services'])) {
+            foreach ($dns_data['services'] as $service) {
+                if (isset($service[0])) {
+                    $tlds = array_merge($tlds, $service[0]);
+                }
+            }
         }
 
-        $tlds = [];
-        foreach ($dns_data['services'] as $service) {
-            if (isset($service[0])) {
-                $tlds = array_merge($tlds, $service[0]);
+        // Add custom TLDs
+        $customTlds = $this->getCustomTlds();
+        foreach ($customTlds as $customTld) {
+            if (!empty($customTld['tld']) && !empty($customTld['rdap_url'])) {
+                $tldClean = ltrim(strtolower($customTld['tld']), '.');
+                if (!in_array($tldClean, $tlds)) {
+                    $tlds[] = $tldClean;
+                }
             }
         }
 
@@ -83,15 +104,25 @@ class BootstrapFileHandler
      */
     public function isValidTld(string $tld): bool
     {
+        $tld = strtolower($tld);
+        if (strpos($tld, '.') === 0) {
+            $tld = substr($tld, 1); // Remove leading dot
+        }
+
+        // Check custom TLDs first
+        $customTlds = $this->getCustomTlds();
+        foreach ($customTlds as $customTld) {
+            $customTldClean = ltrim(strtolower($customTld['tld']), '.');
+            if ($customTldClean === $tld && !empty($customTld['rdap_url'])) {
+                return true;
+            }
+        }
+
+        // Check standard DNS data
         $dns_data = $this->getDnsData();
         
         if (!$dns_data || !isset($dns_data['services'])) {
             return false;
-        }
-
-        $tld = strtolower($tld);
-        if (strpos($tld, '.') === 0) {
-            $tld = substr($tld, 1); // Remove leading dot
         }
 
         foreach ($dns_data['services'] as $service) {
@@ -448,5 +479,22 @@ class BootstrapFileHandler
         }
 
         return true;
+    }
+
+    /**
+     * Get custom TLDs configuration
+     *
+     * @return array
+     */
+    private function getCustomTlds(): array
+    {
+        $custom_tlds = \get_option('owh_domain_whois_rdap_custom_tlds', []);
+        
+        // Ensure we always return an array
+        if (!is_array($custom_tlds)) {
+            return [];
+        }
+        
+        return $custom_tlds;
     }
 }

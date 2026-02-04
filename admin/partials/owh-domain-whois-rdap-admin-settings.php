@@ -24,6 +24,13 @@ defined( 'ABSPATH' ) or exit;
         <a href="#rdap" class="nav-tab owh-tab" data-tab="rdap">
             <?php esc_html_e('RDAP', 'owh-domain-whois-rdap'); ?>
         </a>
+        <?php 
+        $integration_type = get_option('owh_rdap_integration_type', '');
+        if (!empty($integration_type)): ?>
+        <a href="#integration" class="nav-tab owh-tab" data-tab="integration">
+            <?php esc_html_e('TLDS', 'owh-domain-whois-rdap'); ?>
+        </a>
+        <?php endif; ?>
     </nav>
     
     <!-- Tab Contents -->
@@ -124,6 +131,25 @@ defined( 'ABSPATH' ) or exit;
                 <div id="save-custom-tlds-status" class="save-custom-tlds-status"></div>
             </div>
         </div>
+        
+        <!-- Integration Tab -->
+        <?php 
+        $integration_type = get_option('owh_rdap_integration_type', '');
+        if (!empty($integration_type)): ?>
+        <div id="tab-integration" class="owh-tab-panel">
+            <h2><?php esc_html_e('Configuração de TLDs', 'owh-domain-whois-rdap'); ?></h2>
+            <p><?php esc_html_e('Configure quais TLDs estão disponíveis para pesquisa.', 'owh-domain-whois-rdap'); ?></p>
+
+            <div id="tlds-grid-container">
+                <div id="tlds-grid"></div>
+            </div>
+            
+            <button type="button" id="save-tlds-config" class="button button-primary">
+                <?php esc_html_e('Salvar Configurações de TLDs', 'owh-domain-whois-rdap'); ?>
+            </button>
+            <div id="save-tlds-status" class="save-status"></div>
+        </div>
+        <?php endif; ?>
     </div>
     
     <div class="owh-rdap-info">

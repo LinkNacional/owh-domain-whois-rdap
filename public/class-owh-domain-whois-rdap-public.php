@@ -103,6 +103,8 @@ class Owh_Domain_Whois_Rdap_Public {
 
 		wp_localize_script( $this->plugin_name, 'owhRdapPublic', array(
 			'hasResultsPage' => !empty($results_page_id),
+			'rest_url' => rest_url( 'owh-rdap/v1/' ),
+			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			'strings' => array(
 				'configRequired' => __( 'Para realizar pesquisas, é necessário configurar uma "Página de Resultados" nas configurações do plugin. Entre em contato com o administrador.', 'owh-domain-whois-rdap' ),
 				'configTitle' => __( 'Configuração Necessária', 'owh-domain-whois-rdap' )
@@ -237,12 +239,15 @@ class Owh_Domain_Whois_Rdap_Public {
 			'available_text' => '',
 			'unavailable_title' => '',
 			'unavailable_text' => '',
+			'disabled_title' => '',
+			'disabled_text' => '',
 			'buy_button_text' => '',
 			'details_button_text' => '',
 			'show_icons' => 'true',
 			'search_icon' => '',
 			'available_icon' => '',
 			'unavailable_icon' => '',
+			'disabled_icon' => '',
 			'custom_css' => '',
 			'border_width' => '',
 			'border_color' => '',
@@ -250,7 +255,8 @@ class Owh_Domain_Whois_Rdap_Public {
 			'background_color' => '',
 			'padding' => '',
 			'available_color' => '',
-			'unavailable_color' => ''
+			'unavailable_color' => '',
+			'disabled_color' => ''
 		), $atts );
 
 		$settings_manager = $this->service_container->get( 'SettingsManager' );
@@ -281,12 +287,15 @@ class Owh_Domain_Whois_Rdap_Public {
 			'available_text' => ! empty( $atts['available_text'] ) ? $atts['available_text'] : '',
 			'unavailable_title' => ! empty( $atts['unavailable_title'] ) ? $atts['unavailable_title'] : '',
 			'unavailable_text' => ! empty( $atts['unavailable_text'] ) ? $atts['unavailable_text'] : '',
+			'disabled_title' => ! empty( $atts['disabled_title'] ) ? $atts['disabled_title'] : '',
+			'disabled_text' => ! empty( $atts['disabled_text'] ) ? $atts['disabled_text'] : '',
 			'buy_button_text' => ! empty( $atts['buy_button_text'] ) ? $atts['buy_button_text'] : '',
 			'details_button_text' => ! empty( $atts['details_button_text'] ) ? $atts['details_button_text'] : '',
 			'show_icons' => $atts['show_icons'] === 'true',
 			'search_icon' => ! empty( $atts['search_icon'] ) ? $atts['search_icon'] : '',
 			'available_icon' => ! empty( $atts['available_icon'] ) ? $atts['available_icon'] : '',
 			'unavailable_icon' => ! empty( $atts['unavailable_icon'] ) ? $atts['unavailable_icon'] : '',
+			'disabled_icon' => ! empty( $atts['disabled_icon'] ) ? $atts['disabled_icon'] : '',
 			'custom_css' => ! empty( $atts['custom_css'] ) ? $atts['custom_css'] : '',
 			'border_width' => ! empty( $atts['border_width'] ) ? intval( $atts['border_width'] ) : '',
 			'border_color' => ! empty( $atts['border_color'] ) ? $atts['border_color'] : '',
@@ -294,7 +303,8 @@ class Owh_Domain_Whois_Rdap_Public {
 			'background_color' => ! empty( $atts['background_color'] ) ? $atts['background_color'] : '',
 			'padding' => ! empty( $atts['padding'] ) ? intval( $atts['padding'] ) : '',
 			'available_color' => ! empty( $atts['available_color'] ) ? $atts['available_color'] : '',
-			'unavailable_color' => ! empty( $atts['unavailable_color'] ) ? $atts['unavailable_color'] : ''
+			'unavailable_color' => ! empty( $atts['unavailable_color'] ) ? $atts['unavailable_color'] : '',
+			'disabled_color' => ! empty( $atts['disabled_color'] ) ? $atts['disabled_color'] : ''
 		);
 
 		// Ensure styles are enqueued
@@ -322,111 +332,6 @@ class Owh_Domain_Whois_Rdap_Public {
 	 *
 	 * @since    1.0.0
 	 */
-	public function ajax_check_domain() {
-		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'owh_rdap_public_nonce' ) ) {
-			wp_send_json_error( array( 
-				'message' => __( 'Verificação de segurança falhou.', 'owh-domain-whois-rdap' )
-			) );
-			return;
-		}
-
-		$domain = isset( $_POST['domain'] ) ? sanitize_text_field( wp_unslash( $_POST['domain'] ) ) : '';
-
-		if ( empty( $domain ) ) {
-			wp_send_json_error( __( 'Domínio não informado.', 'owh-domain-whois-rdap' ) );
-			return;
-		}
-
-		try {
-			$settings_manager = $this->service_container->get( 'SettingsManager' );
-
-			// Check if search is enabled
-			if ( ! $settings_manager->isSearchEnabled() ) {
-				wp_send_json_error( __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) );
-				return;
-			}
-
-			$availability_service = $this->service_container->get( 'AvailabilityService' );
-			$result = $availability_service->checkAvailability( $domain );
-
-			$response_data = array(
-				'domain' => $result->getDomain(),
-				'is_available' => $result->isAvailable(),
-				'status' => $result->getStatus(),
-				'has_error' => $result->hasError(),
-				'error' => $result->getError(),
-			);
-
-			// Add integration info if domain is available
-			if ( $result->isAvailable() ) {
-				$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
-				
-				// Only add integration if type is not 'none'
-				if ( $integration_type !== 'none' ) {
-					$domain_parts = explode( '.', $result->getDomain() );
-					$sld = $domain_parts[0];
-					$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
-
-					if ( $integration_type === 'custom' ) {
-					$custom_url = get_option( 'owh_rdap_custom_url', '' );
-					if ( ! empty( $custom_url ) ) {
-						$buy_url = str_replace(
-							array( '{domain}', '{sld}', '{tld}' ),
-							array( $result->getDomain(), $sld, $tld ),
-							$custom_url
-						);
-
-						$response_data['integration'] = array(
-							'type' => 'custom',
-							'url' => $buy_url,
-							'text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
-						);
-					}
-				} elseif ( $integration_type === 'whmcs' ) {
-					$whmcs_url = get_option( 'owh_rdap_whmcs_url', '' );
-					if ( ! empty( $whmcs_url ) ) {
-						$response_data['integration'] = array(
-							'type' => 'whmcs',
-							'url' => $whmcs_url,
-							'domain' => $result->getDomain(),
-							'form_html' => sprintf(
-								'<form style="display:none" method="post" name="whmcs_%s" id="whmcs_%s" action="%s/cart.php?a=add&domain=register" target="_self">
-								<input type="hidden" name="domains[]" value="%s">
-								<input type="hidden" name="domainsregperiod[%s]" value="1">
-								</form>',
-								str_replace( '.', '_', $result->getDomain() ),
-								str_replace( '.', '_', $result->getDomain() ),
-								rtrim( $whmcs_url, '/' ),
-								$result->getDomain(),
-								$result->getDomain()
-							),
-							'text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
-						);
-					}
-				}
-				} // Close the if ( $integration_type !== 'none' ) block
-			}
-
-			if ( $result->hasError() ) {
-				wp_send_json_error( $response_data );
-			} else {
-				wp_send_json_success( $response_data );
-			}
-
-		} catch ( Exception $e ) {
-			wp_send_json_error( __( 'Erro interno do servidor.', 'owh-domain-whois-rdap' ) );
-		}
-	}
-
-	/**
-	 * AJAX handler for domain search (required by main class)
-	 */
-	public function handle_domain_search() {
-		// Redirect to the existing check domain handler
-		return $this->ajax_check_domain();
-	}
-
 	/**
 	 * WHOIS details shortcode
 	 *
@@ -540,5 +445,103 @@ class Owh_Domain_Whois_Rdap_Public {
 		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-whois-rdap-public-whois-details.php';
 
 		return ob_get_clean();
+	}
+
+	/**
+	 * Register REST API routes
+	 *
+	 * @since    1.0.0
+	 */
+	public function register_rest_routes() {
+		register_rest_route( 'owh-rdap/v1', '/check-domain', array(
+			'methods' => 'POST',
+			'callback' => array( $this, 'rest_check_domain' ),
+			'permission_callback' => '__return_true', // Public endpoint
+			'args' => array(
+				'domain' => array(
+					'required' => true,
+					'type' => 'string',
+					'sanitize_callback' => 'sanitize_text_field',
+				),
+			),
+		) );
+	}
+
+	/**
+	 * REST API permission check for public endpoints
+	 *
+	 * @since    1.0.0
+	 */
+	public function rest_public_permissions_check() {
+		return true; // Public endpoints
+	}
+
+	/**
+	 * REST API handler for checking domain availability
+	 *
+	 * @since    1.0.0
+	 */
+	public function rest_check_domain( $request ) {
+		$domain = $request->get_param( 'domain' );
+
+		if ( empty( $domain ) ) {
+			return new \WP_Error( 'missing_domain', __( 'Domínio não informado.', 'owh-domain-whois-rdap' ), array( 'status' => 400 ) );
+		}
+
+		try {
+			$settings_manager = $this->service_container->get( 'SettingsManager' );
+
+			// Check if search is enabled
+			if ( ! $settings_manager->isSearchEnabled() ) {
+				return new \WP_Error( 'search_disabled', __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ), array( 'status' => 403 ) );
+			}
+
+			$availability_service = $this->service_container->get( 'AvailabilityService' );
+			$result = $availability_service->checkAvailability( $domain );
+
+			$response_data = array(
+				'domain' => $result->getDomain(),
+				'is_available' => $result->isAvailable(),
+				'status' => $result->getStatus(),
+				'has_error' => $result->hasError(),
+				'error' => $result->getError(),
+			);
+
+			// Add integration info if domain is available
+			if ( $result->isAvailable() ) {
+				$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+				
+				// Only add integration if type is not 'none'
+				if ( $integration_type !== 'none' ) {
+					$domain_parts = explode( '.', $result->getDomain() );
+					$sld = $domain_parts[0];
+					$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+
+					if ( $integration_type === 'custom' ) {
+						$custom_url = get_option( 'owh_rdap_custom_url', '' );
+						if ( ! empty( $custom_url ) ) {
+							$buy_url = str_replace(
+								array( '{domain}', '{sld}', '{tld}' ),
+								array( $result->getDomain(), $sld, $tld ),
+								$custom_url
+							);
+
+							$response_data['integration'] = array(
+								'type' => 'custom',
+								'buy_url' => $buy_url
+							);
+						}
+					}
+				}
+			}
+
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'data' => $response_data
+			), 200 );
+
+		} catch ( Exception $e ) {
+			return new \WP_Error( 'check_error', __( 'Erro ao verificar domínio: ', 'owh-domain-whois-rdap' ) . $e->getMessage(), array( 'status' => 500 ) );
+		}
 	}
 }

@@ -86,6 +86,24 @@ class Owh_Domain_Whois_Rdap_Admin {
 				$this->version, 
 				'all' 
 			);
+			
+			// Grid.js CSS
+			wp_enqueue_style(
+				'gridjs-theme',
+				plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/theme/mermaid.min.css',
+				array(),
+				$this->version,
+				'all'
+			);
+			
+			// TLDs Grid CSS
+			wp_enqueue_style(
+				$this->plugin_name . '-tlds-grid',
+				plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-tlds-grid.css',
+				array(),
+				$this->version,
+				'all'
+			);
 		}
 
 	}
@@ -104,6 +122,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 		wp_localize_script( $this->plugin_name, 'owh_rdap_admin', array(
 			'rest_url' => rest_url( 'owh-rdap/v1/' ),
 			'nonce' => wp_create_nonce( 'owh_rdap_admin_nonce' ),
+			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			'strings' => array(
 				'updating' => __( 'Atualizando...', 'owh-domain-whois-rdap' ),
 				'updated' => __( 'Atualizado com sucesso!', 'owh-domain-whois-rdap' ),
@@ -130,6 +149,24 @@ class Owh_Domain_Whois_Rdap_Admin {
 				array( 'jquery', $this->plugin_name ), // Dependente do script principal
 				$this->version, 
 				true 
+			);
+			
+			// Grid.js library
+			wp_enqueue_script(
+				'gridjs',
+				plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/gridjs.umd.js',
+				array(),
+				$this->version,
+				true
+			);
+			
+			// TLDs Grid script
+			wp_enqueue_script(
+				$this->plugin_name . '-tlds-grid',
+				plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-tlds-grid.js',
+				array( 'jquery', 'gridjs', $this->plugin_name ),
+				$this->version,
+				true
 			);
 		}
 
@@ -312,6 +349,19 @@ class Owh_Domain_Whois_Rdap_Admin {
 					'type' => 'string',
 					'default' => '❌'
 				),
+				'disabledIcon' => array(
+					'type' => 'string',
+					'default' => '⚠️'
+				),
+				// Textos para domínio desabilitado
+				'disabledTitle' => array(
+					'type' => 'string',
+					'default' => 'Erro na Pesquisa'
+				),
+				'disabledText' => array(
+					'type' => 'string',
+					'default' => 'A tld "{tld}" está desabilitada.'
+				),
 				// Preview mode
 				'previewMode' => array(
 					'type' => 'string',
@@ -348,6 +398,10 @@ class Owh_Domain_Whois_Rdap_Admin {
 					'default' => '#46b450'
 				),
 				'unavailableColor' => array(
+					'type' => 'string',
+					'default' => '#dc3232'
+				),
+				'disabledColor' => array(
 					'type' => 'string',
 					'default' => '#dc3232'
 				)
@@ -566,6 +620,17 @@ class Owh_Domain_Whois_Rdap_Admin {
 		if ( isset( $attributes['unavailableIcon'] ) && ! empty( $attributes['unavailableIcon'] ) ) {
 			$shortcode_atts[] = 'unavailable_icon="' . esc_attr( $attributes['unavailableIcon'] ) . '"';
 		}
+		if ( isset( $attributes['disabledIcon'] ) && ! empty( $attributes['disabledIcon'] ) ) {
+			$shortcode_atts[] = 'disabled_icon="' . esc_attr( $attributes['disabledIcon'] ) . '"';
+		}
+		
+		// Add disabled texts
+		if ( isset( $attributes['disabledTitle'] ) && ! empty( $attributes['disabledTitle'] ) ) {
+			$shortcode_atts[] = 'disabled_title="' . esc_attr( $attributes['disabledTitle'] ) . '"';
+		}
+		if ( isset( $attributes['disabledText'] ) && ! empty( $attributes['disabledText'] ) ) {
+			$shortcode_atts[] = 'disabled_text="' . esc_attr( $attributes['disabledText'] ) . '"';
+		}
 		
 		// Add visual customizations
 		if ( isset( $attributes['customCSS'] ) && ! empty( $attributes['customCSS'] ) ) {
@@ -593,6 +658,9 @@ class Owh_Domain_Whois_Rdap_Admin {
 		}
 		if ( isset( $attributes['unavailableColor'] ) && ! empty( $attributes['unavailableColor'] ) ) {
 			$shortcode_atts[] = 'unavailable_color="' . esc_attr( $attributes['unavailableColor'] ) . '"';
+		}
+		if ( isset( $attributes['disabledColor'] ) && ! empty( $attributes['disabledColor'] ) ) {
+			$shortcode_atts[] = 'disabled_color="' . esc_attr( $attributes['disabledColor'] ) . '"';
 		}
 		
 		return do_shortcode( '[owh-rdap-whois-results ' . implode( ' ', $shortcode_atts ) . ']' );
@@ -941,6 +1009,24 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'callback' => array( $this, 'rest_get_server_status' ),
 			'permission_callback' => array( $this, 'rest_permissions_check' ),
 		) );
+
+		register_rest_route( 'owh-rdap/v1', '/custom-tlds', array(
+			'methods' => 'POST',
+			'callback' => array( $this, 'rest_save_custom_tlds' ),
+			'permission_callback' => array( $this, 'rest_permissions_check' ),
+		) );
+
+		register_rest_route( 'owh-rdap/v1', '/tlds-config', array(
+			'methods' => 'GET',
+			'callback' => array( $this, 'rest_get_tlds_config' ),
+			'permission_callback' => array( $this, 'rest_permissions_check' ),
+		) );
+
+		register_rest_route( 'owh-rdap/v1', '/tlds-config', array(
+			'methods' => 'POST',
+			'callback' => array( $this, 'rest_save_tlds_config' ),
+			'permission_callback' => array( $this, 'rest_permissions_check' ),
+		) );
 	}
 
 	/**
@@ -1001,30 +1087,15 @@ class Owh_Domain_Whois_Rdap_Admin {
 	}
 
 	/**
-	 * AJAX handler for saving custom TLDs
+	 * REST API handler for saving custom TLDs
 	 *
 	 * @since    1.0.0
 	 */
-	public function ajax_save_custom_tlds() {
-		// Verify nonce
-		if ( ! wp_verify_nonce( $_POST['nonce'] ?? '', 'owh_rdap_admin_nonce' ) ) {
-			wp_send_json_error( array(
-				'message' => 'Verificação de segurança falhou.'
-			) );
-			return;
-		}
-
-		// Check user capabilities
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( array(
-				'message' => 'Você não tem permissão para executar esta ação.'
-			) );
-			return;
-		}
-
+	public function rest_save_custom_tlds( $request ) {
 		try {
-			// Get the custom TLDs data - properly sanitize array
-			$custom_tlds = isset( $_POST['custom_tlds'] ) ? map_deep( wp_unslash( $_POST['custom_tlds'] ), 'sanitize_text_field' ) : array();
+			// Get the custom TLDs data from request
+			$params = $request->get_json_params();
+			$custom_tlds = isset( $params['custom_tlds'] ) ? $params['custom_tlds'] : array();
 			
 			// Simple validation and processing
 			$processed_tlds = array();
@@ -1034,8 +1105,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 					 isset( $tld_data['tld'] ) && 
 					 isset( $tld_data['rdap_url'] ) ) {
 					
-					$tld = trim( $tld_data['tld'] );
-					$rdap_url = trim( $tld_data['rdap_url'] );
+					$tld = trim( sanitize_text_field( $tld_data['tld'] ) );
+					$rdap_url = trim( sanitize_url( $tld_data['rdap_url'] ) );
 					
 					if ( ! empty( $tld ) && ! empty( $rdap_url ) ) {
 						// Ensure TLD starts with dot
@@ -1051,31 +1122,159 @@ class Owh_Domain_Whois_Rdap_Admin {
 				}
 			}
 			
-			// Save directly using WordPress function
+			// Save using WordPress function
 			$option_name = 'owh_domain_whois_rdap_custom_tlds';
-			
-			// Get current value to check if it's actually changing
-			$current_value = get_option( $option_name, array() );
 			$save_result = update_option( $option_name, $processed_tlds );
 			
-			// update_option returns false if the value didn't change, so we need to handle that
-			$verification = get_option( $option_name, array() );
-			$actually_saved = ( $verification === $processed_tlds );
-			
-			if ( $save_result || $actually_saved ) {
-				wp_send_json_success( array(
-					'message' => sprintf( 'TLDs customizadas salvas com sucesso! %d TLD(s) configurada(s).', count( $processed_tlds ) )
-				) );
-			} else {
-				wp_send_json_error( array(
-					'message' => 'Erro ao salvar no banco de dados. Dados processados: ' . count( $processed_tlds ) . ' TLDs'
-				) );
-			}
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'message' => sprintf( 'TLDs customizadas salvas com sucesso! %d TLD(s) configurada(s).', count( $processed_tlds ) )
+			), 200 );
 
 		} catch ( Exception $e ) {
-			wp_send_json_error( array(
-				'message' => 'Erro interno: ' . $e->getMessage()
-			) );
+			return new \WP_Error( 'save_error', 'Erro interno: ' . $e->getMessage(), array( 'status' => 500 ) );
+		}
+	}
+
+	/**
+	 * REST API handler for getting TLDs configuration
+	 *
+	 * @since    1.0.0
+	 */
+	public function rest_get_tlds_config( $request ) {
+		try {
+			// Get DNS data from local file
+			$dns_file = plugin_dir_path( dirname( __FILE__ ) ) . 'data/dns.json';
+			if ( ! file_exists( $dns_file ) ) {
+				return new \WP_Error( 'file_not_found', 'Arquivo DNS.json não encontrado', array( 'status' => 404 ) );
+			}
+
+			$dns_data = json_decode( file_get_contents( $dns_file ), true );
+			if ( ! $dns_data || ! isset( $dns_data['services'] ) ) {
+				return new \WP_Error( 'invalid_data', 'Dados DNS inválidos', array( 'status' => 500 ) );
+			}
+
+			// Get saved TLDs configuration
+			$saved_config = get_option( 'owh_domain_whois_rdap_tlds_config', array() );
+			
+			// Process TLDs from DNS data
+			$tlds_data = array();
+			
+			foreach ( $dns_data['services'] as $service ) {
+				if ( isset( $service[0] ) && isset( $service[1] ) && is_array( $service[0] ) ) {
+					foreach ( $service[0] as $tld ) {
+						$tld = '.' . $tld; // Ensure TLD starts with dot
+						
+						$providers = is_array( $service[1] ) ? $service[1] : array();
+						
+						// Get saved configuration for this TLD (only stores disabled TLDs)
+						$tld_config = isset( $saved_config[ $tld ] ) ? $saved_config[ $tld ] : array();
+						
+						$tlds_data[] = array(
+							'tld' => $tld,
+							'providers' => $providers,
+							'selectedProvider' => isset( $tld_config['provider'] ) ? $tld_config['provider'] : ( ! empty( $providers ) ? $providers[0] : '' ),
+							'enabled' => isset( $tld_config['enabled'] ) ? $tld_config['enabled'] : true // Default: enabled
+						);
+					}
+				}
+			}
+
+			// Add custom TLDs
+			$custom_tlds = get_option( 'owh_domain_whois_rdap_custom_tlds', array() );
+			if ( is_array( $custom_tlds ) ) {
+				foreach ( $custom_tlds as $custom_tld ) {
+					if ( ! empty( $custom_tld['tld'] ) && ! empty( $custom_tld['rdap_url'] ) ) {
+						$tld = $custom_tld['tld'];
+						
+						// Ensure TLD starts with dot
+						if ( strpos( $tld, '.' ) !== 0 ) {
+							$tld = '.' . $tld;
+						}
+						
+						// Check if this TLD already exists in official list
+						$tld_exists = false;
+						foreach ( $tlds_data as $existing_tld ) {
+							if ( $existing_tld['tld'] === $tld ) {
+								$tld_exists = true;
+								break;
+							}
+						}
+						
+						// Only add if it doesn't exist in official list
+						if ( ! $tld_exists ) {
+							// Get saved configuration for this custom TLD
+							$tld_config = isset( $saved_config[ $tld ] ) ? $saved_config[ $tld ] : array();
+							
+							$tlds_data[] = array(
+								'tld' => $tld,
+								'providers' => array( $custom_tld['rdap_url'] ),
+								'selectedProvider' => $custom_tld['rdap_url'],
+								'enabled' => isset( $tld_config['enabled'] ) ? $tld_config['enabled'] : true // Default: enabled
+							);
+						}
+					}
+				}
+			}
+			
+			// Sort by TLD
+			usort( $tlds_data, function( $a, $b ) {
+				return strcmp( $a['tld'], $b['tld'] );
+			} );
+
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'data' => $tlds_data
+			), 200 );
+
+		} catch ( Exception $e ) {
+			return new \WP_Error( 'load_error', 'Erro ao carregar configurações: ' . $e->getMessage(), array( 'status' => 500 ) );
+		}
+	}
+
+	/**
+	 * REST API handler for saving TLDs configuration
+	 *
+	 * @since    1.0.0
+	 */
+	public function rest_save_tlds_config( $request ) {
+		try {
+			$params = $request->get_json_params();
+			$config_data = isset( $params['config'] ) ? $params['config'] : array();
+			
+			if ( ! is_array( $config_data ) ) {
+				return new \WP_Error( 'invalid_data', 'Dados de configuração inválidos', array( 'status' => 400 ) );
+			}
+			
+			// Process and validate configuration - only save disabled TLDs
+			$processed_config = array();
+			
+			foreach ( $config_data as $item ) {
+				if ( isset( $item['tld'] ) && isset( $item['provider'] ) && isset( $item['enabled'] ) ) {
+					$tld = sanitize_text_field( $item['tld'] );
+					$provider = sanitize_text_field( $item['provider'] );
+					$enabled = (bool) $item['enabled'];
+					
+					// Only save if TLD is DISABLED (optimization: don't save enabled ones)
+					if ( ! $enabled ) {
+						$processed_config[ $tld ] = array(
+							'provider' => $provider,
+							'enabled' => false
+						);
+					}
+				}
+			}
+			
+			// Save configuration (only disabled TLDs)
+			update_option( 'owh_domain_whois_rdap_tlds_config', $processed_config );
+			
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'message' => 'Configurações salvas com sucesso!'
+			), 200 );
+
+		} catch ( Exception $e ) {
+			return new \WP_Error( 'save_error', 'Erro ao salvar configurações: ' . $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
 }

@@ -635,10 +635,23 @@ registerBlockType('owh-rdap/domain-results', {
       type: 'string',
       default: '❌'
     },
+    disabledIcon: {
+      type: 'string',
+      default: '⚠️'
+    },
+    // Textos para domínio desabilitado
+    disabledTitle: {
+      type: 'string',
+      default: 'Erro na Pesquisa'
+    },
+    disabledText: {
+      type: 'string',
+      default: 'A tld "{tld}" está desabilitada.'
+    },
     // Preview mode
     previewMode: {
       type: 'string',
-      default: 'no-result' // 'no-result', 'available', 'unavailable'
+      default: 'no-result' // 'no-result', 'available', 'unavailable', 'disabled'
     },
     // Visual customizations
     customCSS: {
@@ -674,6 +687,10 @@ registerBlockType('owh-rdap/domain-results', {
       type: 'string',
       default: '#dc3232'
     },
+    disabledColor: {
+      type: 'string',
+      default: '#dc3232'
+    },
     // Layout options
     buttonLayout: {
       type: 'string',
@@ -702,12 +719,15 @@ registerBlockType('owh-rdap/domain-results', {
       availableText,
       unavailableTitle,
       unavailableText,
+      disabledTitle,
+      disabledText,
       buyButtonText,
       detailsButtonText,
       showIcons,
       searchIcon,
       availableIcon,
       unavailableIcon,
+      disabledIcon,
       previewMode,
       customCSS,
       borderWidth,
@@ -717,6 +737,7 @@ registerBlockType('owh-rdap/domain-results', {
       padding,
       availableColor,
       unavailableColor,
+      disabledColor,
       showWatermark,
       buttonLayout
     } = attributes;
@@ -821,6 +842,12 @@ registerBlockType('owh-rdap/domain-results', {
         text = unavailableText;
         titleColor = unavailableColor;
         buttonBg = unavailableColor;
+      } else if (previewMode === 'disabled') {
+        icon = disabledIcon;
+        title = disabledTitle;
+        text = disabledText.replace('{tld}', 'com');
+        titleColor = disabledColor;
+        buttonBg = disabledColor;
       }
       return /*#__PURE__*/React.createElement("div", null, combinedCSS && /*#__PURE__*/React.createElement("style", null, `.owh-rdap-results-container { ${combinedCSS} }`), /*#__PURE__*/React.createElement("div", {
         className: "owh-rdap-results-container",
@@ -876,7 +903,11 @@ registerBlockType('owh-rdap/domain-results', {
         }
       }, /*#__PURE__*/React.createElement("span", {
         className: "dashicons dashicons-info"
-      }), detailsButtonText)))))));
+      }), detailsButtonText)), previewMode === 'disabled' && /*#__PURE__*/React.createElement("div", {
+        style: {
+          marginTop: '20px'
+        }
+      }))))));
     };
     return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(InspectorControls, null, /*#__PURE__*/React.createElement(TabPanel, {
       className: "owh-rdap-block-tabs",
@@ -986,6 +1017,33 @@ registerBlockType('owh-rdap/domain-results', {
             unavailableColor: color.hex
           }),
           disableAlpha: true
+        }))), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Estado Desabilitado', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement("p", {
+          style: {
+            marginBottom: '10px',
+            fontSize: '13px',
+            color: '#666'
+          }
+        }, __('Configurações de cor para quando uma extensão está desabilitada', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement("div", {
+          style: {
+            marginBottom: '20px'
+          }
+        }, /*#__PURE__*/React.createElement("label", {
+          style: {
+            display: 'block',
+            marginBottom: '8px',
+            fontSize: '11px',
+            fontWeight: '500',
+            textTransform: 'uppercase'
+          }
+        }, __('Cor - Extensão Desabilitada', 'owh-domain-whois-rdap')), /*#__PURE__*/React.createElement(ColorPicker, {
+          color: disabledColor,
+          onChangeComplete: color => setAttributes({
+            disabledColor: color.hex
+          }),
+          disableAlpha: true
         }))));
       }
 
@@ -1022,6 +1080,13 @@ registerBlockType('owh-rdap/domain-results', {
             unavailableIcon: value
           }),
           placeholder: "\u274C"
+        }), /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Ícone Desabilitado', 'owh-domain-whois-rdap'),
+          value: disabledIcon,
+          onChange: value => setAttributes({
+            disabledIcon: value
+          }),
+          placeholder: "\u26A0\uFE0F"
         })));
       }
 
@@ -1075,6 +1140,23 @@ registerBlockType('owh-rdap/domain-results', {
             unavailableText: value
           }),
           rows: 2
+        })), /*#__PURE__*/React.createElement(PanelBody, {
+          title: __('Extensão Desabilitada', 'owh-domain-whois-rdap'),
+          initialOpen: false
+        }, /*#__PURE__*/React.createElement(TextControl, {
+          label: __('Título do Erro', 'owh-domain-whois-rdap'),
+          value: disabledTitle,
+          onChange: value => setAttributes({
+            disabledTitle: value
+          })
+        }), /*#__PURE__*/React.createElement(TextareaControl, {
+          label: __('Texto da Mensagem', 'owh-domain-whois-rdap'),
+          value: disabledText,
+          onChange: value => setAttributes({
+            disabledText: value
+          }),
+          rows: 2,
+          help: __('Use {tld} para inserir dinamicamente a extensão desabilitada', 'owh-domain-whois-rdap')
         })));
       }
 
@@ -1200,6 +1282,9 @@ registerBlockType('owh-rdap/domain-results', {
           }, {
             label: __('Domínio Indisponível', 'owh-domain-whois-rdap'),
             value: 'unavailable'
+          }, {
+            label: __('Extensão Desabilitada', 'owh-domain-whois-rdap'),
+            value: 'disabled'
           }],
           onChange: value => setAttributes({
             previewMode: value

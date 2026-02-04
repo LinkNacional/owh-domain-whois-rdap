@@ -1,0 +1,172 @@
+/**
+ * TLDs Grid Styling
+ *
+ * @package    Owh_Domain_Whois_Rdap
+ * @since      1.0.0
+ */
+
+#tlds-grid-container {
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border: 1px solid #c3c4c7;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.04);
+}
+
+.owh-tlds-table {
+    width: 100% !important;
+    border-collapse: collapse;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+}
+
+.owh-tlds-th {
+    background-color: #f1f1f1 !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    padding: 12px !important;
+    border-bottom: 2px solid #ddd !important;
+}
+
+.owh-tlds-td {
+    padding: 12px !important;
+    border-bottom: 1px solid #eee !important;
+    vertical-align: middle !important;
+}
+
+.owh-tlds-table tbody tr:hover .owh-tlds-td {
+    background-color: #f9f9f9 !important;
+}
+
+.provider-select {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.provider-select:focus {
+    border-color: #007cba;
+    box-shadow: 0 0 0 1px #007cba;
+    outline: none;
+}
+
+.tld-enabled-checkbox {
+    transform: scale(1.2);
+    margin: 0;
+    cursor: pointer;
+}
+
+.tld-enabled-checkbox:checked {
+    accent-color: #007cba;
+}
+
+/* Grid.js search box styling */
+.gridjs-search {
+    margin-bottom: 15px !important;
+}
+
+.gridjs-search input {
+    padding: 8px 12px !important;
+    border: 1px solid #ddd !important;
+    border-radius: 4px !important;
+    font-size: 14px !important;
+    width: 300px !important;
+    max-width: 100% !important;
+}
+
+.gridjs-search input:focus {
+    border-color: #007cba !important;
+    box-shadow: 0 0 0 1px #007cba !important;
+    outline: none !important;
+}
+
+/* Grid.js pagination styling */
+.gridjs-pagination {
+    margin-top: 15px !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.gridjs-pagination button {
+    background: #007cba !important;
+    color: white !important;
+    border: none !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    margin: 0 2px !important;
+}
+
+.gridjs-pagination button:hover {
+    background: #005a87 !important;
+}
+
+.gridjs-pagination button:disabled {
+    background: #c3c4c7 !important;
+    cursor: not-allowed !important;
+}
+
+.gridjs-pagination button[aria-current="page"] {
+    background: #f0f0f1 !important;
+    color: #1d2327 !important;
+    border: 1px solid #c3c4c7 !important;
+}
+
+.gridjs-summary {
+    font-size: 13px !important;
+    color: #646970 !important;
+}
+
+/* Status messages */
+.save-status {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 500;
+    display: none;
+}
+
+.save-status.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #badbcc;
+}
+
+.save-status.error {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+}
+
+.save-status.info {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #tlds-grid-container {
+        padding: 10px;
+        margin: 10px 0;
+    }
+    
+    .owh-tlds-th,
+    .owh-tlds-td {
+        padding: 8px 6px !important;
+        font-size: 13px !important;
+    }
+    
+    .provider-select {
+        font-size: 12px;
+    }
+    
+    .gridjs-search input {
+        width: 100% !important;
+    }
+}

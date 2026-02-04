@@ -25,12 +25,15 @@ $defaults = array(
 	'available_text' => __( 'Este domínio está disponível para registro!', 'owh-domain-whois-rdap' ),
 	'unavailable_title' => __( 'Domínio Indisponível', 'owh-domain-whois-rdap' ),
 	'unavailable_text' => __( 'Este domínio já está registrado e não está disponível.', 'owh-domain-whois-rdap' ),
+	'disabled_title' => __( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ),
+	'disabled_text' => __( 'A tld "{tld}" está desabilitada.', 'owh-domain-whois-rdap' ),
 	'buy_button_text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
 	'details_button_text' => __( 'Ver detalhes completos do WHOIS', 'owh-domain-whois-rdap' ),
 	'show_icons' => true,
 	'search_icon' => '🔍',
 	'available_icon' => '✅',
-	'unavailable_icon' => '❌'
+	'unavailable_icon' => '❌',
+	'disabled_icon' => '⚠️'
 );
 
 // Merge custom attributes with defaults
@@ -104,15 +107,35 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 
 	<?php if ( $result ) : ?>
 		<?php if ( $result->hasError() ) : ?>
-			<div class="owh-rdap-result-error">
-				<?php if ( $show_icons ) : ?>
-					<div class="owh-rdap-error-icon">⚠️</div>
-				<?php endif; ?>
-				<div class="owh-rdap-error-content">
-					<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
-					<p><?php echo esc_html( $result->getError() ); ?></p>
+			<?php if ( $result->getStatus() === 'TLD_DISABLED' ) : ?>
+				<!-- Seção específica para TLD desabilitada -->
+				<div class="owh-rdap-result-error">
+					<?php if ( $show_icons ) : ?>
+						<div class="owh-rdap-error-icon"><?php echo esc_html( $disabled_icon ); ?></div>
+					<?php endif; ?>
+					<div class="owh-rdap-error-content">
+						<h4 style="color: #dc3232;"><?php echo esc_html( $disabled_title ); ?></h4>
+						<?php 
+						// Substituir {tld} pelo TLD real no texto
+						$domain_parts = explode( '.', $result->getDomain() );
+						$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+						$disabled_message = str_replace( '{tld}', $tld, $disabled_text );
+						?>
+						<p><?php echo esc_html( $disabled_message ); ?></p>
+					</div>
 				</div>
-			</div>
+			<?php else : ?>
+				<!-- Erro geral -->
+				<div class="owh-rdap-result-error">
+					<?php if ( $show_icons ) : ?>
+						<div class="owh-rdap-error-icon">⚠️</div>
+					<?php endif; ?>
+					<div class="owh-rdap-error-content">
+						<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
+						<p><?php echo esc_html( $result->getError() ); ?></p>
+					</div>
+				</div>
+			<?php endif; ?>
 		<?php elseif ( $result->isAvailable() ) : ?>
 			<div class="owh-rdap-result-available">
 				<?php if ( $show_icons ) : ?>

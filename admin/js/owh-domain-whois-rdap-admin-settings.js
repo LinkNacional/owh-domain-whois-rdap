@@ -110,29 +110,34 @@
             });
             
             
-            // Send AJAX request
-            $.ajax({
-                url: ajaxurl,
-                type: 'POST',
-                data: {
-                    action: 'save_custom_tlds',
-                    custom_tlds: customTlds,
-                    nonce: owh_rdap_admin.nonce
+            // Send REST API request
+            fetch('/wp-json/owh-rdap/v1/custom-tlds', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': owh_rdap_admin.rest_nonce
                 },
-                success: function(response) {
-                    if (response.success) {
-                        statusDiv.html('<div class="notice notice-success inline"><p>' + response.data.message + '</p></div>').show();
-                    } else {
-                        statusDiv.html('<div class="notice notice-error inline"><p>' + response.data.message + '</p></div>').show();
-                    }
-                },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.error('[OWH-RDAP] AJAX error:', textStatus, errorThrown, jqXHR.responseText);
-                    statusDiv.html('<div class="notice notice-error inline"><p>Erro ao salvar configurações. Resposta: ' + jqXHR.responseText + '</p></div>').show();
-                },
-                complete: function() {
-                    button.prop('disabled', false).text('Salvar TLDs Customizadas');
+                body: JSON.stringify({
+                    custom_tlds: customTlds
+                })
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                if (data.success) {
+                    statusDiv.html('<div class="notice notice-success inline"><p>' + data.message + '</p></div>').show();
+                } else {
+                    statusDiv.html('<div class="notice notice-error inline"><p>' + (data.message || 'Erro desconhecido') + '</p></div>').show();
                 }
+            })
+            .catch(function(error) {
+                console.error('[OWH-RDAP] REST API error:', error);
+                statusDiv.html('<div class="notice notice-error inline"><p>Erro ao salvar configurações: ' + error.message + '</p></div>').show();
+            })
+            .finally(function() {
+                button.prop('disabled', false).text('Salvar TLDs Customizadas');
             });
         });
 

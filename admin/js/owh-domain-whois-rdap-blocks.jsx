@@ -665,10 +665,23 @@ registerBlockType('owh-rdap/domain-results', {
             type: 'string',
             default: '❌'
         },
+        disabledIcon: {
+            type: 'string',
+            default: '⚠️'
+        },
+        // Textos para domínio desabilitado
+        disabledTitle: {
+            type: 'string',
+            default: 'Erro na Pesquisa'
+        },
+        disabledText: {
+            type: 'string',
+            default: 'A tld "{tld}" está desabilitada.'
+        },
         // Preview mode
         previewMode: {
             type: 'string',
-            default: 'no-result' // 'no-result', 'available', 'unavailable'
+            default: 'no-result' // 'no-result', 'available', 'unavailable', 'disabled'
         },
         // Visual customizations
         customCSS: {
@@ -704,6 +717,10 @@ registerBlockType('owh-rdap/domain-results', {
             type: 'string',
             default: '#dc3232'
         },
+        disabledColor: {
+            type: 'string',
+            default: '#dc3232'
+        },
         // Layout options
         buttonLayout: {
             type: 'string',
@@ -723,10 +740,11 @@ registerBlockType('owh-rdap/domain-results', {
         const { 
             showTitle, customTitle, noResultText, noResultDescription,
             availableTitle, availableText, unavailableTitle, unavailableText,
+            disabledTitle, disabledText,
             buyButtonText, detailsButtonText,
-            showIcons, searchIcon, availableIcon, unavailableIcon,
+            showIcons, searchIcon, availableIcon, unavailableIcon, disabledIcon,
             previewMode, customCSS, borderWidth, borderColor, borderRadius,
-            backgroundColor, padding, availableColor, unavailableColor, showWatermark, buttonLayout
+            backgroundColor, padding, availableColor, unavailableColor, disabledColor, showWatermark, buttonLayout
         } = attributes;
 
         // Preview component
@@ -837,6 +855,12 @@ registerBlockType('owh-rdap/domain-results', {
                 text = unavailableText;
                 titleColor = unavailableColor;
                 buttonBg = unavailableColor;
+            } else if (previewMode === 'disabled') {
+                icon = disabledIcon;
+                title = disabledTitle;
+                text = disabledText.replace('{tld}', 'com');
+                titleColor = disabledColor;
+                buttonBg = disabledColor;
             }
 
             return (
@@ -894,6 +918,11 @@ registerBlockType('owh-rdap/domain-results', {
                                                 <span className="dashicons dashicons-info"></span>
                                                 {detailsButtonText}
                                             </button>
+                                        </div>
+                                    )}
+                                    {previewMode === 'disabled' && (
+                                        <div style={{ marginTop: '20px' }}>
+                                            {/* Sem botão - apenas texto customizável */}
                                         </div>
                                     )}
                                 </div>
@@ -1027,6 +1056,31 @@ registerBlockType('owh-rdap/domain-results', {
                                                 />
                                             </div>
                                         </PanelBody>
+                                        
+                                        <PanelBody
+                                            title={__('Estado Desabilitado', 'owh-domain-whois-rdap')}
+                                            initialOpen={false}
+                                        >
+                                            <p style={{ marginBottom: '10px', fontSize: '13px', color: '#666' }}>
+                                                {__('Configurações de cor para quando uma extensão está desabilitada', 'owh-domain-whois-rdap')}
+                                            </p>
+                                            <div style={{ marginBottom: '20px' }}>
+                                                <label style={{ 
+                                                    display: 'block', 
+                                                    marginBottom: '8px', 
+                                                    fontSize: '11px', 
+                                                    fontWeight: '500', 
+                                                    textTransform: 'uppercase' 
+                                                }}>
+                                                    {__('Cor - Extensão Desabilitada', 'owh-domain-whois-rdap')}
+                                                </label>
+                                                <ColorPicker
+                                                    color={disabledColor}
+                                                    onChangeComplete={(color) => setAttributes({ disabledColor: color.hex })}
+                                                    disableAlpha={true}
+                                                />
+                                            </div>
+                                        </PanelBody>
                                     </div>
                                 );
                             }
@@ -1063,6 +1117,12 @@ registerBlockType('owh-rdap/domain-results', {
                                                     value={unavailableIcon}
                                                     onChange={(value) => setAttributes({ unavailableIcon: value })}
                                                     placeholder="❌"
+                                                />
+                                                <TextControl
+                                                    label={__('Ícone Desabilitado', 'owh-domain-whois-rdap')}
+                                                    value={disabledIcon}
+                                                    onChange={(value) => setAttributes({ disabledIcon: value })}
+                                                    placeholder="⚠️"
                                                 />
                                             </div>
                                         )}
@@ -1122,6 +1182,24 @@ registerBlockType('owh-rdap/domain-results', {
                                                 value={unavailableText}
                                                 onChange={(value) => setAttributes({ unavailableText: value })}
                                                 rows={2}
+                                            />
+                                        </PanelBody>
+                                        
+                                        <PanelBody
+                                            title={__('Extensão Desabilitada', 'owh-domain-whois-rdap')}
+                                            initialOpen={false}
+                                        >
+                                            <TextControl
+                                                label={__('Título do Erro', 'owh-domain-whois-rdap')}
+                                                value={disabledTitle}
+                                                onChange={(value) => setAttributes({ disabledTitle: value })}
+                                            />
+                                            <TextareaControl
+                                                label={__('Texto da Mensagem', 'owh-domain-whois-rdap')}
+                                                value={disabledText}
+                                                onChange={(value) => setAttributes({ disabledText: value })}
+                                                rows={2}
+                                                help={__('Use {tld} para inserir dinamicamente a extensão desabilitada', 'owh-domain-whois-rdap')}
                                             />
                                         </PanelBody>
                                     </div>
@@ -1243,7 +1321,8 @@ registerBlockType('owh-rdap/domain-results', {
                                             options={[
                                                 { label: __('Sem Resultado', 'owh-domain-whois-rdap'), value: 'no-result' },
                                                 { label: __('Domínio Disponível', 'owh-domain-whois-rdap'), value: 'available' },
-                                                { label: __('Domínio Indisponível', 'owh-domain-whois-rdap'), value: 'unavailable' }
+                                                { label: __('Domínio Indisponível', 'owh-domain-whois-rdap'), value: 'unavailable' },
+                                                { label: __('Extensão Desabilitada', 'owh-domain-whois-rdap'), value: 'disabled' }
                                             ]}
                                             onChange={(value) => setAttributes({ previewMode: value })}
                                             help={__('Escolha como visualizar o bloco no editor', 'owh-domain-whois-rdap')}

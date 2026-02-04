@@ -190,6 +190,7 @@
 
 .owh-rdap-result-available,
 .owh-rdap-result-unavailable,
+.owh-rdap-result-disabled,
 .owh-rdap-result-error {
     display: flex;
     align-items: flex-start;
@@ -198,6 +199,7 @@
 
 .owh-rdap-available-icon,
 .owh-rdap-unavailable-icon,
+.owh-rdap-disabled-icon,
 .owh-rdap-error-icon {
     font-size: 48px;
     line-height: 1;
@@ -206,12 +208,14 @@
 
 .owh-rdap-available-content,
 .owh-rdap-unavailable-content,
+.owh-rdap-disabled-content,
 .owh-rdap-error-content {
     flex: 1;
 }
 
 .owh-rdap-available-content h4,
 .owh-rdap-unavailable-content h4,
+.owh-rdap-disabled-content h4,
 .owh-rdap-error-content h4 {
     margin: 0 0 10px 0;
     font-size: 20px;

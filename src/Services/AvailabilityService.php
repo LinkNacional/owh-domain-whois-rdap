@@ -120,6 +120,17 @@ class AvailabilityService
             $rdapServer = 'https://rdap.org/domain/';
         }
 
+        // Check if TLD is enabled for search
+        if (!$this->isTldEnabled($tld)) {
+            return new DomainResult(
+                $domain,
+                false,
+                'TLD_DISABLED', // Status específico para TLD desabilitada
+                null,
+                sprintf('A extensão "%s" está desabilitada nas configurações do plugin', $tld)
+            );
+        }
+
         // Query RDAP server (custom or universal)
         $rdapResponse = $this->rdapClient->queryDomain($domain, $rdapServer);
         if (!$rdapResponse) {
@@ -286,5 +297,27 @@ class AvailabilityService
         
         // For standard domains or fallback, return the last part
         return end($parts);
+    }
+ 
+    /**
+     * Check if TLD is enabled for search
+     *
+     * @param string $tld
+     * @return bool
+     */
+    private function isTldEnabled(string $tld): bool
+    {
+        $tld = '.' . ltrim($tld, '.');
+        
+        // Get TLD configuration (only stores disabled TLDs)
+        $tldConfig = \get_option('owh_domain_whois_rdap_tlds_config', array());
+        
+        // If TLD is in configuration, it means it was explicitly disabled
+        if (isset($tldConfig[$tld])) {
+            return (bool) $tldConfig[$tld]['enabled']; // This should be false for disabled TLDs
+        }
+        
+        // If TLD not in configuration, it means it's enabled (default behavior)
+        return true;
     }
 }

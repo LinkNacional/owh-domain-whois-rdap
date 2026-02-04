@@ -57,7 +57,7 @@
                     subtitle = 'Configure onde os resultados da pesquisa serão exibidos.';
                     break;
                 case fieldName.includes('Tipo de Integração'):
-                    newContent = 'Sistema de Integração';
+                    newContent = 'TLDS';
                     subtitle = 'Escolha como integrar com seu sistema de vendas de domínios.';
                     break;
                 case fieldName.includes('Custom URL'):

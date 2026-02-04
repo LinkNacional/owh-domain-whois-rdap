@@ -134,9 +134,6 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_plugin_settings' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_gutenberg_blocks' );
 		
-		// AJAX handlers
-		$this->loader->add_action( 'wp_ajax_save_custom_tlds', $plugin_admin, 'ajax_save_custom_tlds' );
-		
 		// REST API endpoints
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_rest_routes' );
 	}
@@ -154,8 +151,9 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		$this->loader->add_action( 'wp_ajax_owh_check_domain', $plugin_public, 'ajax_check_domain' );
-		$this->loader->add_action( 'wp_ajax_nopriv_owh_check_domain', $plugin_public, 'ajax_check_domain' );
+		
+		// REST API endpoints
+		$this->loader->add_action( 'rest_api_init', $plugin_public, 'register_rest_routes' );
 	}
 
 	/**
