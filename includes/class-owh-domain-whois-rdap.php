@@ -136,6 +136,16 @@ class Owh_Domain_Whois_Rdap {
 		
 		// REST API endpoints
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_rest_routes' );
+
+		// Domain product type hooks
+		$this->loader->add_action( 'init', 'Owh_Domain_Product_Registration', 'register_domain_product_type' );
+		$this->loader->add_filter( 'product_type_selector', 'Owh_Domain_Product_Registration', 'add_domain_product_type' );
+		$this->loader->add_filter( 'woocommerce_product_class', 'Owh_Domain_Product_Registration', 'get_domain_product_class', 10, 2 );
+		
+		// Domain product admin hooks - Matriz de Preços 3x10
+		$this->loader->add_action( 'woocommerce_product_data_tabs', $plugin_admin, 'add_domain_pricing_tab' );
+		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'add_domain_pricing_panel' );
+		$this->loader->add_action( 'woocommerce_process_product_meta_domain', $plugin_admin, 'save_domain_pricing_matrix_fields' );
 	}
 
 	/**
@@ -154,6 +164,16 @@ class Owh_Domain_Whois_Rdap {
 		
 		// REST API endpoints
 		$this->loader->add_action( 'rest_api_init', $plugin_public, 'register_rest_routes' );
+		
+		// Domain product period selection hooks
+		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_period_selector', 18 );
+		$this->loader->add_action( 'wp_ajax_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
+		$this->loader->add_action( 'wp_ajax_nopriv_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
+		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $plugin_public, 'add_domain_cart_item_data', 10, 3 );
+		$this->loader->add_action( 'woocommerce_before_calculate_totals', $plugin_public, 'update_domain_cart_item_price' );
+		
+		// Force Add to Cart button for domain products (Block Theme compatibility)
+		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_add_to_cart_form', 30 );
 	}
 
 	/**

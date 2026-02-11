@@ -76,6 +76,20 @@ class Owh_Domain_Whois_Rdap_Public {
 			$this->version, 
 			'all' 
 		);
+
+		// Enqueue domain product periods CSS on single product page
+		if ( is_product() ) {
+			global $product;
+			if ( $product && $product->get_type() === 'domain' ) {
+				wp_enqueue_style( 
+					$this->plugin_name . '-domain-periods', 
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-product-periods.css', 
+					array( $this->plugin_name ), 
+					$this->version, 
+					'all' 
+				);
+			}
+		}
 	}
 
 	public function add_inline_styles( $custom_css ) {
@@ -97,6 +111,25 @@ class Owh_Domain_Whois_Rdap_Public {
 			$this->version, 
 			false 
 		);
+
+		// Enqueue domain product periods script on single product page
+		if ( is_product() ) {
+			global $product;
+			if ( $product && $product->get_type() === 'domain' ) {
+				wp_enqueue_script( 
+					'owh-domain-periods', 
+					plugin_dir_url( __FILE__ ) . 'js/owh-domain-product-periods.js', 
+					array( 'jquery' ), 
+					$this->version, 
+					true 
+				);
+				
+				wp_localize_script( 'owh-domain-periods', 'owh_domain_ajax', array(
+					'ajax_url' => admin_url( 'admin-ajax.php' ),
+					'nonce' => wp_create_nonce( 'owh_domain_ajax' )
+				) );
+			}
+		}
 
 		// Localize script with plugin settings
 		$results_page_id = get_option( 'owh_domain_whois_rdap_results_page', '' );
@@ -543,5 +576,178 @@ class Owh_Domain_Whois_Rdap_Public {
 		} catch ( Exception $e ) {
 			return new \WP_Error( 'check_error', __( 'Erro ao verificar domínio: ', 'owh-domain-whois-rdap' ) . $e->getMessage(), array( 'status' => 500 ) );
 		}
+	}
+
+	/**
+	 * Render domain period selector on single product page
+	 * 
+	 * @since 1.0.0
+	 */
+	public function render_domain_period_selector() {
+		global $product;
+		
+		// Only show for domain products
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			return;
+		}
+		
+		// Check if product has available periods (single or multiple)
+		if ( ! method_exists( $product, 'get_available_periods' ) ) {
+			return;
+		}
+		
+		$available_periods = $product->get_available_periods();
+		if ( empty( $available_periods ) ) {
+			return;
+		}
+		
+		// Include the template
+		include plugin_dir_path( __FILE__ ) . 'partials/owh-domain-product-periods.php';
+	}
+
+	/**
+	 * AJAX handler for getting domain price for specific period
+	 * 
+	 * @since 1.0.0
+	 */
+	public function ajax_get_domain_price_for_period() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'owh_domain_ajax' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$product_id = intval( $_POST['product_id'] );
+		$period = intval( $_POST['period'] );
+
+		if ( ! $product_id || ! $period ) {
+			wp_send_json_error( 'Invalid parameters' );
+		}
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			wp_send_json_error( 'Invalid product' );
+		}
+
+		$price = $product->get_price_for_period( $period, 'register' );
+
+		if ( $price === null ) {
+			wp_send_json_error( 'Price not available for this period' );
+		}
+
+		wp_send_json_success( array(
+			'price' => $price,
+			'price_html' => wc_price( $price ),
+			'period' => $period
+		) );
+	}
+
+	/**
+	 * Add domain-specific data to cart item
+	 * 
+	 * @since 1.0.0
+	 * @param array $cart_item_data Cart item data
+	 * @param int $product_id Product ID
+	 * @param int $variation_id Variation ID
+	 * @return array Modified cart item data
+	 */
+	public function add_domain_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
+		$product = wc_get_product( $product_id );
+		
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			return $cart_item_data;
+		}
+
+		// Get domain period from form
+		if ( isset( $_POST['domain_period'] ) ) {
+			$period = intval( $_POST['domain_period'] );
+			
+			if ( $period >= 1 && $period <= 10 ) {
+				$cart_item_data['domain_period'] = $period;
+				
+				// Get the price for this period
+				$price = $product->get_price_for_period( $period, 'register' );
+				if ( $price !== null ) {
+					$cart_item_data['domain_price'] = $price;
+				}
+			}
+		}
+
+		// Get domain name if provided
+		if ( isset( $_POST['domain_name'] ) && ! empty( $_POST['domain_name'] ) ) {
+			$cart_item_data['domain_name'] = sanitize_text_field( $_POST['domain_name'] );
+		}
+
+		// Get domain action (register/renew/transfer)
+		if ( isset( $_POST['domain_action'] ) ) {
+			$cart_item_data['domain_action'] = sanitize_text_field( $_POST['domain_action'] );
+		}
+
+		return $cart_item_data;
+	}
+
+	/**
+	 * Update cart item price based on selected period
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Cart $cart Cart object
+	 */
+	public function update_domain_cart_item_price( $cart ) {
+		if ( is_admin() && ! defined( 'DOING_AJAX' ) ) {
+			return;
+		}
+
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+			$product = $cart_item['data'];
+			
+			if ( $product->get_type() !== 'domain' ) {
+				continue;
+			}
+
+			// Check if we have domain-specific pricing
+			if ( isset( $cart_item['domain_price'] ) && $cart_item['domain_price'] > 0 ) {
+				$product->set_price( $cart_item['domain_price'] );
+			}
+		}
+	}
+
+	/**
+	 * Render Add to Cart form for domain products
+	 * Ensures compatibility with Block Themes
+	 * 
+	 * @since 1.0.0
+	 */
+	public function render_domain_add_to_cart_form() {
+		global $product;
+		
+		// Only show for domain products
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			return;
+		}
+		
+		// Don't show if not purchasable
+		if ( ! method_exists( $product, 'is_purchasable' ) || ! $product->is_purchasable() ) {
+			return;
+		}
+		
+		// Render Add to Cart form
+		echo '<div class="domain-add-to-cart-section">';
+		
+		echo '<form class="cart" method="post" enctype="multipart/form-data">';
+		echo '<input type="hidden" name="add-to-cart" value="' . $product->get_id() . '" />';
+		echo '<input type="hidden" name="quantity" value="1" />';
+		
+		// Add custom domain fields if they exist in the session/form
+		if ( isset( $_POST['domain_period'] ) ) {
+			echo '<input type="hidden" name="domain_period" value="' . intval( $_POST['domain_period'] ) . '" />';
+		}
+		
+		echo '<button type="submit" name="add-to-cart" value="' . $product->get_id() . '" class="single_add_to_cart_button button alt wp-element-button">';
+		echo 'Adicionar ao carrinho';
+		echo '</button>';
+		
+		echo '</form>';
+		echo '</div>';
 	}
 }

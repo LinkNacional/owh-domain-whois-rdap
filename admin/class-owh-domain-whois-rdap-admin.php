@@ -78,32 +78,57 @@ class Owh_Domain_Whois_Rdap_Admin {
 
 		// Carregar CSS específico das configurações na página de configurações do plugin
 		global $pagenow;
-		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-rdap' ) {
-			wp_enqueue_style( 
-				$this->plugin_name . '-settings', 
-				plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin-settings.css', 
-				array( $this->plugin_name ), // Dependente do CSS principal
-				$this->version, 
-				'all' 
-			);
-			
-			// Grid.js CSS
-			wp_enqueue_style(
-				'gridjs-theme',
-				plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/theme/mermaid.min.css',
-				array(),
-				$this->version,
-				'all'
-			);
-			
-			// TLDs Grid CSS
-			wp_enqueue_style(
-				$this->plugin_name . '-tlds-grid',
-				plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-tlds-grid.css',
-				array(),
-				$this->version,
-				'all'
-			);
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) ) {
+			$page = sanitize_text_field( wp_unslash( $_GET['page'] ) );
+			if ( $page === 'owh-rdap' ) {
+				wp_enqueue_style( 
+					$this->plugin_name . '-settings', 
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin-settings.css', 
+					array( $this->plugin_name ), // Dependente do CSS principal
+					$this->version, 
+					'all' 
+				);
+				
+				// Grid.js CSS
+				wp_enqueue_style(
+					'gridjs-theme',
+					plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/theme/mermaid.min.css',
+					array(),
+					$this->version,
+					'all'
+				);
+				
+				// TLDs Grid CSS
+				wp_enqueue_style(
+					$this->plugin_name . '-tlds-grid',
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-tlds-grid.css',
+					array(),
+					$this->version,
+					'all'
+				);
+			}
+		}
+
+		// Domain Product Admin CSS - for product edit pages
+		if ( $pagenow === 'post.php' || $pagenow === 'post-new.php' ) {
+			global $post_type;
+			if ( $post_type === 'product' ) {
+				wp_enqueue_style(
+					$this->plugin_name . '-domain-product-admin',
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-product-admin.css',
+					array(),
+					$this->version,
+					'all'
+				);
+				
+				wp_enqueue_style(
+					$this->plugin_name . '-pricing-matrix',
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-pricing-matrix.css',
+					array(),
+					$this->version,
+					'all'
+				);
+			}
 		}
 
 	}
@@ -117,6 +142,30 @@ class Owh_Domain_Whois_Rdap_Admin {
 
 		wp_enqueue_script( 'wp-api' );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-admin.js', array( 'jquery', 'wp-api' ), $this->version, false );
+		
+		// Domain Pricing Matrix JS - for product edit pages
+		global $pagenow;
+		if ( $pagenow === 'post.php' || $pagenow === 'post-new.php' ) {
+			global $post_type;
+			if ( $post_type === 'product' ) {
+				wp_enqueue_script(
+					$this->plugin_name . '-pricing-matrix',
+					plugin_dir_url( __FILE__ ) . 'js/owh-domain-pricing-matrix.js',
+					array( 'jquery' ),
+					$this->version,
+					true
+				);
+				
+				// Domain product type handler
+				wp_enqueue_script(
+					$this->plugin_name . '-product-type',
+					plugin_dir_url( __FILE__ ) . 'js/owh-domain-product-type.js',
+					array( 'jquery' ),
+					$this->version,
+					true
+				);
+			}
+		}
 		
 		// Localize script for admin strings and API settings
 		wp_localize_script( $this->plugin_name, 'owh_rdap_admin', array(
@@ -1276,5 +1325,635 @@ class Owh_Domain_Whois_Rdap_Admin {
 		} catch ( Exception $e ) {
 			return new \WP_Error( 'save_error', 'Erro ao salvar configurações: ' . $e->getMessage(), array( 'status' => 500 ) );
 		}
+	}
+
+	/**
+	 * Add domain pricing tab to product data tabs
+	 * 
+	 * @since 1.0.0
+	 * @param array $tabs Existing tabs
+	 * @return array Modified tabs
+	 */
+	public function add_domain_pricing_tab( $tabs ) {
+		// Aba 1: Configuração de Domínio
+		$tabs['domain_config'] = array(
+			'label'    => __( 'Configuração de Domínio', 'owh-domain-whois-rdap' ),
+			'target'   => 'domain_config_options',
+			'class'    => array( 'show_if_domain' ),
+			'priority' => 80
+		);
+		
+		// Aba 2: Valores do Domínio 
+		$tabs['domain_pricing'] = array(
+			'label'    => __( 'Valores do Domínio', 'owh-domain-whois-rdap' ),
+			'target'   => 'domain_pricing_options', 
+			'class'    => array( 'show_if_domain' ),
+			'priority' => 81
+		);
+		
+		// Aba 3: Documentos
+		$tabs['domain_documents'] = array(
+			'label'    => __( 'Documentos', 'owh-domain-whois-rdap' ),
+			'target'   => 'domain_documents_options',
+			'class'    => array( 'show_if_domain' ),
+			'priority' => 82
+		);
+		
+		return $tabs;
+	}
+
+	/**
+	 * Add domain pricing panel to product data panels
+	 * 
+	 * @since 1.0.0
+	 */
+	public function add_domain_pricing_panel() {
+		// Aba 1: Configuração de Domínio
+		$this->render_domain_config_panel();
+		
+		// Aba 2: Valores do Domínio
+		$this->render_domain_pricing_panel();
+		
+		// Aba 3: Documentos
+		$this->render_domain_documents_panel();
+	}
+
+	/**
+	 * Render Domain Configuration Panel (TLD e Registradora)
+	 * 
+	 * @since 1.0.0
+	 */
+	private function render_domain_config_panel() {
+		global $post;
+		?>
+		<div id="domain_config_options" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<h3><?php esc_html_e( 'Configuração do Domínio', 'owh-domain-whois-rdap' ); ?></h3>
+				<p><?php esc_html_e( 'Configure as informações básicas do tipo de domínio.', 'owh-domain-whois-rdap' ); ?></p>
+				
+				<?php
+				// Get available TLDs from dns.json
+				$tld_options = $this->get_available_tlds();
+				
+				// TLD Field - Select dropdown
+				woocommerce_wp_select( array(
+					'id'            => '_domain_tld',
+					'label'         => __( 'TLD (Extensão)', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Selecione a extensão de domínio disponível.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_tld', true ),
+					'options'       => $tld_options
+				) );
+
+				// Registradora Field
+				woocommerce_wp_select( array(
+					'id'            => '_domain_registrar',
+					'label'         => __( 'Registradora', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Selecione a registradora responsável por este tipo de domínio.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_registrar', true ),
+					'options'       => array(
+						''                => __( 'Selecione...', 'owh-domain-whois-rdap' ),
+						'manual'     => 'Manual',
+					)
+				) );
+
+				// Custom Registrar Field (appears when "Outros" is selected)
+				woocommerce_wp_text_input( array(
+					'id'            => '_domain_registrar_custom',
+					'label'         => __( 'Registradora Personalizada', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Digite o nome da registradora (apenas quando "Outros" for selecionado).', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_registrar_custom', true )
+				) );
+				?>
+				
+				<script>
+				jQuery(document).ready(function($) {
+					function toggleCustomRegistrar() {
+						if ($('#_domain_registrar').val() === 'outros') {
+							$('#_domain_registrar_custom').closest('p').show();
+						} else {
+							$('#_domain_registrar_custom').closest('p').hide();
+						}
+					}
+					
+					$('#_domain_registrar').on('change', toggleCustomRegistrar);
+					toggleCustomRegistrar(); // Initial check
+				});
+				</script>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render Domain Pricing Panel (Tabela de Valores)
+	 * 
+	 * @since 1.0.0
+	 */
+	private function render_domain_pricing_panel() {
+		global $post;
+		?>
+		<div id="domain_pricing_options" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<h3><?php esc_html_e( 'Valores do Domínio - Matriz 3x10', 'owh-domain-whois-rdap' ); ?></h3>
+				<p><?php esc_html_e( 'Configure os preços para registro, renovação e transferência por período de 1 a 10 anos.', 'owh-domain-whois-rdap' ); ?></p>
+
+				<?php $this->render_pricing_matrix_table(); ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render Domain Documents Panel (Opção de documentos obrigatórios)
+	 * 
+	 * @since 1.0.0
+	 */
+	private function render_domain_documents_panel() {
+		global $post;
+		?>
+		<div id="domain_documents_options" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<h3><?php esc_html_e( 'Documentos Obrigatórios', 'owh-domain-whois-rdap' ); ?></h3>
+				<p><?php esc_html_e( 'Configure quais documentos são obrigatórios para este tipo de domínio.', 'owh-domain-whois-rdap' ); ?></p>
+				
+				<?php
+				// Require CPF/CNPJ checkbox
+				woocommerce_wp_checkbox( array(
+					'id'            => '_domain_require_tax_id',
+					'label'         => __( 'Exigir CPF/CNPJ', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Marque esta opção se este tipo de domínio exigir documento (CPF/CNPJ) do titular.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_require_tax_id', true )
+				) );
+
+				// Require RG checkbox
+				woocommerce_wp_checkbox( array(
+					'id'            => '_domain_require_rg',
+					'label'         => __( 'Exigir RG', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Marque esta opção se este tipo de domínio exigir RG do titular.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_require_rg', true )
+				) );
+
+				// Require Birth Certificate checkbox
+				woocommerce_wp_checkbox( array(
+					'id'            => '_domain_require_birth_certificate',
+					'label'         => __( 'Exigir Certidão de Nascimento', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Marque esta opção se este tipo de domínio exigir certidão de nascimento.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_require_birth_certificate', true )
+				) );
+
+				// Require Company Registration checkbox
+				woocommerce_wp_checkbox( array(
+					'id'            => '_domain_require_company_registration',
+					'label'         => __( 'Exigir Contrato Social/CNPJ', 'owh-domain-whois-rdap' ),
+					'description'   => __( 'Marque esta opção se este tipo de domínio exigir contrato social ou comprovante de CNPJ.', 'owh-domain-whois-rdap' ),
+					'desc_tip'      => true,
+					'value'         => get_post_meta( $post->ID, '_domain_require_company_registration', true )
+				) );
+				?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render pricing matrix table for domain products
+	 * Matriz de Preços 3x10 (3 Actions x 10 Years)
+	 * 
+	 * @since 1.0.0
+	 */
+	private function render_pricing_matrix_table() {
+		global $post;
+		
+		echo '<h3>' . __( 'Configuração de Preços - Matriz 3x10', 'owh-domain-whois-rdap' ) . '</h3>';
+		echo '<p>' . __( 'Configure os preços para registro, renovação e transferência por período de 1 a 10 anos.', 'owh-domain-whois-rdap' ) . '</p>';
+
+		// Get current pricing matrix
+		$pricing_matrix = get_post_meta( $post->ID, '_domain_pricing_matrix', true );
+		if ( ! $pricing_matrix ) {
+			$pricing_matrix = array();
+		}
+
+		// Actions
+		$actions = array(
+			'register' => __( 'Registro', 'owh-domain-whois-rdap' ),
+			'renew'    => __( 'Renovação', 'owh-domain-whois-rdap' ),
+			'transfer' => __( 'Transferência', 'owh-domain-whois-rdap' )
+		);
+
+		echo '<table class="domain-pricing-matrix-table" style="width: 100%; border-collapse: collapse;">';
+		echo '<thead>';
+		echo '<tr>';
+		echo '<th style="border: 1px solid #ddd; padding: 8px;">' . __( 'Ação / Anos', 'owh-domain-whois-rdap' ) . '</th>';
+		
+		// Header with years 1-10
+		for ( $year = 1; $year <= 10; $year++ ) {
+			echo '<th style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . sprintf( __( '%d ano(s)', 'owh-domain-whois-rdap' ), $year ) . '</th>';
+		}
+		echo '</tr>';
+		echo '</thead>';
+		echo '<tbody>';
+
+		// Rows for each action
+		foreach ( $actions as $action_key => $action_label ) {
+			echo '<tr>';
+			echo '<td style="border: 1px solid #ddd; padding: 8px; font-weight: bold; background-color: #f9f9f9;">' . esc_html( $action_label ) . '</td>';
+			
+			// Columns for each year (1-10)
+			for ( $year = 1; $year <= 10; $year++ ) {
+				$field_name = "_domain_pricing_matrix[{$year}][{$action_key}]";
+				$current_value = isset( $pricing_matrix[ $year ][ $action_key ] ) ? $pricing_matrix[ $year ][ $action_key ] : '';
+				
+				echo '<td style="border: 1px solid #ddd; padding: 4px;">';
+				echo '<input type="text" name="' . esc_attr( $field_name ) . '" ';
+				echo 'value="' . esc_attr( $current_value ) . '" ';
+				echo 'placeholder="0.00" ';
+				echo 'style="width: 100%; text-align: center;" ';
+				echo 'pattern="[0-9]+(\.[0-9]{1,2})?" ';
+				echo 'title="' . __( 'Digite o preço no formato: 00.00', 'owh-domain-whois-rdap' ) . '" />';
+				echo '</td>';
+			}
+			echo '</tr>';
+		}
+
+		echo '</tbody>';
+		echo '</table>';
+	}
+
+	/**
+	 * Save domain pricing matrix fields
+	 * Hook: woocommerce_process_product_meta_domain
+	 * 
+	 * @since 1.0.0
+	 * @param int $post_id Product ID
+	 */
+	public function save_domain_pricing_matrix_fields( $post_id ) {
+		// Security check
+		if ( ! current_user_can( 'edit_post', $post_id ) ) {
+			return;
+		}
+
+		// === ABA 1: CONFIGURAÇÃO DE DOMÍNIO ===
+		
+		// Save TLD
+		if ( isset( $_POST['_domain_tld'] ) ) {
+			$tld = sanitize_text_field( $_POST['_domain_tld'] );
+			update_post_meta( $post_id, '_domain_tld', $tld );
+		}
+
+		// Save Registrar
+		if ( isset( $_POST['_domain_registrar'] ) ) {
+			$registrar = sanitize_text_field( $_POST['_domain_registrar'] );
+			update_post_meta( $post_id, '_domain_registrar', $registrar );
+		}
+
+		// Save Custom Registrar
+		if ( isset( $_POST['_domain_registrar_custom'] ) ) {
+			$registrar_custom = sanitize_text_field( $_POST['_domain_registrar_custom'] );
+			update_post_meta( $post_id, '_domain_registrar_custom', $registrar_custom );
+		}
+
+		// === ABA 2: VALORES DO DOMÍNIO ===
+		
+		// Save pricing matrix
+		if ( isset( $_POST['_domain_pricing_matrix'] ) ) {
+			$pricing_matrix = array();
+			
+			// Sanitize and validate pricing data
+			foreach ( $_POST['_domain_pricing_matrix'] as $year => $actions ) {
+				$year = intval( $year );
+				if ( $year >= 1 && $year <= 10 ) {
+					foreach ( $actions as $action => $price ) {
+						if ( in_array( $action, array( 'register', 'renew', 'transfer' ) ) ) {
+							$price = sanitize_text_field( $price );
+							// Validate price format
+							if ( $price !== '' && is_numeric( $price ) && floatval( $price ) >= 0 ) {
+								$pricing_matrix[ $year ][ $action ] = number_format( floatval( $price ), 2, '.', '' );
+							}
+						}
+					}
+				}
+			}
+			
+			update_post_meta( $post_id, '_domain_pricing_matrix', $pricing_matrix );
+		}
+
+		// === ABA 3: DOCUMENTOS OBRIGATÓRIOS ===
+		
+		// Save Tax ID requirement
+		$require_tax_id = isset( $_POST['_domain_require_tax_id'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_domain_require_tax_id', $require_tax_id );
+
+		// Save RG requirement
+		$require_rg = isset( $_POST['_domain_require_rg'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_domain_require_rg', $require_rg );
+
+		// Save Birth Certificate requirement
+		$require_birth_certificate = isset( $_POST['_domain_require_birth_certificate'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_domain_require_birth_certificate', $require_birth_certificate );
+
+		// Save Company Registration requirement
+		$require_company_registration = isset( $_POST['_domain_require_company_registration'] ) ? 'yes' : 'no';
+		update_post_meta( $post_id, '_domain_require_company_registration', $require_company_registration );
+
+		// === AUTOMAÇÃO E COMPATIBILIDADE ===
+
+		// AUTOMAÇÃO LKN INVOICE PAYMENT
+		// Força este produto a ser uma assinatura anual recorrente
+		update_post_meta( $post_id, '_lkn-wcip-subscription-product', 'yes' ); 
+		update_post_meta( $post_id, 'lkn_wcip_subscription_interval_number', '1' );
+		update_post_meta( $post_id, 'lkn_wcip_subscription_interval_type', 'year' );
+		update_post_meta( $post_id, 'lkn_wcip_subscription_limit', '0' ); // 0 = Infinito
+
+		// Set base price from 1 year register price (for display purposes)
+		if ( isset( $pricing_matrix[1]['register'] ) && ! empty( $pricing_matrix[1]['register'] ) ) {
+			update_post_meta( $post_id, '_regular_price', $pricing_matrix[1]['register'] );
+			update_post_meta( $post_id, '_price', $pricing_matrix[1]['register'] );
+		}
+	}
+
+	/**
+	 * Domain Configuration Tab Content
+	 */
+	public function domain_config_tab_content() {
+		global $post;
+		
+		$tld = get_post_meta( $post->ID, '_domain_tld', true );
+		$registrar = get_post_meta( $post->ID, '_domain_registrar', true );
+		
+		// Get available TLDs from DNS data
+		$dns_file = plugin_dir_path( dirname( __FILE__ ) ) . 'data/dns.json';
+		$tlds = array();
+		
+		if ( file_exists( $dns_file ) ) {
+			$dns_data = json_decode( file_get_contents( $dns_file ), true );
+			if ( isset( $dns_data['services'] ) ) {
+				foreach ( $dns_data['services'] as $service ) {
+					if ( isset( $service[0] ) && is_array( $service[0] ) ) {
+						foreach ( $service[0] as $tld_entry ) {
+							if ( is_string( $tld_entry ) ) {
+								$tlds[] = $tld_entry;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		// Remove duplicates and sort
+		$tlds = array_unique( $tlds );
+		sort( $tlds );
+		
+		?>
+		<div id="domain_config_product_data" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<p class="form-field">
+					<label for="domain_tld"><?php esc_html_e( 'TLD (Extensão)', 'owh-domain-whois-rdap' ); ?></label>
+					<select name="domain_tld" id="domain_tld" class="select short">
+						<option value=""><?php esc_html_e( 'Selecione uma extensão', 'owh-domain-whois-rdap' ); ?></option>
+						<?php foreach ( $tlds as $tld_option ) : ?>
+							<option value="<?php echo esc_attr( $tld_option ); ?>" <?php selected( $tld, $tld_option ); ?>>
+								.<?php echo esc_html( ltrim( $tld_option, '.' ) ); ?>
+							</option>
+						<?php endforeach; ?>
+					</select>
+					<span class="description"><?php esc_html_e( 'Selecione a extensão de domínio (TLD) para este produto.', 'owh-domain-whois-rdap' ); ?></span>
+				</p>
+
+				<p class="form-field">
+					<label for="domain_registrar"><?php esc_html_e( 'Registradora', 'owh-domain-whois-rdap' ); ?></label>
+					<select name="domain_registrar" id="domain_registrar" class="select short">
+						<option value="manual" <?php selected( $registrar, 'manual' ); ?>>
+							<?php esc_html_e( 'Manual', 'owh-domain-whois-rdap' ); ?>
+						</option>
+					</select>
+					<span class="description"><?php esc_html_e( 'Por enquanto apenas registro manual está disponível.', 'owh-domain-whois-rdap' ); ?></span>
+				</p>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Domain Pricing Tab Content
+	 */
+	public function domain_pricing_tab_content() {
+		global $post;
+		
+		$pricing_matrix = get_post_meta( $post->ID, '_domain_pricing_matrix', true );
+		if ( ! is_array( $pricing_matrix ) ) {
+			$pricing_matrix = array();
+		}
+		
+		?>
+		<div id="domain_pricing_product_data" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<h3><?php esc_html_e( 'Tabela de Preços por Período', 'owh-domain-whois-rdap' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'Configure os preços para registro, renovação e transferência por período (anos).', 'owh-domain-whois-rdap' ); ?></p>
+				
+				<table class="widefat domain-pricing-table">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Período', 'owh-domain-whois-rdap' ); ?></th>
+							<th><?php esc_html_e( 'Registro (R$)', 'owh-domain-whois-rdap' ); ?></th>
+							<th><?php esc_html_e( 'Renovação (R$)', 'owh-domain-whois-rdap' ); ?></th>
+							<th><?php esc_html_e( 'Transferência (R$)', 'owh-domain-whois-rdap' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php for ( $i = 1; $i <= 10; $i++ ) : ?>
+							<tr>
+								<td><strong><?php echo $i; ?> <?php echo $i === 1 ? 'ano' : 'anos'; ?></strong></td>
+								<td>
+									<input type="number" 
+										   name="domain_pricing[<?php echo $i; ?>][register]" 
+										   value="<?php echo esc_attr( $pricing_matrix[$i]['register'] ?? '' ); ?>"
+										   step="0.01" 
+										   min="0" 
+										   class="small-text" />
+								</td>
+								<td>
+									<input type="number" 
+										   name="domain_pricing[<?php echo $i; ?>][renew]" 
+										   value="<?php echo esc_attr( $pricing_matrix[$i]['renew'] ?? '' ); ?>"
+										   step="0.01" 
+										   min="0" 
+										   class="small-text" />
+								</td>
+								<td>
+									<input type="number" 
+										   name="domain_pricing[<?php echo $i; ?>][transfer]" 
+										   value="<?php echo esc_attr( $pricing_matrix[$i]['transfer'] ?? '' ); ?>"
+										   step="0.01" 
+										   min="0" 
+										   class="small-text" />
+								</td>
+							</tr>
+						<?php endfor; ?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Domain Documents Tab Content
+	 */
+	public function domain_documents_tab_content() {
+		global $post;
+		
+		$required_documents = get_post_meta( $post->ID, '_domain_required_documents', true );
+		if ( ! is_array( $required_documents ) ) {
+			$required_documents = array();
+		}
+		
+		?>
+		<div id="domain_documents_product_data" class="panel woocommerce_options_panel">
+			<div class="options_group">
+				<h3><?php esc_html_e( 'Documentos Obrigatórios', 'owh-domain-whois-rdap' ); ?></h3>
+				<p class="description"><?php esc_html_e( 'Configure quais documentos são obrigatórios para este tipo de domínio.', 'owh-domain-whois-rdap' ); ?></p>
+				
+				<div class="domain-documents-list">
+					<?php
+					$available_documents = array(
+						'cpf' => 'CPF',
+						'cnpj' => 'CNPJ',
+						'rg' => 'RG',
+						'passport' => 'Passaporte',
+						'company_registration' => 'Registro da Empresa',
+						'trademark' => 'Marca Registrada',
+						'authorization' => 'Autorização Legal',
+						'identity_proof' => 'Comprovante de Identidade',
+						'address_proof' => 'Comprovante de Endereço'
+					);
+					
+					foreach ( $available_documents as $doc_key => $doc_label ) :
+					?>
+						<p class="form-field">
+							<label>
+								<input type="checkbox" 
+									   name="domain_required_documents[]" 
+									   value="<?php echo esc_attr( $doc_key ); ?>"
+									   <?php checked( in_array( $doc_key, $required_documents ) ); ?> />
+								<?php echo esc_html( $doc_label ); ?>
+							</label>
+						</p>
+					<?php endforeach; ?>
+				</div>
+				
+				<p class="form-field">
+					<label for="domain_documents_note"><?php esc_html_e( 'Observações sobre Documentos', 'owh-domain-whois-rdap' ); ?></label>
+					<textarea name="domain_documents_note" 
+							  id="domain_documents_note" 
+							  rows="3" 
+							  class="large-text"
+							  placeholder="<?php esc_attr_e( 'Instruções adicionais sobre os documentos necessários...', 'owh-domain-whois-rdap' ); ?>"><?php echo esc_textarea( get_post_meta( $post->ID, '_domain_documents_note', true ) ); ?></textarea>
+					<span class="description"><?php esc_html_e( 'Instruções adicionais que serão mostradas ao cliente sobre os documentos.', 'owh-domain-whois-rdap' ); ?></span>
+				</p>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Save domain product custom fields
+	 */
+	public function save_domain_product_fields( $post_id ) {
+		$product = wc_get_product( $post_id );
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			return;
+		}
+
+		// Save domain configuration
+		if ( isset( $_POST['domain_tld'] ) ) {
+			update_post_meta( $post_id, '_domain_tld', sanitize_text_field( $_POST['domain_tld'] ) );
+		}
+		
+		if ( isset( $_POST['domain_registrar'] ) ) {
+			update_post_meta( $post_id, '_domain_registrar', sanitize_text_field( $_POST['domain_registrar'] ) );
+		}
+
+		// Save pricing matrix
+		if ( isset( $_POST['domain_pricing'] ) && is_array( $_POST['domain_pricing'] ) ) {
+			$pricing_matrix = array();
+			foreach ( $_POST['domain_pricing'] as $period => $prices ) {
+				$period = intval( $period );
+				if ( $period >= 1 && $period <= 10 ) {
+					$pricing_matrix[$period] = array(
+						'register' => floatval( $prices['register'] ?? 0 ),
+						'renew' => floatval( $prices['renew'] ?? 0 ),
+						'transfer' => floatval( $prices['transfer'] ?? 0 )
+					);
+				}
+			}
+			update_post_meta( $post_id, '_domain_pricing_matrix', $pricing_matrix );
+		}
+
+		// Save required documents
+		$required_documents = array();
+		if ( isset( $_POST['domain_required_documents'] ) && is_array( $_POST['domain_required_documents'] ) ) {
+			foreach ( $_POST['domain_required_documents'] as $doc ) {
+				$required_documents[] = sanitize_text_field( $doc );
+			}
+		}
+		update_post_meta( $post_id, '_domain_required_documents', $required_documents );
+		
+		if ( isset( $_POST['domain_documents_note'] ) ) {
+			update_post_meta( $post_id, '_domain_documents_note', sanitize_textarea_field( $_POST['domain_documents_note'] ) );
+		}
+	}
+
+	/**
+	 * Get available TLDs from dns.json file
+	 * 
+	 * @since 1.0.0
+	 * @return array Array of TLD options for select field
+	 */
+	private function get_available_tlds() {
+		$tld_options = array( '' => __( 'Selecione uma extensão...', 'owh-domain-whois-rdap' ) );
+		
+		// Path to dns.json file
+		$dns_file = plugin_dir_path( dirname( __FILE__ ) ) . 'data/dns.json';
+		
+		if ( ! file_exists( $dns_file ) ) {
+			return $tld_options;
+		}
+		
+		// Read and decode JSON
+		$dns_content = file_get_contents( $dns_file );
+		$dns_data = json_decode( $dns_content, true );
+		
+		if ( ! $dns_data || ! isset( $dns_data['services'] ) ) {
+			return $tld_options;
+		}
+		
+		$tlds = array();
+		
+		// Extract TLDs from services array
+		foreach ( $dns_data['services'] as $service ) {
+			if ( isset( $service[0] ) && is_array( $service[0] ) ) {
+				foreach ( $service[0] as $tld ) {
+					if ( is_string( $tld ) && ! empty( $tld ) ) {
+						// Ensure TLD has leading dot
+						$formatted_tld = ( strpos( $tld, '.' ) === 0 ) ? $tld : '.' . $tld;
+						$tlds[ $formatted_tld ] = $formatted_tld;
+					}
+				}
+			}
+		}
+		
+		// Sort TLDs alphabetically
+		ksort( $tlds );
+		
+		// Merge with default option
+		$tld_options = array_merge( $tld_options, $tlds );
+		
+		return $tld_options;
 	}
 }

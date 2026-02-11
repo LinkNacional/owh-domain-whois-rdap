@@ -1,0 +1,165 @@
+/**
+ * Domain Pricing Matrix Styles
+ * 
+ * @package    Owh_Domain_Whois_Rdap
+ * @subpackage Owh_Domain_Whois_Rdap/admin/css
+ */
+
+.domain_pricing_matrix {
+    background: #f9f9f9;
+    border: 1px solid #e1e1e1;
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 4px;
+}
+
+.domain_pricing_matrix h3 {
+    margin-top: 0;
+    color: #2271b1;
+    border-bottom: 2px solid #2271b1;
+    padding-bottom: 10px;
+}
+
+.domain-pricing-matrix-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 15px 0;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.domain-pricing-matrix-table th {
+    border: 1px solid #ddd;
+    padding: 12px 8px;
+    text-align: center;
+    background-color: #2271b1;
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.domain-pricing-matrix-table td {
+    border: 1px solid #ddd;
+    padding: 4px;
+}
+
+.domain-pricing-matrix-table tbody tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+.domain-pricing-matrix-table tbody tr:hover {
+    background-color: #f0f8ff;
+}
+
+.domain-pricing-matrix-table td:first-child {
+    font-weight: bold;
+    background-color: #f9f9f9 !important;
+    padding: 12px 8px;
+}
+
+.domain-pricing-matrix-table input[type="text"] {
+    width: 100%;
+    text-align: center;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    padding: 8px 4px;
+    font-size: 13px;
+    transition: border-color 0.2s ease;
+}
+
+.domain-pricing-matrix-table input[type="text"]:focus {
+    border-color: #2271b1;
+    outline: none;
+    box-shadow: 0 0 5px rgba(34, 113, 177, 0.3);
+}
+
+.domain-pricing-matrix-table input[type="text"]:invalid {
+    border-color: #dc3232;
+}
+
+/* Additional configuration section */
+.domain_pricing_matrix .form-field {
+    margin-bottom: 15px;
+}
+
+.domain_pricing_matrix .form-field label {
+    font-weight: 600;
+    color: #333;
+}
+
+.domain_pricing_matrix .description {
+    font-style: italic;
+    color: #666;
+    margin-top: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .domain-pricing-matrix-table {
+        font-size: 12px;
+    }
+    
+    .domain-pricing-matrix-table th,
+    .domain-pricing-matrix-table td:first-child {
+        padding: 8px 6px;
+    }
+    
+    .domain-pricing-matrix-table input[type="text"] {
+        padding: 6px 3px;
+        font-size: 12px;
+    }
+}
+
+/* Success/error indicators */
+.domain-pricing-matrix-table .price-valid {
+    border-color: #46b450;
+    background-color: #f7fcf0;
+}
+
+.domain-pricing-matrix-table .price-invalid {
+    border-color: #dc3232;
+    background-color: #fef7f1;
+}
+
+/* Loading state */
+.domain_pricing_matrix.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.domain_pricing_matrix.loading::after {
+    content: "Carregando...";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255, 255, 255, 0.9);
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+/* Ensure domain panel is properly styled */
+#domain_product_options {
+    padding: 20px;
+}
+
+#domain_product_options .options_group {
+    border: 1px solid #e1e1e1;
+    padding: 20px;
+    margin-bottom: 20px;
+    background: #f9f9f9;
+    border-radius: 4px;
+}
+
+/* Domain pricing matrix specific styles */
+.domain-pricing-matrix-table {
+    margin: 15px 0;
+}
+
+/* Hide standard pricing for domain products */
+body.post-type-product[data-product-type="domain"] .pricing,
+body.post-type-product[data-product-type="domain"] ._regular_price_field,
+body.post-type-product[data-product-type="domain"] ._sale_price_field{
+    display: none !important;
+}
