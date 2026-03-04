@@ -117,7 +117,7 @@
                     name: 'Permitir Pesquisa',
                     id: 'enabled',
                     sort: true,
-                    width: '150px',
+                    width: '120px',
                     formatter: function(cell, row) {
                         const tld = row.cells[0].data;
                         return h('input', {
@@ -130,12 +130,33 @@
                             }
                         });
                     }
+                },
+                {
+                    name: 'Produto',
+                    id: 'product',
+                    sort: false,
+                    width: '180px',
+                    formatter: function(cell, row) {
+                        const tld = row.cells[0].data;
+                        const sanitizedTld = tld.replace('.', '');
+                        return gridjs.html(`
+                            <div class="product-actions" data-tld="${tld}">
+                                <button type="button" 
+                                        class="button button-small button-primary convert-to-product-btn" 
+                                        data-tld="${tld}">
+                                    Converter para Produto
+                                </button>
+                                <div id="product-status-${sanitizedTld}" class="product-status"></div>
+                            </div>
+                        `);
+                    }
                 }
             ],
             data: tldsData.map(item => [
                 item.tld,
                 item.selectedProvider || item.providers[0] || '',
-                item.enabled || false
+                item.enabled || false,
+                '' // Placeholder for product actions
             ]),
             search: {
                 enabled: true,
@@ -177,6 +198,66 @@
         });
 
         tldsGrid.render(document.getElementById('tlds-grid'));
+        
+        // Add event handler for convert buttons after grid is rendered
+        $(document).off('click', '.convert-to-product-btn').on('click', '.convert-to-product-btn', function(e) {
+            e.preventDefault();
+            const tld = $(this).data('tld');
+            convertTldToProduct(tld);
+        });
+        
+        // Load product status after grid is rendered
+        loadProductStatus();
+    }
+
+    /**
+     * Load product status for all TLDs
+     */
+    function loadProductStatus() {
+        const allTlds = tldsData.map(item => item.tld);
+        
+        jQuery.post(owh_admin_ajax.ajax_url, {
+            action: 'owh_check_tld_product_status',
+            nonce: owh_admin_ajax.nonce,
+            tlds: allTlds
+        })
+        .done(function(response) {
+            if (response.success && response.data) {
+                updateProductButtons(response.data);
+            }
+        })
+        .fail(function(xhr, status, error) {
+            console.error('Error loading product status:', error);
+        });
+    }
+
+    /**
+     * Update product buttons based on status
+     */
+    function updateProductButtons(productStatus) {
+        Object.keys(productStatus).forEach(function(tld) {
+            const sanitizedTld = tld.replace('.', '');
+            const button = $(`.convert-to-product-btn[data-tld="${tld}"]`);
+            const statusDiv = $(`#product-status-${sanitizedTld}`);
+            
+            if (productStatus[tld].exists) {
+                // Product exists - show "Product Created" state
+                button.text('Produto Criado')
+                      .removeClass('button-primary')
+                      .addClass('button-secondary')
+                      .prop('disabled', true);
+                      
+                statusDiv.html(`<small><a href="${productStatus[tld].edit_url}" target="_blank">Editar produto</a></small>`);
+            } else {
+                // Product doesn't exist - show "Convert" button
+                button.text('Converter para Produto')
+                      .removeClass('button-secondary')
+                      .addClass('button-primary')
+                      .prop('disabled', false);
+                      
+                statusDiv.empty();
+            }
+        });
     }
 
     /**
@@ -255,6 +336,85 @@
                 statusDiv.fadeOut();
             }, 3000);
         }
+    }
+
+    /**
+     * Convert TLD to WooCommerce Product
+     */
+    function convertTldToProduct(tld) {
+        const button = $(`.convert-to-product-btn[data-tld="${tld}"]`);
+        const sanitizedTld = tld.replace('.', '');
+        const statusDiv = $(`#product-status-${sanitizedTld}`);
+        
+        // Check if button is already disabled (product already exists or conversion in progress)
+        if (button.prop('disabled')) {
+            return;
+        }
+        
+        // Store original state
+        const originalText = button.text();
+        const originalClass = button.hasClass('button-primary') ? 'button-primary' : 'button-secondary';
+        
+        // Disable button and show loading state
+        button.prop('disabled', true)
+              .text('Criando...')
+              .removeClass('button-primary button-secondary')
+              .addClass('button-secondary');
+        
+        statusDiv.html('<small>Criando produto...</small>');
+        
+        // Make AJAX request to create product
+        jQuery.post(owh_admin_ajax.ajax_url, {
+            action: 'owh_convert_tld_to_product',
+            nonce: owh_admin_ajax.nonce,
+            tld: tld
+        })
+        .done(function(response) {
+            if (response.success) {
+                // Success - product created
+                showStatus(`Produto criado com sucesso para ${tld}!`, 'success');
+                button.text('Produto Criado')
+                      .removeClass('button-primary')
+                      .addClass('button-secondary');
+                
+                statusDiv.html(`<small><a href="${response.data.edit_url}" target="_blank">Editar produto</a></small>`);
+                
+                // Keep button disabled permanently
+                
+            } else {
+                // Handle different types of errors
+                if (response.data && response.data.product_exists) {
+                    // Product already exists
+                    showStatus(`Produto já existe para ${tld}`, 'info');
+                    button.text('Produto Criado')
+                          .removeClass('button-primary')
+                          .addClass('button-secondary');
+                    
+                    statusDiv.html(`<small><a href="${response.data.edit_url}" target="_blank">Editar produto</a></small>`);
+                    
+                    // Keep button disabled
+                } else {
+                    // Other errors - restore button state
+                    showStatus(`Erro ao criar produto para ${tld}: ` + (response.data || 'Erro desconhecido'), 'error');
+                    button.prop('disabled', false)
+                          .text(originalText)
+                          .removeClass('button-primary button-secondary')
+                          .addClass(originalClass);
+                    
+                    statusDiv.empty();
+                }
+            }
+        })
+        .fail(function(xhr, status, error) {
+            // Network/server error - restore button state
+            showStatus(`Erro na requisição: ${error}`, 'error');
+            button.prop('disabled', false)
+                  .text(originalText)
+                  .removeClass('button-primary button-secondary')
+                  .addClass(originalClass);
+            
+            statusDiv.empty();
+        });
     }
 
     /**

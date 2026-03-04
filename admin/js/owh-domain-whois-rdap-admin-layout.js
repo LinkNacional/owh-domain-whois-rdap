@@ -127,7 +127,7 @@
                     break;
                 case fieldName.includes('Tipo de Integração'):
                     headerText = 'Tipo de Integração';
-                    description = 'Escolha entre Custom URL ou WHMCS para integrar com seu sistema.';
+                    description = 'Escolha entre Custom URL, WHMCS ou WooCommerce para integrar com seu sistema.';
                     break;
                 case fieldName.includes('Custom URL'):
                     headerText = 'Custom URL';
@@ -391,7 +391,7 @@
                     $customUrlRow.hide();
                     $whmcsSection.show();
                     $customUrlSection.hide();
-                }else if (integrationType == 'none'){
+                } else if (integrationType === 'none' || integrationType === 'woocommerce') {
                     $customUrlRow.hide();
                     $customUrlSection.hide();
                     $whmcsSection.hide();

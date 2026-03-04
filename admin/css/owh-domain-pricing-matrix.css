@@ -144,6 +144,10 @@
     padding: 20px;
 }
 
+.options_group{
+    margin-left: 10px;
+}
+
 #domain_product_options .options_group {
     border: 1px solid #e1e1e1;
     padding: 20px;
@@ -162,4 +166,19 @@ body.post-type-product[data-product-type="domain"] .pricing,
 body.post-type-product[data-product-type="domain"] ._regular_price_field,
 body.post-type-product[data-product-type="domain"] ._sale_price_field{
     display: none !important;
+}
+
+/* Table wrapper for horizontal scroll */
+.domain-pricing-table-wrapper {
+    overflow-x: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 15px 0;
+}
+
+.domain-pricing-table-wrapper .domain-pricing-matrix-table {
+    margin: 0;
+    border: none;
+    box-shadow: none;
+    min-width: 800px;
 }

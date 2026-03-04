@@ -24,6 +24,9 @@ defined( 'ABSPATH' ) or exit;
         <a href="#rdap" class="nav-tab owh-tab" data-tab="rdap">
             <?php esc_html_e('RDAP', 'owh-domain-whois-rdap'); ?>
         </a>
+        <a href="#custom-fields" class="nav-tab owh-tab" data-tab="custom-fields">
+            <?php esc_html_e('Campos Customizados', 'owh-domain-whois-rdap'); ?>
+        </a>
         <?php 
         $integration_type = get_option('owh_rdap_integration_type', '');
         if (!empty($integration_type)): ?>
@@ -129,6 +132,50 @@ defined( 'ABSPATH' ) or exit;
                     <?php esc_html_e('Salvar TLDs Customizadas', 'owh-domain-whois-rdap'); ?>
                 </button>
                 <div id="save-custom-tlds-status" class="save-custom-tlds-status"></div>
+            </div>
+        </div>
+        
+        <!-- Custom Fields Tab -->
+        <div id="tab-custom-fields" class="owh-tab-panel">
+            <h2><?php esc_html_e('Campos Customizados para TLDs', 'owh-domain-whois-rdap'); ?></h2>
+            <p><?php esc_html_e('Configure campos customizados que serão obrigatórios no checkout para domínios específicos. Cada campo deve ter um label (rótulo). A regex para validação é opcional - sem regex, qualquer valor será aceito.', 'owh-domain-whois-rdap'); ?></p>
+            
+            <div id="custom-fields-container">
+                <div id="custom-fields-grid-wrapper">
+                    <div id="custom-fields-grid"></div>
+                </div>
+                
+                <div class="custom-fields-actions">
+                    <button type="button" id="add-custom-field" class="button button-primary">
+                        <?php esc_html_e('Adicionar Campo', 'owh-domain-whois-rdap'); ?>
+                    </button>
+                    <button type="button" id="save-custom-fields" class="button button-secondary">
+                        <?php esc_html_e('Salvar Campos', 'owh-domain-whois-rdap'); ?>
+                    </button>
+                </div>
+                
+                <div id="save-custom-fields-status" class="save-status"></div>
+            </div>
+            
+            <div class="custom-fields-help">
+                <h3><?php esc_html_e('Como usar os campos customizados:', 'owh-domain-whois-rdap'); ?></h3>
+                <ol>
+                    <li><?php esc_html_e('Crie campos com labels descritivos (ex: "CPF", "CNPJ", "Passaporte")', 'owh-domain-whois-rdap'); ?></li>
+                    <li><?php esc_html_e('Opcionalmente, configure uma regex JavaScript para validação (ex: "^[0-9]{11}$" para CPF)', 'owh-domain-whois-rdap'); ?></li>
+                    <li><?php esc_html_e('Sem regex, qualquer valor será aceito no campo', 'owh-domain-whois-rdap'); ?></li>
+                    <li><?php esc_html_e('Nas configurações de produtos, selecione quais campos são obrigatórios para cada TLD', 'owh-domain-whois-rdap'); ?></li>
+                    <li><?php esc_html_e('Os campos aparecerão automaticamente no checkout quando necessário', 'owh-domain-whois-rdap'); ?></li>
+                </ol>
+                
+                <div class="regex-examples">
+                    <h4><?php esc_html_e('Exemplos de Regex:', 'owh-domain-whois-rdap'); ?></h4>
+                    <ul>
+                        <li><strong>CPF:</strong> <code>^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$</code></li>
+                        <li><strong>CNPJ:</strong> <code>^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$</code></li>
+                        <li><strong>Email:</strong> <code>^[^@\s]+@[^@\s]+\.[^@\s]+$</code></li>
+                        <li><strong>Telefone BR:</strong> <code>^(\(?\d{2}\)?\s?)?(9?\d{4})-?\d{4}$</code></li>
+                    </ul>
+                </div>
             </div>
         </div>
         

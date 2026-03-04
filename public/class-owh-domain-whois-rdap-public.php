@@ -104,6 +104,7 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @since    1.0.0
 	 */
 	public function enqueue_scripts() {
+		// Always enqueue main script - needed for checkout interception
 		wp_enqueue_script( 
 			$this->plugin_name, 
 			plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-public.js', 
@@ -548,7 +549,7 @@ class Owh_Domain_Whois_Rdap_Public {
 				if ( $integration_type !== 'none' ) {
 					$domain_parts = explode( '.', $result->getDomain() );
 					$sld = $domain_parts[0];
-					$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+					$tld = isset( $domain_parts[1] ) ? '.' . $domain_parts[1] : '';
 
 					if ( $integration_type === 'custom' ) {
 						$custom_url = get_option( 'owh_rdap_custom_url', '' );
@@ -562,6 +563,20 @@ class Owh_Domain_Whois_Rdap_Public {
 							$response_data['integration'] = array(
 								'type' => 'custom',
 								'buy_url' => $buy_url
+							);
+						}
+					} elseif ( $integration_type === 'woocommerce' && ! empty( $tld ) ) {
+						// Check if there's a product for this TLD
+						$product_data = $this->get_product_data_by_tld( $tld );
+						
+						if ( $product_data ) {
+							$response_data['integration'] = array(
+								'type' => 'woocommerce',
+								'product_id' => $product_data['id'],
+								'product_name' => $product_data['name'],
+								'product_price' => $product_data['price'],
+								'add_to_cart_url' => $product_data['add_to_cart_url'],
+								'tld' => $tld
 							);
 						}
 					}
@@ -749,5 +764,427 @@ class Owh_Domain_Whois_Rdap_Public {
 		
 		echo '</form>';
 		echo '</div>';
+	}
+
+	/**
+	 * Get product ID for a specific TLD
+	 *
+	 * @param string $tld The TLD to search for (including the dot, e.g. '.com')
+	 * @return int|false Product ID if found, false otherwise
+	 */
+	public function get_product_id_by_tld( $tld ) {
+		if ( ! class_exists( 'WooCommerce' ) ) {
+			return false;
+		}
+
+		$existing_products = get_posts( array(
+			'post_type' => 'product',
+			'meta_query' => array(
+				array(
+					'key' => '_domain_tld',
+					'value' => $tld,
+					'compare' => '='
+				)
+			),
+			'post_status' => 'publish',
+			'numberposts' => 1,
+			'fields' => 'ids'
+		) );
+
+		return ! empty( $existing_products ) ? $existing_products[0] : false;
+	}
+
+	/**
+	 * Get product data for a specific TLD
+	 *
+	 * @param string $tld The TLD to search for
+	 * @return array|false Product data if found, false otherwise
+	 */
+	public function get_product_data_by_tld( $tld ) {
+		$product_id = $this->get_product_id_by_tld( $tld );
+		
+		if ( ! $product_id ) {
+			return false;
+		}
+
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return false;
+		}
+
+		return array(
+			'id' => $product_id,
+			'name' => $product->get_name(),
+			'price' => $product->get_price(),
+			'permalink' => get_permalink( $product_id ),
+			'add_to_cart_url' => wc_get_cart_url() . '?add-to-cart=' . $product_id
+		);
+	}
+
+	/**
+	 * Register dynamic checkout fields for domain products
+	 * 
+	 * @since 1.0.0
+	 */
+	public function register_dynamic_checkout_fields() {
+		// Only run on checkout pages
+		if ( ! is_checkout() ) {
+			return;
+		}
+		if (! function_exists('woocommerce_register_additional_checkout_field')) {
+			return;
+		}
+		
+		// Try modern WooCommerce method first (WC 8.8+) if available
+		$required_fields = $this->get_required_custom_fields_for_cart();
+		
+		if ( empty( $required_fields ) ) {
+			return;
+		}
+		
+		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+		
+		// Only use modern method if function exists
+		foreach ( $required_fields as $field_id ) {
+			$field_config = null;
+			
+			// Find field configuration
+			foreach ( $custom_fields as $field ) {
+				if ( intval( $field['id'] ) === intval( $field_id ) ) {
+					$field_config = $field;
+					break;
+				}
+			}
+			
+			if ( ! $field_config ) {
+				continue;
+			}
+
+
+			woocommerce_register_additional_checkout_field( array(
+				'id'       => 'owh-domain-whois-rdap/custom-field-' . $field_id,
+				'label'    => $field_config['label'],
+				'location' => 'order',
+				'type'     => 'text',
+				'required' => true,
+				'attributes' => array(
+					'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
+				),
+			));
+		}
+		// For older WC versions, the hooks are already registered in the main file
+	}
+
+	/**
+	 * Display custom checkout field (fallback method)
+	 * 
+	 * @since 1.0.0
+	 */
+	public function display_custom_checkout_fields( $checkout ) {
+		$required_fields = $this->get_required_custom_fields_for_cart();
+		
+		if ( empty( $required_fields ) ) {
+			return;
+		}
+
+		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+		
+		echo '<div id="owh_domain_custom_fields"><h3>' . esc_html__( 'Informações Adicionais para Domínios', 'owh-domain-whois-rdap' ) . '</h3>';
+		
+		foreach ( $required_fields as $field_id ) {
+			$field_config = null;
+			
+			foreach ( $custom_fields as $field ) {
+				if ( intval( $field['id'] ) === intval( $field_id ) ) {
+					$field_config = $field;
+					break;
+				}
+			}
+			
+			if ( ! $field_config ) {
+				continue;
+			}
+
+			$field_name = 'owh_domain_custom_field_' . $field_id;
+			$field_value = $checkout->get_value( $field_name );
+			
+			woocommerce_form_field( $field_name, array(
+				'type'        => 'text',
+				'class'       => array( 'form-row-wide' ),
+				'label'       => $field_config['label'],
+				'placeholder' => $field_config['label'],
+				'required'    => true,
+				'custom_attributes' => array(
+					'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
+					'data-field-id' => $field_id
+				)
+			), $field_value );
+		}
+		
+		echo '</div>';
+	}
+
+	/**
+	 * Validate custom checkout fields
+	 * 
+	 * @since 1.0.0
+	 */
+	public function validate_custom_checkout_fields() {
+		$required_fields = $this->get_required_custom_fields_for_cart();
+		
+		if ( empty( $required_fields ) ) {
+			return;
+		}
+
+		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+		
+		foreach ( $required_fields as $field_id ) {
+			$field_config = null;
+			
+			foreach ( $custom_fields as $field ) {
+				if ( intval( $field['id'] ) === intval( $field_id ) ) {
+					$field_config = $field;
+					break;
+				}
+			}
+			
+			if ( ! $field_config ) {
+				continue;
+			}
+
+			$field_name = 'owh_domain_custom_field_' . $field_id;
+			$field_value = sanitize_text_field( $_POST[ $field_name ] ?? '' );
+			
+			// Check if field is required and empty
+			if ( empty( $field_value ) ) {
+				wc_add_notice( sprintf( 
+					__( 'O campo "%s" é obrigatório.', 'owh-domain-whois-rdap' ), 
+					$field_config['label'] 
+				), 'error' );
+				continue;
+			}
+			
+			// Validate against regex if provided
+			if ( ! empty( $field_config['regex'] ) ) {
+				if ( ! preg_match( '/' . $field_config['regex'] . '/', $field_value ) ) {
+					wc_add_notice( sprintf( 
+						__( 'O campo "%s" não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
+						$field_config['label'] 
+					), 'error' );
+				}
+			}
+		}
+	}
+
+	/**
+	 * Save custom checkout fields to order meta
+	 * 
+	 * Este método salva os campos personalizados do checkout no meta da ordem.
+	 * Os dados chegam através do $context->payment_data no formato:
+	 * Array(
+	 *   "owh-domain-whois-rdap-custom-field-1" => "624.655.700-72",
+	 *   "owh-domain-whois-rdap-custom-field-2" => "23.375.581/0001-41"
+	 * )
+	 * 
+	 * E são salvos como uma única meta da ordem com a chave "_owh_domain_custom_fields" 
+	 * contendo um array estruturado:
+	 * Array(
+	 *   "1" => Array(
+	 *     "field_id" => "1",
+	 *     "value" => "624.655.700-72", 
+	 *     "original_key" => "owh-domain-whois-rdap-custom-field-1"
+	 *   ),
+	 *   "2" => Array(
+	 *     "field_id" => "2",
+	 *     "value" => "23.375.581/0001-41",
+	 *     "original_key" => "owh-domain-whois-rdap-custom-field-2" 
+	 *   )
+	 * )
+	 * 
+	 * @since 1.0.0
+	 * @param \WC_Order_Context $context Payment context object
+	 * @param \WC_Result $result Payment result object
+	 */
+	public function save_custom_checkout_fields( $context, $result ) {
+		// Check if we have payment data and order
+		$order = $context->order;
+		$payment_data = $context->payment_data;
+
+		foreach ( $payment_data as $key => $value ) {
+			// Check if the key matches our custom field pattern
+			if ( strpos( $key, 'owh-domain-whois-rdap-custom-field-' ) === 0 ) {
+				// Extract the field ID from the key
+				$field_id = str_replace( 'owh-domain-whois-rdap-custom-field-', '', $key );
+				
+				// Sanitize the value
+				$sanitized_value = sanitize_text_field( $value );
+				
+				// Adicionar ao array de campos personalizados
+				$custom_fields_data[ $field_id ] = array(
+					'field_id' => $field_id,
+					'value' => $sanitized_value,
+					'original_key' => $key
+				);
+			}
+		}
+
+		// Salvar todos os campos em uma única meta se houver dados
+		if ( ! empty( $custom_fields_data ) ) {
+			$order->update_meta_data( '_owh_domain_custom_fields', $custom_fields_data );
+		}
+
+		// Save the order to persist the meta data
+		$order->save();
+	}
+
+	/**
+	 * Get required custom fields for domain products in cart
+	 * 
+	 * @since 1.0.0
+	 * @return array Array of field IDs that are required
+	 */
+	private function get_required_custom_fields_for_cart() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return array();
+		}
+
+		$required_fields = array();
+		
+		// Loop through cart items
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$product_id = $cart_item['product_id'];
+			$product = wc_get_product( $product_id );
+			
+			// Check if it's a domain product
+			if ( $product && $product->get_type() === 'domain' ) {
+				$product_required_fields = get_post_meta( $product_id, '_domain_required_custom_fields', true );
+				
+				if ( is_array( $product_required_fields ) ) {
+					$required_fields = array_merge( $required_fields, $product_required_fields );
+				}
+			}
+		}
+
+		// Remove duplicates and return
+		return array_unique( $required_fields );
+	}
+
+	/**
+	 * Display custom checkout fields in admin order view
+	 * 
+	 * Exibe os campos personalizados na página de visualização do pedido no painel administrativo.
+	 * Mostra no formato: (Label do Campo) (Valor do Campo)
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order $order Order object
+	 */
+	public function display_custom_fields_in_admin_order( $order ) {
+		// Get custom fields from order meta
+		$custom_fields = $this->get_order_custom_fields( $order );
+		
+		// Always enqueue the CSS for consistency, even if no fields
+		$this->enqueue_admin_custom_fields_styles();
+		
+		// Get field configurations to show proper labels
+		$field_configs = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+		
+		// Create a map of field_id => field_config for easier lookup
+		$field_map = array();
+		foreach ( $field_configs as $field_config ) {
+			if ( isset( $field_config['id'] ) ) {
+				$field_map[ $field_config['id'] ] = $field_config;
+			}
+		}
+
+		// Prepare template variables
+		$template_vars = array(
+			'custom_fields' => $custom_fields,
+			'field_map' => $field_map,
+			'section_title' => __( 'Informações Adicionais do Domínio', 'owh-domain-whois-rdap' )
+		);
+
+		// Load template
+		$this->load_admin_template( 'owh-domain-custom-fields-admin-order', $template_vars );
+	}
+
+	/**
+	 * Enqueue admin styles for custom fields display
+	 * 
+	 * @since 1.0.0
+	 */
+	private function enqueue_admin_custom_fields_styles() {
+		wp_enqueue_style( 
+			$this->plugin_name . '-admin-custom-fields', 
+			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/owh-domain-custom-fields-admin.css', 
+			array(), 
+			$this->version, 
+			'all' 
+		);
+	}
+
+	/**
+	 * Load admin template with variables
+	 * 
+	 * @since 1.0.0
+	 * @param string $template_name Template file name (without .php extension)
+	 * @param array $vars Variables to extract for template use
+	 */
+	private function load_admin_template( $template_name, $vars = array() ) {
+		// Extract variables for template use
+		extract( $vars );
+		
+		// Build template path
+		$template_path = plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/' . $template_name . '.php';
+		
+		// Load template if exists
+		if ( file_exists( $template_path ) ) {
+			include $template_path;
+		} else {
+			// Fallback error message
+			echo '<div class="notice notice-error"><p>' . 
+				sprintf( __( 'Template não encontrado: %s', 'owh-domain-whois-rdap' ), $template_name ) . 
+				'</p></div>';
+		}
+	}
+
+	/**
+	 * Get custom checkout fields from order meta
+	 * 
+	 * Método helper para recuperar os campos personalizados salvos no meta da ordem.
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @return array Array of custom fields data or empty array if none found
+	 */
+	public function get_order_custom_fields( $order ) {
+		if ( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		if ( ! $order ) {
+			return array();
+		}
+
+		$custom_fields = $order->get_meta( '_owh_domain_custom_fields', true );
+		
+		return is_array( $custom_fields ) ? $custom_fields : array();
+	}
+
+	/**
+	 * Get specific custom field value from order
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @param string|int $field_id Field ID to retrieve
+	 * @return string|null Field value or null if not found
+	 */
+	public function get_order_custom_field_value( $order, $field_id ) {
+		$custom_fields = $this->get_order_custom_fields( $order );
+		
+		if ( isset( $custom_fields[ $field_id ] ) && isset( $custom_fields[ $field_id ]['value'] ) ) {
+			return $custom_fields[ $field_id ]['value'];
+		}
+		
+		return null;
 	}
 }

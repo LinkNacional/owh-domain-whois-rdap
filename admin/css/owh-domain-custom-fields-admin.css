@@ -1,0 +1,37 @@
+
+.owh-domain-custom-fields-section h3 {
+    margin-top: 0;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.owh-domain-custom-fields-section table {
+    margin-top: 10px;
+}
+
+.owh-domain-custom-fields-section table td {
+    padding: 8px 12px;
+    border: 1px solid #e5e5e5;
+}
+
+.owh-domain-custom-fields-section table td.field-label {
+    width: 30%;
+    font-weight: bold;
+    background-color: #f7f7f7;
+}
+
+.owh-domain-custom-fields-section table td.field-value {
+    width: 70%;
+    background-color: #ffffff;
+}
+
+.owh-domain-custom-fields-section .no-fields-message {
+    font-style: italic;
+    color: #666;
+    padding: 10px;
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+}

@@ -196,6 +196,52 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 							</div>
 							<?php
 						}
+					} elseif ( $integration_type === 'woocommerce' ) {
+						// Extract TLD from domain
+						$domain_parts = explode( '.', $result->getDomain() );
+						$tld = isset( $domain_parts[1] ) ? '.' . $domain_parts[1] : '';
+						
+						if ( ! empty( $tld ) && class_exists( 'WooCommerce' ) ) {
+							// Check if there's a product for this TLD
+							$existing_products = get_posts( array(
+								'post_type' => 'product',
+								'meta_query' => array(
+									array(
+										'key' => '_domain_tld',
+										'value' => $tld,
+										'compare' => '='
+									)
+								),
+								'post_status' => 'publish',
+								'numberposts' => 1,
+								'fields' => 'ids'
+							) );
+							
+							if ( ! empty( $existing_products ) ) {
+								$product_id = $existing_products[0];
+								$product = wc_get_product( $product_id );
+								
+								if ( $product ) {
+									$add_to_cart_url = wc_get_cart_url() . '?add-to-cart=' . $product_id;
+									?>
+									<div class="owh-rdap-buy-section">
+										<a href="<?php echo esc_url( $add_to_cart_url ); ?>" 
+										   class="owh-rdap-buy-button" 
+										   rel="nofollow"
+										   style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
+											<span class="dashicons dashicons-cart"></span>
+											<?php echo esc_html( $buy_button_text ); ?> - <?php echo esc_html( $product->get_name() ); ?>
+										</a>
+										<p class="owh-rdap-product-info">
+											<?php if ( $product->get_price() ) : ?>
+												<span class="price"><?php echo wc_price( $product->get_price() ); ?>/ano</span>
+											<?php endif; ?>
+										</p>
+									</div>
+									<?php
+								}
+							}
+						}
 					}
 					} // Close the if ( $integration_type !== 'none' ) block
 					?>
