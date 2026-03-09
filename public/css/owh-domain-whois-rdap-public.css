@@ -727,6 +727,11 @@
     height: 16px;
 }
 
+.wc-block-components-order-summary-item__individual-price,
+.wc-block-cart-item__wrap .wc-block-components-product-price__value{
+    display: none !important;
+}
+
 /* Responsive styles */
 @media (max-width: 768px) {
     .owh-rdap-whois-details-container {

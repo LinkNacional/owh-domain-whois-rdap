@@ -222,7 +222,9 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 								$product = wc_get_product( $product_id );
 								
 								if ( $product ) {
-									$add_to_cart_url = wc_get_cart_url() . '?add-to-cart=' . $product_id;
+									// Add domain name to cart URL so it can be used in checkout
+									$domain_name = $result->getDomain();
+									$add_to_cart_url = wc_get_cart_url() . '?add-to-cart=' . $product_id . '&domain_name=' . urlencode( $domain_name );
 									?>
 									<div class="owh-rdap-buy-section">
 										<a href="<?php echo esc_url( $add_to_cart_url ); ?>" 
@@ -230,7 +232,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 										   rel="nofollow"
 										   style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
 											<span class="dashicons dashicons-cart"></span>
-											<?php echo esc_html( $buy_button_text ); ?> - <?php echo esc_html( $product->get_name() ); ?>
+											<?php echo esc_html( $buy_button_text ); ?> - <?php echo esc_html( $domain_name ); ?>
 										</a>
 										<p class="owh-rdap-product-info">
 											<?php if ( $product->get_price() ) : ?>

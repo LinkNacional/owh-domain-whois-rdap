@@ -113,6 +113,23 @@ class Owh_Domain_Whois_Rdap_Public {
 			false 
 		);
 
+		// Enqueue blocks checkout script for domain name modification
+		if ( is_cart() || is_checkout() ) {
+			wp_enqueue_script( 
+				'owh-domain-checkout-blocks', 
+				plugin_dir_url( __FILE__ ) . 'js/owh-domain-checkout-blocks.js', 
+				array( 'wc-blocks-checkout' ), 
+				$this->version, 
+				true 
+			);
+			
+			// Add global nonce for AJAX requests
+			wp_add_inline_script( 'owh-domain-checkout-blocks', 
+				'window.owh_domain_nonce = "' . wp_create_nonce( 'owh_domain_ajax' ) . '";',
+				'before'
+			);
+		}
+
 		// Enqueue domain product periods script on single product page
 		if ( is_product() ) {
 			global $product;
@@ -659,6 +676,121 @@ class Owh_Domain_Whois_Rdap_Public {
 	}
 
 	/**
+	 * AJAX handler for getting domain pricing matrix
+	 * 
+	 * @since 1.0.0
+	 */
+	public function ajax_get_domain_pricing_matrix() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'owh_domain_ajax' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$product_id = intval( $_POST['product_id'] );
+
+		if ( ! $product_id ) {
+			wp_send_json_error( 'Invalid product ID' );
+		}
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			wp_send_json_error( 'Invalid product' );
+		}
+
+		// Get the pricing matrix from product meta
+		$pricing_matrix = get_post_meta( $product_id, '_domain_pricing_matrix', true );
+		
+		// Debug: Log the matrix content
+		error_log( 'OWH Debug - Product ID: ' . $product_id );
+		error_log( 'OWH Debug - Pricing Matrix Raw: ' . print_r( $pricing_matrix, true ) );
+		
+		if ( empty( $pricing_matrix ) ) {
+			error_log( 'OWH Debug - No pricing matrix found for product ' . $product_id );
+			wp_send_json_error( 'No pricing matrix found' );
+		}
+
+		wp_send_json_success( array(
+			'matrix' => $pricing_matrix,
+			'product_id' => $product_id
+		) );
+	}
+
+	/**
+	 * AJAX handler for updating domain period in cart
+	 * 
+	 * @since 1.0.0
+	 */
+	public function ajax_update_domain_period() {
+		// Verify nonce
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( $_POST['nonce'], 'owh_domain_ajax' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$cart_key = sanitize_text_field( $_POST['cart_key'] );
+		$new_period = intval( $_POST['new_period'] );
+		$product_id = intval( $_POST['product_id'] );
+
+		if ( ! $cart_key || ! $new_period || ! $product_id ) {
+			wp_send_json_error( 'Invalid parameters' );
+		}
+
+		// Get cart
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			wp_send_json_error( 'Cart not available' );
+		}
+
+		$cart = WC()->cart;
+		$cart_item = $cart->get_cart_item( $cart_key );
+
+		if ( ! $cart_item ) {
+			wp_send_json_error( 'Cart item not found' );
+		}
+
+		$product = wc_get_product( $product_id );
+
+		if ( ! $product || $product->get_type() !== 'domain' ) {
+			wp_send_json_error( 'Invalid product' );
+		}
+
+		// Get new price for the period
+		$new_price = null;
+		if ( method_exists( $product, 'get_price_for_period' ) ) {
+			$new_price = $product->get_price_for_period( $new_period, 'register' );
+		}
+
+		if ( $new_price === null ) {
+			wp_send_json_error( 'Price not available for this period' );
+		}
+
+		// Update cart item data
+		$cart_item['domain_period'] = $new_period;
+		$cart_item['line_subtotal'] = $new_price;
+		$cart_item['line_total'] = $new_price;
+
+		// Update cart
+		$cart->cart_contents[ $cart_key ] = $cart_item;
+		$cart->set_session();
+		error_log(json_encode([
+			'cart1' => $cart,
+		]));
+
+		// Force recalculation
+		$cart->calculate_totals();
+		error_log(json_encode([
+			'cart2' => $cart,
+		]));
+		wp_send_json_success( array(
+			'message' => 'Period updated successfully',
+			'new_period' => $new_period,
+			'new_price' => $new_price,
+			'new_price_html' => wc_price( $new_price )
+		) );
+	}
+
+	/**
 	 * Add domain-specific data to cart item
 	 * 
 	 * @since 1.0.0
@@ -689,8 +821,10 @@ class Owh_Domain_Whois_Rdap_Public {
 			}
 		}
 
-		// Get domain name if provided
-		if ( isset( $_POST['domain_name'] ) && ! empty( $_POST['domain_name'] ) ) {
+		// Get domain name from URL parameter (when coming from search results) or form
+		if ( isset( $_GET['domain_name'] ) && ! empty( $_GET['domain_name'] ) ) {
+			$cart_item_data['domain_name'] = sanitize_text_field( $_GET['domain_name'] );
+		} elseif ( isset( $_POST['domain_name'] ) && ! empty( $_POST['domain_name'] ) ) {
 			$cart_item_data['domain_name'] = sanitize_text_field( $_POST['domain_name'] );
 		}
 
@@ -700,6 +834,203 @@ class Owh_Domain_Whois_Rdap_Public {
 		}
 
 		return $cart_item_data;
+	}
+
+	/**
+	 * Modify domain product name in cart and checkout (classic)
+	 * 
+	 * @since 1.0.0
+	 * @param string $product_name Original product name
+	 * @param array $cart_item Cart item data
+	 * @param string $cart_item_key Cart item key
+	 * @return string Modified product name
+	 */
+	public function modify_domain_cart_item_name( $product_name, $cart_item, $cart_item_key ) {
+		// Only for domain products
+		if ( ! isset( $cart_item['data'] ) || $cart_item['data']->get_type() !== 'domain' ) {
+			return $product_name;
+		}
+
+		// Build new product name with domain details
+		$new_name = $product_name;
+		
+		// Add domain name if available
+		if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
+			$period = isset( $cart_item['domain_period'] ) ? intval( $cart_item['domain_period'] ) : 1;
+			$period_text = $period == 1 ? '1 ano' : $period . ' anos';
+			
+			// Get price from cart item or product matrix
+			$price_text = '';
+			if ( isset( $cart_item['domain_price'] ) && $cart_item['domain_price'] > 0 ) {
+				$price_text = ' (' . wc_price( $cart_item['domain_price'] ) . ')';
+			} else {
+				// Try to get price from product matrix as fallback
+				$product = $cart_item['data'];
+				if ( method_exists( $product, 'get_price_for_period' ) ) {
+					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+					$price = $product->get_price_for_period( $period, $action );
+					if ( $price !== null && $price > 0 ) {
+						$price_text = ' (' . wc_price( $price ) . ')';
+					}
+				}
+			}
+			
+			$new_name = sprintf( 
+				'%s por %s%s', 
+				esc_html( $cart_item['domain_name'] ), 
+				$period_text,
+				$price_text
+			);
+		}
+
+		return $new_name;
+	}
+
+	/**
+	 * Extend Store API item data for blocks checkout
+	 * 
+	 * @since 1.0.0
+	 */
+	public function extend_store_api_item_data( $order, $request ) {
+		// This hook ensures domain data is available in the Store API
+		// The actual name change for blocks will be handled by JavaScript
+	}
+
+	/**
+	 * Extend cart item data for Store API
+	 * 
+	 * @since 1.0.0
+	 * @param array $cart_item Cart item data
+	 * @return array Domain data for Store API
+	 */
+	public function extend_cart_item_store_api_data( $cart_item ) {
+		if ( ! isset( $cart_item['data'] ) || $cart_item['data']->get_type() !== 'domain' ) {
+			return array();
+		}
+
+		$domain_data = array();
+
+		if ( isset( $cart_item['domain_name'] ) ) {
+			$domain_data['domain_name'] = $cart_item['domain_name'];
+		}
+
+		if ( isset( $cart_item['domain_period'] ) ) {
+			$domain_data['domain_period'] = intval( $cart_item['domain_period'] );
+		}
+
+		if ( isset( $cart_item['domain_action'] ) ) {
+			$domain_data['domain_action'] = $cart_item['domain_action'];
+		}
+
+		return $domain_data;
+	}
+
+	/**
+	 * Define schema for Store API extension
+	 * 
+	 * @since 1.0.0
+	 * @return array Schema definition
+	 */
+	public function extend_cart_item_store_api_schema() {
+		return array(
+			'domain_name' => array(
+				'description' => __( 'Nome do domínio', 'owh-domain-whois-rdap' ),
+				'type'        => 'string',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'domain_period' => array(
+				'description' => __( 'Período do domínio em anos', 'owh-domain-whois-rdap' ),
+				'type'        => 'integer',
+				'context'     => array( 'view', 'edit' ),
+			),
+			'domain_action' => array(
+				'description' => __( 'Ação do domínio (register, renew, transfer)', 'owh-domain-whois-rdap' ),
+				'type'        => 'string',
+				'context'     => array( 'view', 'edit' ),
+			),
+		);
+	}
+
+	/**
+	 * Register Store API extension for WooCommerce Blocks
+	 * 
+	 * @since 1.0.0
+	 */
+	public function register_store_api_extension() {
+		if ( class_exists( '\Automattic\WooCommerce\StoreApi\StoreApi' ) ) {
+			$extend = \Automattic\WooCommerce\StoreApi\StoreApi::container()->get( \Automattic\WooCommerce\StoreApi\Schemas\ExtendSchema::class );
+			
+			$extend->register_endpoint_data( array(
+				'endpoint'        => \Automattic\WooCommerce\StoreApi\Schemas\V1\CartItemSchema::IDENTIFIER,
+				'namespace'       => 'owh_domain_data',
+				'data_callback'   => array( $this, 'extend_cart_item_store_api_data' ),
+				'schema_callback' => array( $this, 'extend_cart_item_store_api_schema' ),
+			) );
+		}
+	}
+
+	/**
+	 * Get domain data from cart item (helper function)
+	 * Use this function to get domain information anywhere in your code
+	 * 
+	 * @since 1.0.0
+	 * @param array $cart_item Cart item data
+	 * @return array|false Domain data or false if not a domain product
+	 */
+	public function get_domain_data_from_cart_item( $cart_item ) {
+		// Check if this is a domain product
+		if ( ! isset( $cart_item['data'] ) || $cart_item['data']->get_type() !== 'domain' ) {
+			return false;
+		}
+
+		$domain_data = array();
+
+		// Get domain name
+		if ( isset( $cart_item['domain_name'] ) ) {
+			$domain_data['name'] = $cart_item['domain_name'];
+		}
+
+		// Get domain period
+		if ( isset( $cart_item['domain_period'] ) ) {
+			$domain_data['period'] = $cart_item['domain_period'];
+		}
+
+		// Get domain action
+		if ( isset( $cart_item['domain_action'] ) ) {
+			$domain_data['action'] = $cart_item['domain_action'];
+		}
+
+		// Get domain price
+		if ( isset( $cart_item['domain_price'] ) ) {
+			$domain_data['price'] = $cart_item['domain_price'];
+		}
+
+		return ! empty( $domain_data ) ? $domain_data : false;
+	}
+
+	/**
+	 * Example: Get all domain products from cart
+	 * Use this function to get all domains in the current cart
+	 * 
+	 * @since 1.0.0
+	 * @return array Array of domain data from cart
+	 */
+	public function get_domains_from_cart() {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return array();
+		}
+
+		$domains = array();
+		
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
+			$domain_data = $this->get_domain_data_from_cart_item( $cart_item );
+			
+			if ( $domain_data ) {
+				$domains[ $cart_item_key ] = $domain_data;
+			}
+		}
+
+		return $domains;
 	}
 
 	/**
@@ -713,19 +1044,26 @@ class Owh_Domain_Whois_Rdap_Public {
 			return;
 		}
 
-		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
-			$product = $cart_item['data'];
-			
-			if ( $product->get_type() !== 'domain' ) {
-				continue;
-			}
 
-			// Check if we have domain-specific pricing
-			if ( isset( $cart_item['domain_price'] ) && $cart_item['domain_price'] > 0 ) {
-				$product->set_price( $cart_item['domain_price'] );
+		foreach ( $cart->get_cart() as $cart_item_key => $cart_item ) {
+
+			$product = $cart_item['data'];
+
+			// Verifica se é seu produto domain
+			if ( $product instanceof WC_Product_Domain ) {
+
+				// periodo salvo no cart item
+				$period = isset( $cart_item['domain_period'] ) ? intval( $cart_item['domain_period'] ) : 1;
+
+				$price = $product->get_price_for_period( $period, 'register' );
+
+				if ( $price ) {
+					$cart_item['data']->set_price( $price );
+				}
+
 			}
 		}
-	}
+    }
 
 	/**
 	 * Render Add to Cart form for domain products
@@ -1186,5 +1524,231 @@ class Owh_Domain_Whois_Rdap_Public {
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Filter cart subtotal to include domain period pricing
+	 * 
+	 * @since 1.0.0
+	 * @param float $subtotal Original subtotal
+	 * @return float Corrected subtotal
+	 */
+	public function filter_cart_subtotal( $subtotal ) {
+		$correct_subtotal = 0;
+		
+		if ( function_exists( 'WC' ) && WC()->cart ) {
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				if ( isset( $cart_item['data'] ) && 
+					$cart_item['data'] instanceof WC_Product_Domain && 
+					isset( $cart_item['domain_period'] ) ) {
+					
+					$period = intval( $cart_item['domain_period'] );
+					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+					$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+					
+					if ( isset( $pricing_matrix[$period][$action] ) ) {
+						$correct_price = floatval( $pricing_matrix[$period][$action] );
+						$correct_subtotal += $correct_price * intval( $cart_item['quantity'] );
+					} else {
+						$correct_subtotal += floatval( $cart_item['line_subtotal'] );
+					}
+				} else {
+					$correct_subtotal += floatval( $cart_item['line_subtotal'] );
+				}
+			}
+			
+			return $correct_subtotal;
+		}
+		
+		return $subtotal;
+	}
+	
+	/**
+	 * Filter cart total to include domain period pricing
+	 * 
+	 * @since 1.0.0
+	 * @param float $total Original total
+	 * @return float Corrected total
+	 */
+	public function filter_cart_total( $total ) {
+		$correct_total = 0;
+		
+		if ( function_exists( 'WC' ) && WC()->cart ) {
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				if ( isset( $cart_item['data'] ) && 
+					$cart_item['data'] instanceof WC_Product_Domain && 
+					isset( $cart_item['domain_period'] ) ) {
+					
+					$period = intval( $cart_item['domain_period'] );
+					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+					$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+					
+					if ( isset( $pricing_matrix[$period][$action] ) ) {
+						$correct_price = floatval( $pricing_matrix[$period][$action] );
+						$correct_total += $correct_price * intval( $cart_item['quantity'] );
+					} else {
+						$correct_total += floatval( $cart_item['line_total'] );
+					}
+				} else {
+					$correct_total += floatval( $cart_item['line_total'] );
+				}
+			}
+			
+			error_log( "OWH TOTAL FILTER: Original={$total}, Corrected={$correct_total}" );
+			return $correct_total;
+		}
+		
+		return $total;
+	}
+
+	/**
+	 * Filter cart contents to force correct pricing based on domain periods
+	 * 
+	 * @param array $cart_contents WooCommerce cart contents
+	 * @return array Modified cart contents
+	 */
+	public function filter_cart_contents( $cart_contents ) {
+		// Intercepta e força a atualização dos valores do carrinho baseado no período
+		foreach ($cart_contents as $cart_item_key => &$cart_item) {
+			// Se é produto domain e tem período definido
+			if (isset($cart_item['data']) && 
+				$cart_item['data'] instanceof WC_Product_Domain && 
+				isset($cart_item['domain_period'])) {
+				
+				$product = $cart_item['data'];
+				$period = intval($cart_item['domain_period']);
+				$action = isset($cart_item['domain_action']) ? $cart_item['domain_action'] : 'register';
+				
+				// Obtém a matriz de preços
+				$pricing_matrix = $product->get_pricing_matrix();
+				
+				// Se existe preço para este período
+				if (isset($pricing_matrix[$period][$action])) {
+					$correct_price = floatval($pricing_matrix[$period][$action]);
+					$quantity = intval($cart_item['quantity']);
+					$correct_line_total = $correct_price * $quantity;
+					
+					// FORÇA a atualização dos valores
+					$cart_item['domain_price'] = $correct_price;
+					$cart_item['line_subtotal'] = $correct_line_total;
+					$cart_item['line_total'] = $correct_line_total;
+					
+					// Também atualiza o preço do produto
+					$cart_item['data']->set_price($correct_price);
+					
+					error_log("OWH FILTRO - Forçando valores: Período={$period}, Preço={$correct_price}, LineTotal={$correct_line_total}");
+				}
+			}
+		}
+
+		return $cart_contents;
+	}
+
+	/**
+	 * Filter cart item price display
+	 * 
+	 * @param string $price_html The price HTML
+	 * @param array $cart_item Cart item data
+	 * @param string $cart_item_key Cart item key
+	 * @return string Modified price HTML
+	 */
+	public function filter_cart_item_price( $price_html, $cart_item, $cart_item_key ) {
+		if ( isset( $cart_item['data'] ) && 
+			$cart_item['data'] instanceof WC_Product_Domain &&
+			isset( $cart_item['domain_period'] ) ) {
+			
+			$period = intval( $cart_item['domain_period'] );
+			$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+			$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+			
+			if ( isset( $pricing_matrix[$period][$action] ) ) {
+				$correct_price = floatval( $pricing_matrix[$period][$action] );
+				return wc_price( $correct_price );
+			}
+		}
+		
+		return $price_html;
+	}
+
+	/**
+	 * Filter cart item subtotal display
+	 * 
+	 * @param string $subtotal_html The subtotal HTML
+	 * @param array $cart_item Cart item data  
+	 * @param string $cart_item_key Cart item key
+	 * @return string Modified subtotal HTML
+	 */
+	public function filter_cart_item_subtotal( $subtotal_html, $cart_item, $cart_item_key ) {
+		if ( isset( $cart_item['data'] ) && 
+			$cart_item['data'] instanceof WC_Product_Domain &&
+			isset( $cart_item['domain_period'] ) ) {
+			
+			$period = intval( $cart_item['domain_period'] );
+			$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+			$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+			
+			if ( isset( $pricing_matrix[$period][$action] ) ) {
+				$correct_price = floatval( $pricing_matrix[$period][$action] );
+				$quantity = intval( $cart_item['quantity'] );
+				$correct_subtotal = $correct_price * $quantity;
+				return wc_price( $correct_subtotal );
+			}
+		}
+		
+		return $subtotal_html;
+	}
+
+	/**
+	 * Filter store API price for blocks (placeholder method)
+	 * 
+	 * @param array $limit Quantity limit data
+	 * @param WC_Product $product Product object
+	 * @param array $context Context data
+	 * @return array
+	 */
+	public function filter_store_api_price( $limit, $product, $context ) {
+		// Este é um placeholder - precisaria implementar se necessário
+		return $limit;
+	}
+
+	/**
+	 * Filter blocks cart item data for correct price display
+	 * 
+	 * @param array $item_data Cart item data
+	 * @param WC_Product $product Product object
+	 * @return array Modified item data
+	 */
+	public function filter_blocks_cart_item_data( $item_data, $product ) {
+		// Verifica se é um produto domain no carrinho
+		$cart = WC()->cart;
+		if ( ! $cart ) {
+			return $item_data;
+		}
+
+		foreach ( $cart->get_cart_contents() as $cart_item ) {
+			if ( isset( $cart_item['data'] ) && 
+				$cart_item['data'] instanceof WC_Product_Domain &&
+				$cart_item['data']->get_id() === $product->get_id() &&
+				isset( $cart_item['domain_period'] ) ) {
+				
+				$period = intval( $cart_item['domain_period'] );
+				$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+				$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+				
+				if ( isset( $pricing_matrix[$period][$action] ) ) {
+					$correct_price = floatval( $pricing_matrix[$period][$action] );
+					
+					// Modifica os dados de preço no item_data
+					if ( isset( $item_data['prices'] ) ) {
+						$item_data['prices']['price'] = wc_get_price_to_display( $product, array( 'price' => $correct_price ) ) * 100; // Store API usa centavos
+						$item_data['prices']['regular_price'] = $item_data['prices']['price'];
+						$item_data['prices']['sale_price'] = $item_data['prices']['price'];
+					}
+				}
+				break;
+			}
+		}
+		
+		return $item_data;
 	}
 }

@@ -183,8 +183,41 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_period_selector', 18 );
 		$this->loader->add_action( 'wp_ajax_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
 		$this->loader->add_action( 'wp_ajax_nopriv_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
+		
+		// Domain pricing matrix and cart update AJAX handlers
+		$this->loader->add_action( 'wp_ajax_owh_get_domain_pricing_matrix', $plugin_public, 'ajax_get_domain_pricing_matrix' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owh_get_domain_pricing_matrix', $plugin_public, 'ajax_get_domain_pricing_matrix' );
+		$this->loader->add_action( 'wp_ajax_owh_update_domain_period', $plugin_public, 'ajax_update_domain_period' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owh_update_domain_period', $plugin_public, 'ajax_update_domain_period' );
+		
 		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $plugin_public, 'add_domain_cart_item_data', 10, 3 );
 		$this->loader->add_action( 'woocommerce_before_calculate_totals', $plugin_public, 'update_domain_cart_item_price' );
+		
+		// Filtros para interceptar e corrigir os totais do carrinho
+		$this->loader->add_filter( 'woocommerce_cart_get_subtotal', $plugin_public, 'filter_cart_subtotal', 999 );
+		$this->loader->add_filter( 'woocommerce_cart_get_total', $plugin_public, 'filter_cart_total', 999 );
+		
+		// Filtros adicionais para preços individuais dos produtos
+		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'filter_cart_item_price', 999, 3 );
+		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'filter_cart_item_subtotal', 999, 3 );
+		
+		// Filtros para WooCommerce Blocks
+		$this->loader->add_filter( 'woocommerce_store_api_product_quantity_limit', $plugin_public, 'filter_store_api_price', 999, 3 );
+		$this->loader->add_filter( 'woocommerce_blocks_cart_item_data', $plugin_public, 'filter_blocks_cart_item_data', 999, 2 );
+		
+		// Filtros para forçar preços corretos no carrinho
+		$this->loader->add_filter( 'woocommerce_get_cart_contents', $plugin_public, 'filter_cart_contents', 999 );
+		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'filter_cart_item_price', 999, 3 );
+		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'filter_cart_item_subtotal', 999, 3 );
+
+		// Display domain information in cart and checkout
+		$this->loader->add_filter( 'woocommerce_cart_item_name', $plugin_public, 'modify_domain_cart_item_name', 10, 3 );
+		
+		// Store API hooks for blocks checkout
+		$this->loader->add_action( 'woocommerce_store_api_checkout_update_order_from_request', $plugin_public, 'extend_store_api_item_data', 10, 2 );
+		
+		// Register Store API extension for blocks
+		$this->loader->add_action( 'woocommerce_blocks_loaded', $plugin_public, 'register_store_api_extension' );
 		
 		// Force Add to Cart button for domain products (Block Theme compatibility)
 		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_add_to_cart_form', 30 );
