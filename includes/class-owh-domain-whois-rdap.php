@@ -134,36 +134,11 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'admin_init', $plugin_admin, 'register_plugin_settings' );
 		$this->loader->add_action( 'init', $plugin_admin, 'register_gutenberg_blocks' );
 		
+		// AJAX handlers
+		$this->loader->add_action( 'wp_ajax_save_custom_tlds', $plugin_admin, 'ajax_save_custom_tlds' );
+		
 		// REST API endpoints
 		$this->loader->add_action( 'rest_api_init', $plugin_admin, 'register_rest_routes' );
-
-		// Domain product type hooks
-		$this->loader->add_action( 'init', 'Owh_Domain_Product_Registration', 'register_domain_product_type' );
-		$this->loader->add_filter( 'product_type_selector', 'Owh_Domain_Product_Registration', 'add_domain_product_type' );
-		$this->loader->add_filter( 'woocommerce_product_class', 'Owh_Domain_Product_Registration', 'get_domain_product_class', 10, 2 );
-		
-		// Domain product admin hooks - Matriz de Preços 3x10
-		$this->loader->add_action( 'woocommerce_product_data_tabs', $plugin_admin, 'add_domain_pricing_tab' );
-		$this->loader->add_action( 'woocommerce_product_data_panels', $plugin_admin, 'add_domain_pricing_panel' );
-		$this->loader->add_action( 'woocommerce_process_product_meta_domain', $plugin_admin, 'save_domain_pricing_matrix_fields' );
-		
-		// Custom Fields AJAX handlers
-		$this->loader->add_action( 'wp_ajax_owh_load_custom_fields', $plugin_admin, 'ajax_load_custom_fields' );
-		$this->loader->add_action( 'wp_ajax_owh_save_custom_fields', $plugin_admin, 'ajax_save_custom_fields' );
-		
-		// Get custom field configs for frontend (both logged in and guests)
-		$this->loader->add_action( 'wp_ajax_owh_get_custom_field_configs', $plugin_admin, 'ajax_get_custom_field_configs' );
-		$this->loader->add_action( 'wp_ajax_nopriv_owh_get_custom_field_configs', $plugin_admin, 'ajax_get_custom_field_configs' );
-		
-		// TLD to Product conversion AJAX handler
-		$this->loader->add_action( 'wp_ajax_owh_convert_tld_to_product', $plugin_admin, 'ajax_convert_tld_to_product' );
-		
-		// TLD product status check AJAX handler
-		$this->loader->add_action( 'wp_ajax_owh_check_tld_product_status', $plugin_admin, 'ajax_check_tld_product_status' );
-
-		// Display custom fields in admin order view  
-		$plugin_public = new Owh_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
-		$this->loader->add_action( 'woocommerce_admin_order_data_after_billing_address', $plugin_public, 'display_custom_fields_in_admin_order' );
 	}
 
 	/**
@@ -179,61 +154,8 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		
-		// REST API endpoints
-		$this->loader->add_action( 'rest_api_init', $plugin_public, 'register_rest_routes' );
-		
-		// Domain product period selection hooks
-		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_period_selector', 18 );
-		$this->loader->add_action( 'wp_ajax_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
-		$this->loader->add_action( 'wp_ajax_nopriv_get_domain_price_for_period', $plugin_public, 'ajax_get_domain_price_for_period' );
-		
-		// Domain pricing matrix and cart update AJAX handlers
-		$this->loader->add_action( 'wp_ajax_owh_get_domain_pricing_matrix', $plugin_public, 'ajax_get_domain_pricing_matrix' );
-		$this->loader->add_action( 'wp_ajax_nopriv_owh_get_domain_pricing_matrix', $plugin_public, 'ajax_get_domain_pricing_matrix' );
-		$this->loader->add_action( 'wp_ajax_owh_update_domain_period', $plugin_public, 'ajax_update_domain_period' );
-		$this->loader->add_action( 'wp_ajax_nopriv_owh_update_domain_period', $plugin_public, 'ajax_update_domain_period' );
-		
-		$this->loader->add_filter( 'woocommerce_add_cart_item_data', $plugin_public, 'add_domain_cart_item_data', 10, 3 );
-		$this->loader->add_action( 'woocommerce_before_calculate_totals', $plugin_public, 'update_domain_cart_item_price' );
-		
-		// Filtros para interceptar e corrigir os totais do carrinho
-		$this->loader->add_filter( 'woocommerce_cart_get_subtotal', $plugin_public, 'filter_cart_subtotal', 999 );
-		$this->loader->add_filter( 'woocommerce_cart_get_total', $plugin_public, 'filter_cart_total', 999 );
-		
-		// Filtros adicionais para preços individuais dos produtos
-		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'filter_cart_item_price', 999, 3 );
-		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'filter_cart_item_subtotal', 999, 3 );
-		
-		// Filtros para WooCommerce Blocks
-		$this->loader->add_filter( 'woocommerce_store_api_product_quantity_limit', $plugin_public, 'filter_store_api_price', 999, 3 );
-		$this->loader->add_filter( 'woocommerce_blocks_cart_item_data', $plugin_public, 'filter_blocks_cart_item_data', 999, 2 );
-		
-		// Filtros para forçar preços corretos no carrinho
-		$this->loader->add_filter( 'woocommerce_get_cart_contents', $plugin_public, 'filter_cart_contents', 999 );
-		$this->loader->add_filter( 'woocommerce_cart_item_price', $plugin_public, 'filter_cart_item_price', 999, 3 );
-		$this->loader->add_filter( 'woocommerce_cart_item_subtotal', $plugin_public, 'filter_cart_item_subtotal', 999, 3 );
-
-		// Display domain information in cart and checkout
-		$this->loader->add_filter( 'woocommerce_cart_item_name', $plugin_public, 'modify_domain_cart_item_name', 10, 3 );
-		$this->loader->add_filter( 'wp_kses_allowed_html', $plugin_public, 'modify_wp_kses_allowed_html', 10, 2 );
-		
-		// Store API hooks for blocks checkout
-		$this->loader->add_action( 'woocommerce_store_api_checkout_update_order_from_request', $plugin_public, 'extend_store_api_item_data', 10, 2 );
-		
-		// Register Store API extension for blocks
-		$this->loader->add_action( 'woocommerce_blocks_loaded', $plugin_public, 'register_store_api_extension' );
-		
-		// Force Add to Cart button for domain products (Block Theme compatibility)
-		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_add_to_cart_form', 30 );
-		
-		// Dynamic checkout fields for domain products - use hooks that run after cart is loaded
-		$this->loader->add_action( 'woocommerce_checkout_init', $plugin_public, 'register_dynamic_checkout_fields' );
-		$this->loader->add_action( 'woocommerce_after_order_notes', $plugin_public, 'display_custom_checkout_fields' );
-		$this->loader->add_action( 'woocommerce_checkout_process', $plugin_public, 'validate_custom_checkout_fields' );
-		$this->loader->add_action( 'woocommerce_rest_checkout_process_payment_with_context', $plugin_public, 'save_custom_checkout_fields', 1, 2 );
-	
-		
+		$this->loader->add_action( 'wp_ajax_owh_check_domain', $plugin_public, 'ajax_check_domain' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owh_check_domain', $plugin_public, 'ajax_check_domain' );
 	}
 
 	/**

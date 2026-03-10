@@ -79,10 +79,8 @@
             $.ajax({
                 url: owh_rdap_admin.rest_url + 'update-servers',
                 type: 'POST',
-                credentials: 'same-origin',
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.rest_nonce);
-                    xhr.setRequestHeader('Content-Type', 'application/json');
+                    xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.nonce);
                 },
                 timeout: 30000, // 30 seconds timeout
                 success: function(response) {
@@ -243,10 +241,8 @@
         $.ajax({
             url: owh_rdap_admin.rest_url + 'server-status',
             type: 'GET',
-            credentials: 'same-origin',
             beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.rest_nonce);
-                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.nonce);
             },
             success: function(response) {
                 if (response.success && response.data) {
@@ -289,7 +285,44 @@
         });
     }
     
-    // RDAP Server Update Handler - using delegation to avoid conflicts
-    // This is already handled by the earlier click event, removing duplicate
+    // RDAP Server Update Handler
+    $(document).on('click', '#update-rdap-servers', function() {
+        var button = $(this);
+        var status = $('#update-rdap-status');
+        
+        // Get localized strings
+        var strings = owh_rdap_admin.strings || {};
+        var updatingText = strings.updating || 'Atualizando...';
+        var originalText = button.text();
+        
+        button.prop('disabled', true).text(updatingText);
+        status.html('<span style="color: #0073aa;">Atualizando lista de servidores RDAP...</span>');
+        
+        $.ajax({
+            url: ajaxurl,
+            type: 'POST',
+            data: {
+                action: 'owh_update_rdap_servers',
+                nonce: owh_rdap_admin.nonce
+            },
+            success: function(response) {
+                if (response.success) {
+                    status.html('<span style="color: #46b450;">Lista de servidores RDAP atualizada com sucesso!</span>');
+                    // Reload server status after successful update
+                    setTimeout(function() {
+                        loadRdapServerStatus();
+                    }, 1000);
+                } else {
+                    status.html('<span style="color: #dc3232;">Erro ao atualizar lista: ' + (response.data || 'Erro desconhecido') + '</span>');
+                }
+            },
+            error: function() {
+                status.html('<span style="color: #dc3232;">Erro de conexão ao atualizar lista.</span>');
+            },
+            complete: function() {
+                button.prop('disabled', false).text(originalText);
+            }
+        });
+    });
     
 })(jQuery);

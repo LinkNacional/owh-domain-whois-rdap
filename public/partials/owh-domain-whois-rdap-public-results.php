@@ -25,15 +25,12 @@ $defaults = array(
 	'available_text' => __( 'Este domínio está disponível para registro!', 'owh-domain-whois-rdap' ),
 	'unavailable_title' => __( 'Domínio Indisponível', 'owh-domain-whois-rdap' ),
 	'unavailable_text' => __( 'Este domínio já está registrado e não está disponível.', 'owh-domain-whois-rdap' ),
-	'disabled_title' => __( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ),
-	'disabled_text' => __( 'A tld "{tld}" está desabilitada.', 'owh-domain-whois-rdap' ),
 	'buy_button_text' => __( 'Registrar Domínio', 'owh-domain-whois-rdap' ),
 	'details_button_text' => __( 'Ver detalhes completos do WHOIS', 'owh-domain-whois-rdap' ),
 	'show_icons' => true,
 	'search_icon' => '🔍',
 	'available_icon' => '✅',
-	'unavailable_icon' => '❌',
-	'disabled_icon' => '⚠️'
+	'unavailable_icon' => '❌'
 );
 
 // Merge custom attributes with defaults
@@ -107,35 +104,15 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 
 	<?php if ( $result ) : ?>
 		<?php if ( $result->hasError() ) : ?>
-			<?php if ( $result->getStatus() === 'TLD_DISABLED' ) : ?>
-				<!-- Seção específica para TLD desabilitada -->
-				<div class="owh-rdap-result-error">
-					<?php if ( $show_icons ) : ?>
-						<div class="owh-rdap-error-icon"><?php echo esc_html( $disabled_icon ); ?></div>
-					<?php endif; ?>
-					<div class="owh-rdap-error-content">
-						<h4 style="color: #dc3232;"><?php echo esc_html( $disabled_title ); ?></h4>
-						<?php 
-						// Substituir {tld} pelo TLD real no texto
-						$domain_parts = explode( '.', $result->getDomain() );
-						$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
-						$disabled_message = str_replace( '{tld}', $tld, $disabled_text );
-						?>
-						<p><?php echo esc_html( $disabled_message ); ?></p>
-					</div>
+			<div class="owh-rdap-result-error">
+				<?php if ( $show_icons ) : ?>
+					<div class="owh-rdap-error-icon">⚠️</div>
+				<?php endif; ?>
+				<div class="owh-rdap-error-content">
+					<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
+					<p><?php echo esc_html( $result->getError() ); ?></p>
 				</div>
-			<?php else : ?>
-				<!-- Erro geral -->
-				<div class="owh-rdap-result-error">
-					<?php if ( $show_icons ) : ?>
-						<div class="owh-rdap-error-icon">⚠️</div>
-					<?php endif; ?>
-					<div class="owh-rdap-error-content">
-						<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
-						<p><?php echo esc_html( $result->getError() ); ?></p>
-					</div>
-				</div>
-			<?php endif; ?>
+			</div>
 		<?php elseif ( $result->isAvailable() ) : ?>
 			<div class="owh-rdap-result-available">
 				<?php if ( $show_icons ) : ?>
@@ -195,54 +172,6 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 								</button>
 							</div>
 							<?php
-						}
-					} elseif ( $integration_type === 'woocommerce' ) {
-						// Extract TLD from domain
-						$domain_parts = explode( '.', $result->getDomain() );
-						$tld = isset( $domain_parts[1] ) ? '.' . $domain_parts[1] : '';
-						
-						if ( ! empty( $tld ) && class_exists( 'WooCommerce' ) ) {
-							// Check if there's a product for this TLD
-							$existing_products = get_posts( array(
-								'post_type' => 'product',
-								'meta_query' => array(
-									array(
-										'key' => '_domain_tld',
-										'value' => $tld,
-										'compare' => '='
-									)
-								),
-								'post_status' => 'publish',
-								'numberposts' => 1,
-								'fields' => 'ids'
-							) );
-							
-							if ( ! empty( $existing_products ) ) {
-								$product_id = $existing_products[0];
-								$product = wc_get_product( $product_id );
-								
-								if ( $product ) {
-									// Add domain name to cart URL so it can be used in checkout
-									$domain_name = $result->getDomain();
-									$add_to_cart_url = wc_get_cart_url() . '?add-to-cart=' . $product_id . '&domain_name=' . urlencode( $domain_name );
-									?>
-									<div class="owh-rdap-buy-section">
-										<a href="<?php echo esc_url( $add_to_cart_url ); ?>" 
-										   class="owh-rdap-buy-button" 
-										   rel="nofollow"
-										   style="<?php echo isset( $custom_attributes['available_color'] ) ? 'background: ' . esc_attr( $custom_attributes['available_color'] ) . ';' : ''; ?>">
-											<span class="dashicons dashicons-cart"></span>
-											<?php echo esc_html( $buy_button_text ); ?> - <?php echo esc_html( $domain_name ); ?>
-										</a>
-										<p class="owh-rdap-product-info">
-											<?php if ( $product->get_price() ) : ?>
-												<span class="price"><?php echo wc_price( $product->get_price() ); ?>/ano</span>
-											<?php endif; ?>
-										</p>
-									</div>
-									<?php
-								}
-							}
 						}
 					}
 					} // Close the if ( $integration_type !== 'none' ) block

@@ -270,6 +270,9 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 	<?php else : ?>
 		<div class="owh-rdap-no-domain">
 			<div style="text-align: center;">
+				<?php if ( isset( $show_icon ) && $show_icon ) : ?>
+					<div style="font-size: 48px; margin-bottom: 15px;"><?php echo esc_html( isset( $custom_icon ) ? $custom_icon : '📋' ); ?></div>
+				<?php endif; ?>
 				<h4><?php echo esc_html( isset( $no_domain_text ) ? $no_domain_text : __( 'Nenhum Domínio Informado', 'owh-domain-whois-rdap' ) ); ?></h4>
 				<p><?php echo esc_html( isset( $no_domain_description ) ? $no_domain_description : __( 'Para visualizar os detalhes WHOIS, acesse esta página através do link "Ver detalhes completos" nos resultados da pesquisa.', 'owh-domain-whois-rdap' ) ); ?></p>
 			</div>
