@@ -227,7 +227,7 @@
         let gridData = [];
         if (customFieldsData && customFieldsData.length > 0) {
             gridData = customFieldsData.map(function(field) {
-                return [field.label || '', field.regex || '', '', field.id];
+                return [field.label || '', field.regex || '', field.error_message || '', '', field.id];
             });
         }
 
@@ -237,9 +237,9 @@
                     name: 'Label do Campo',
                     id: 'label',
                     sort: true,
-                    width: '40%',
+                    width: '30%',
                     formatter: function(cell, row) {
-                        const fieldId = row.cells[3].data; // ID is in the 4th column
+                        const fieldId = row.cells[4].data; // ID is in the 5th column now
                         return h('input', {
                             type: 'text',
                             value: cell || '',
@@ -256,9 +256,9 @@
                     name: 'Regex de Validação (Opcional)',
                     id: 'regex',
                     sort: false,
-                    width: '40%',
+                    width: '25%',
                     formatter: function(cell, row) {
-                        const fieldId = row.cells[3].data; // ID is in the 4th column
+                        const fieldId = row.cells[4].data; // ID is in the 5th column now
                         return h('input', {
                             type: 'text',
                             value: cell || '',
@@ -272,12 +272,31 @@
                     }
                 },
                 {
+                    name: 'Mensagem de Erro Personalizada',
+                    id: 'error_message',
+                    sort: false,
+                    width: '30%',
+                    formatter: function(cell, row) {
+                        const fieldId = row.cells[4].data; // ID is in the 5th column now
+                        return h('input', {
+                            type: 'text',
+                            value: cell || '',
+                            className: 'regular-text field-error-message',
+                            placeholder: 'Ex: Por favor, insira um CPF válido',
+                            'data-field-id': fieldId,
+                            onInput: function(e) {
+                                updateFieldData(fieldId, 'error_message', e.target.value);
+                            }
+                        });
+                    }
+                },
+                {
                     name: 'Ações',
                     id: 'actions',
                     sort: false,
                     width: '15%',
                     formatter: function(cell, row) {
-                        const fieldId = row.cells[3].data; // ID is in the 4th column
+                        const fieldId = row.cells[4].data; // ID is in the 5th column now
                         return h('div', { className: 'custom-field-actions' }, [
                             h('button', {
                                 type: 'button',
@@ -346,7 +365,8 @@
         const newField = {
             id: nextFieldId++,
             label: '',
-            regex: ''
+            regex: '',
+            error_message: ''
         };
 
         customFieldsData.push(newField);
@@ -355,7 +375,7 @@
         $('#custom-fields-grid .no-fields-message').remove();
         
         initializeGrid();
-        showStatus('Campo adicionado. Configure o label e regex.', 'success');
+        showStatus('Campo adicionado. Configure o label, regex e mensagem de erro.', 'success');
     }
 
     /**

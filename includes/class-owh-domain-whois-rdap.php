@@ -151,6 +151,10 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'wp_ajax_owh_load_custom_fields', $plugin_admin, 'ajax_load_custom_fields' );
 		$this->loader->add_action( 'wp_ajax_owh_save_custom_fields', $plugin_admin, 'ajax_save_custom_fields' );
 		
+		// Get custom field configs for frontend (both logged in and guests)
+		$this->loader->add_action( 'wp_ajax_owh_get_custom_field_configs', $plugin_admin, 'ajax_get_custom_field_configs' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owh_get_custom_field_configs', $plugin_admin, 'ajax_get_custom_field_configs' );
+		
 		// TLD to Product conversion AJAX handler
 		$this->loader->add_action( 'wp_ajax_owh_convert_tld_to_product', $plugin_admin, 'ajax_convert_tld_to_product' );
 		
@@ -212,6 +216,7 @@ class Owh_Domain_Whois_Rdap {
 
 		// Display domain information in cart and checkout
 		$this->loader->add_filter( 'woocommerce_cart_item_name', $plugin_public, 'modify_domain_cart_item_name', 10, 3 );
+		$this->loader->add_filter( 'wp_kses_allowed_html', $plugin_public, 'modify_wp_kses_allowed_html', 10, 2 );
 		
 		// Store API hooks for blocks checkout
 		$this->loader->add_action( 'woocommerce_store_api_checkout_update_order_from_request', $plugin_public, 'extend_store_api_item_data', 10, 2 );

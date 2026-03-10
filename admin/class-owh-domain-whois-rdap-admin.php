@@ -1110,6 +1110,13 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'callback' => array( $this, 'rest_save_tlds_config' ),
 			'permission_callback' => array( $this, 'rest_permissions_check' ),
 		) );
+
+		// Custom field configurations endpoint (public access for frontend)
+		register_rest_route( 'owh-rdap/v1', '/custom-field-configs', array(
+			'methods' => 'GET',
+			'callback' => array( $this, 'rest_get_custom_field_configs' ),
+			'permission_callback' => '__return_true', // Public access
+		) );
 	}
 
 	/**
@@ -2120,7 +2127,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 				$sanitized_fields[] = array(
 					'id' => intval( $field['id'] ),
 					'label' => sanitize_text_field( $field['label'] ),
-					'regex' => sanitize_text_field( $regex )
+					'regex' => sanitize_text_field( $regex ),
+					'error_message' => isset( $field['error_message'] ) ? sanitize_text_field( $field['error_message'] ) : ''
 				);
 			}
 
@@ -2329,5 +2337,58 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'permalink' => get_permalink( $product_id ),
 			'add_to_cart_url' => wc_get_cart_url() . '?add-to-cart=' . $product_id
 		);
+	}
+
+	/**
+	 * AJAX handler to get custom field configurations for frontend
+	 *
+	 * @since    1.0.0
+	 */
+	public function ajax_get_custom_field_configs() {
+		try {
+			// Get custom fields from options (only return fields with error messages)
+			$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+			
+			// Filter only fields that have error messages
+			$fields_with_messages = array_filter( $custom_fields, function( $field ) {
+				return isset( $field['error_message'] ) && ! empty( trim( $field['error_message'] ) );
+			} );
+			
+			$response = array(
+				'success' => true,
+				'data' => array_values( $fields_with_messages ) // Re-index array
+			);
+		} catch ( Exception $e ) {
+			$response = array(
+				'success' => false,
+				'data' => 'Error loading field configs: ' . $e->getMessage()
+			);
+		}
+		
+		wp_send_json( $response );
+	}
+
+	/**
+	 * REST API endpoint to get custom field configurations
+	 *
+	 * @since    1.0.0
+	 */
+	public function rest_get_custom_field_configs( $request ) {
+		try {
+			// Get custom fields from options (only return fields with error messages)
+			$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+			
+			// Filter only fields that have error messages
+			$fields_with_messages = array_filter( $custom_fields, function( $field ) {
+				return isset( $field['error_message'] ) && ! empty( trim( $field['error_message'] ) );
+			} );
+			
+			return new \WP_REST_Response( array(
+				'success' => true,
+				'data' => array_values( $fields_with_messages ) // Re-index array
+			), 200 );
+		} catch ( Exception $e ) {
+			return new \WP_Error( 'load_error', 'Error loading field configs: ' . $e->getMessage(), array( 'status' => 500 ) );
+		}
 	}
 }

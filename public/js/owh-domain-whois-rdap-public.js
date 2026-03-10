@@ -10,6 +10,71 @@
             $('#owh-rdap-domain-input').val(domain).focus();
         });
 
+        // Handle domain period selection changes in cart/checkout
+        $(document).on('change', '.owh-domain-period-selector', function(e) {
+            e.preventDefault();
+            
+            var $select = $(this);
+            var cartKey = $select.data('cart-key');
+            var productId = $select.data('product-id');
+            var newPeriod = $select.val();
+            var $loading = $select.siblings('.owh-domain-loading');
+            var $wrapper = $select.closest('.owh-domain-period-wrapper');
+            
+            // Show loading
+            $loading.show();
+            $select.prop('disabled', true);
+            
+            // Make AJAX request to update period
+            $.ajax({
+                url: owhRdapPublic.ajax_url,
+                type: 'POST',
+                data: {
+                    action: 'owh_update_domain_period',
+                    nonce: owhRdapPublic.nonce,
+                    cart_key: cartKey,
+                    product_id: productId,
+                    new_period: newPeriod
+                },
+                success: function(response) {
+                    if (response.success) {
+                        // Update the displayed price in the select option
+                        var $selectedOption = $select.find('option:selected');
+                        
+                        // Reload checkout fragments to update totals
+                        if (typeof wc_checkout_params !== 'undefined' && wc_checkout_params.is_checkout) {
+                            $('body').trigger('update_checkout');
+                        } else if (typeof wc_cart_params !== 'undefined') {
+                            // For cart page
+                            $('[name="update_cart"]').trigger('click');
+                        } else {
+                            // Fallback: reload page
+                            location.reload();
+                        }
+                    } else {
+                        alert('Erro ao atualizar período: ' + (response.data || 'Erro desconhecido'));
+                        // Reset select to previous value
+                        $select.val($select.data('previous-value'));
+                    }
+                },
+                error: function() {
+                    alert('Erro de conexão ao atualizar período');
+                    // Reset select to previous value
+                    $select.val($select.data('previous-value'));
+                },
+                complete: function() {
+                    // Hide loading and re-enable select
+                    $loading.hide();
+                    $select.prop('disabled', false);
+                }
+            });
+        });
+
+        // Store previous value when select gets focus
+        $(document).on('focus', '.owh-domain-period-selector', function() {
+            $(this).data('previous-value', $(this).val());
+        });
+
         // Real-time domain validation
         $('#owh-rdap-domain-input').on('input', function() {
             var input = $(this);

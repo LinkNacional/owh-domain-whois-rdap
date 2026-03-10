@@ -35,6 +35,16 @@
     font-size: 13px;
 }
 
+/* Error Message Field Styling */
+.field-error-message {
+    font-style: italic;
+}
+
+.field-error-message::placeholder {
+    font-style: italic;
+    color: #888;
+}
+
 /* Welcome message for empty state */
 .no-fields-message {
     text-align: center;
@@ -300,5 +310,24 @@
     
     .gridjs-search input {
         width: 100% !important;
+    }
+    
+    /* Better mobile display for the table */
+    .owh-custom-fields-table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
+
+/* Responsive Design Improvements for Error Message Column */
+@media screen and (max-width: 1200px) {
+    .owh-custom-fields-table {
+        font-size: 12px;
+    }
+    
+    .owh-custom-fields-table input[type="text"] {
+        padding: 4px 8px;
+        font-size: 12px;
     }
 }

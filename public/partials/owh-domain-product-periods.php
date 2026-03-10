@@ -58,46 +58,6 @@ if ( empty( $available_periods ) ) {
             </span>
         </div>
         
-        <script>
-        jQuery(document).ready(function($) {
-            $('.domain-period-selector').on('change', function() {
-                var period = $(this).val();
-                var $priceDisplay = $('.domain-period-price');
-                
-                console.log('Período selecionado:', period);
-                
-                if (!period) return;
-                
-                $priceDisplay.text('Carregando...');
-                
-                $.ajax({
-                    url: '<?php echo admin_url('admin-ajax.php'); ?>',
-                    type: 'POST',
-                    data: {
-                        action: 'get_domain_price_for_period',
-                        product_id: <?php echo $product->get_id(); ?>,
-                        period: period,
-                        nonce: '<?php echo wp_create_nonce('owh_domain_ajax'); ?>'
-                    },
-                    success: function(response) {
-                        console.log('Resposta AJAX:', response);
-                        if (response.success && response.data.price_html) {
-                            $priceDisplay.html(response.data.price_html);
-                        } else {
-                            $priceDisplay.text('Preço não disponível');
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log('Erro AJAX:', error);
-                        $priceDisplay.text('Erro ao carregar preço');
-                    }
-                });
-            });
-            
-            // Trigger change event for initial selected value
-            $('.domain-period-selector').trigger('change');
-        });
-        </script>
         
     <?php else : ?>
         
@@ -121,13 +81,14 @@ if ( empty( $available_periods ) ) {
     <?php endif; ?>
     
     <!-- Additional domain-specific fields -->
-    <div class="domain-additional-fields" style="display: none;">
+    <div class="domain-additional-fields">
         <!-- Domain name input (if needed for custom search) -->
-        <input type="text" name="domain_name" class="domain-name-input" placeholder="Digite o domínio..." />
+        <input type="text" name="domain_name" class="domain-name-input" placeholder="Digite o domínio..." style="display: none;" />
         
         <!-- Hidden fields for cart processing -->
         <input type="hidden" name="domain_action" value="register" />
         <input type="hidden" name="is_domain_product" value="1" />
+        <input type="hidden" name="domain_price" id="hidden_domain_price" value="" />
     </div>
     
 </div>

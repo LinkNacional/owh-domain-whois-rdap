@@ -182,13 +182,6 @@
             const productId = selectElement.dataset.productId;
             const newPeriod = parseInt(selectElement.value);
             
-            console.log('Período alterado:', {
-                cartKey: cartKey,
-                domain: domainName,
-                productId: productId,
-                newPeriod: newPeriod
-            });
-            
             // Show loading state
             selectElement.style.borderColor = '#007cba';
             selectElement.disabled = true;
@@ -196,7 +189,6 @@
             // Make AJAX call to update cart item with new period
             updateCartItemPeriod(cartKey, newPeriod, productId).then(response => {
                 if (response.success) {
-                    console.log('Carrinho atualizado com sucesso');
                     selectElement.style.borderColor = '#28a745';
                     
                     // Trigger cart refresh in WooCommerce Blocks
@@ -266,5 +258,179 @@
         document.head.appendChild(styleSheet);
 
     });
+
+    /**
+     * Observer for custom error messages in WooCommerce Blocks
+     * Replaces default validation messages with custom configured messages
+     */
+    function initCustomErrorMessageObserver() {
+        // Store custom error messages
+        let customErrorMessages = {};
+        
+        // Fetch custom field configurations
+        function fetchCustomFieldConfigs() {
+            // Try REST API first, then fallback to AJAX
+            const restUrl = window.wpApiSettings?.root || '/wp-json/';
+            const apiUrl = restUrl + 'owh-rdap/v1/custom-field-configs';
+            
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    // Build error message map
+                    data.data.forEach(function(field) {
+                        if (field.id && field.error_message && field.error_message.trim() !== '') {
+                            customErrorMessages['validate-error-order_owh-domain-whois-rdap/custom-field-' + field.id] = field.error_message;
+                        }
+                    });
+                } else {
+                    console.log('REST API response format unexpected:', data);
+                }
+            })
+            .catch(error => {
+                console.log('REST API failed, trying AJAX fallback:', error);
+                
+                // Fallback to AJAX if available
+                if (window.owh_ajax_url && window.owh_domain_nonce) {
+                    const formData = new FormData();
+                    formData.append('action', 'owh_get_custom_field_configs');
+                    formData.append('nonce', window.owh_domain_nonce);
+                    
+                    fetch(window.owh_ajax_url, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success && data.data) {
+                            data.data.forEach(function(field) {
+                                if (field.id && field.error_message && field.error_message.trim() !== '') {
+                                    customErrorMessages['validate-error-order_owh-domain-whois-rdap/custom-field-' + field.id] = field.error_message;
+                                }
+                            });
+                        }
+                    })
+                    .catch(ajaxError => {
+                        console.log('Both REST API and AJAX failed:', ajaxError);
+                    });
+                } else {
+                    console.log('No AJAX configuration available for fallback');
+                }
+            });
+        }
+        
+        // Create mutation observer to watch for validation errors
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if this is a validation error div
+                        if (node.classList && node.classList.contains('wc-block-components-validation-error')) {
+                            replaceErrorMessage(node);
+                        }
+                        
+                        // Also check child elements
+                        const errorDivs = node.querySelectorAll && node.querySelectorAll('.wc-block-components-validation-error');
+                        if (errorDivs && errorDivs.length > 0) {
+                            errorDivs.forEach(replaceErrorMessage);
+                        }
+                    }
+                });
+            });
+        });
+        
+        // Function to replace error message
+        function replaceErrorMessage(errorDiv) {
+            const errorP = errorDiv.querySelector('p[id^="validate-error-order_owh-domain-whois-rdap/custom-field-"]');
+            if (errorP) {
+                const fieldId = errorP.id;
+                
+                if (customErrorMessages[fieldId]) {
+                    const span = errorP.querySelector('span');
+                    if (span) {
+                        const currentText = span.textContent.trim();
+                        
+                        // Check if the message has already been modified (to avoid duplicating)
+                        if (!currentText.startsWith(customErrorMessages[fieldId])) {
+                            // List of patterns that should be prefixed with custom messages
+                            const replaceablePatterns = [
+                                'Please match the requested format.',
+                                'This field is invalid.',
+                                'The field format is invalid.',
+                                'Invalid format.',
+                                /critérios?\s+necessários?/i,
+                                /não\s+atende/i,
+                                /format?\s+(required|invalid)/i,
+                                /required?\s+format/i,
+                                /invalid\s+input/i,
+                                /formato\s+(inválido|incorreto)/i
+                            ];
+                            
+                            const shouldModify = replaceablePatterns.some(pattern => {
+                                if (pattern instanceof RegExp) {
+                                    return pattern.test(currentText);
+                                }
+                                return currentText === pattern || currentText.includes(pattern);
+                            });
+                            
+                            if (shouldModify) {
+                                // Prepend custom message to the existing message
+                                const newMessage = customErrorMessages[fieldId] + ' ' + currentText;
+                                span.textContent = newMessage;
+                            } else {
+                                console.log('Error message doesn\'t match replacement patterns:', currentText);
+                            }
+                        } else {
+                            console.log('Message already contains custom prefix, skipping');
+                        }
+                    }
+                } else {
+                    console.log('No custom message found for field ID:', fieldId);
+                }
+            }
+        }
+        
+        // Start observing when DOM is ready
+        function startObserving() {
+            fetchCustomFieldConfigs();
+            
+            // Start observing the document for changes
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+            
+            // Also check existing error messages
+            setTimeout(() => {
+                const existingErrors = document.querySelectorAll('.wc-block-components-validation-error');
+                existingErrors.forEach(replaceErrorMessage);
+            }, 100);
+        }
+        
+        // Initialize when checkout is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startObserving);
+        } else {
+            startObserving();
+        }
+        
+        // Re-fetch configs when checkout updates (in case of AJAX)
+        document.addEventListener('updated_checkout', function() {
+            setTimeout(fetchCustomFieldConfigs, 500);
+        });
+        
+        // Also listen for form validation events
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.name && e.target.name.includes('owh_domain_custom_field_')) {
+                setTimeout(() => {
+                    const errorDivs = document.querySelectorAll('.wc-block-components-validation-error');
+                    errorDivs.forEach(replaceErrorMessage);
+                }, 100);
+            }
+        });
+    }
+    
+    // Initialize the observer
+    initCustomErrorMessageObserver();
 
 })();

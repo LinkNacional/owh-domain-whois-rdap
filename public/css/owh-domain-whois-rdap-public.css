@@ -732,43 +732,73 @@
     display: none !important;
 }
 
-/* Responsive styles */
+/* Domain period selector in cart/checkout */
+.owh-domain-period-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.owh-domain-period-selector {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    background: #fff;
+    min-width: 120px;
+    cursor: pointer;
+    transition: border-color 0.3s ease;
+}
+
+.owh-domain-period-selector:hover {
+    border-color: #999;
+}
+
+.owh-domain-period-selector:focus {
+    border-color: #007cba;
+    outline: none;
+    box-shadow: 0 0 0 1px #007cba;
+}
+
+.owh-domain-period-selector:disabled {
+    background-color: #f1f1f1;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.owh-domain-loading {
+    font-size: 14px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Responsive adjustments */
 @media (max-width: 768px) {
-    .owh-rdap-whois-details-container {
-        padding: 0 15px;
+    .owh-domain-period-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
     
-    .owh-rdap-domain-events,
-    .owh-rdap-domain-entities,
-    .owh-rdap-nameservers,
-    .owh-rdap-domain-status,
-    .owh-rdap-secure-dns {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .owh-rdap-table {
-        font-size: 14px;
-    }
-    
-    .owh-rdap-table th,
-    .owh-rdap-table td {
-        padding: 8px 10px;
+    .owh-domain-period-selector {
+        width: 100%;
+        min-width: auto;
     }
 }
 
-@media (max-width: 480px) {
-    .owh-rdap-table {
-        font-size: 12px;
-    }
-    
-    .owh-rdap-entity-item,
-    .owh-rdap-event-item {
-        padding: 10px;
-    }
-    
-    .owh-rdap-vcard-info p,
-    .owh-rdap-event-info p {
-        font-size: 13px;
-    }
+/* Integration with WooCommerce checkout */
+.woocommerce-checkout-review-order-table .owh-domain-period-wrapper,
+.woocommerce-cart-form .owh-domain-period-wrapper {
+    font-size: inherit;
+}
+
+.woocommerce-checkout-review-order-table .owh-domain-period-selector,
+.woocommerce-cart-form .owh-domain-period-selector {
+    font-size: 13px;
+    padding: 2px 6px;
 }

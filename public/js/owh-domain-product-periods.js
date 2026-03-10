@@ -30,12 +30,11 @@
         handlePeriodChange(event) {
             const $selector = $(event.target);
             const selectedPeriod = parseInt($selector.val());
-            const $form = $selector.closest('.domain-product-form-container').find('form.cart');
+            const $container = $selector.closest('.domain-product-form-container');
             
-            console.log('handlePeriodChange', { selectedPeriod, formFound: $form.length }); // Debug
             
-            this.updatePrice($form, selectedPeriod);
-            this.updateButtonText($form, selectedPeriod);
+            this.updatePrice($container, selectedPeriod);
+            this.updateAllForms(selectedPeriod);
         }
 
         handleDomainChange(event) {
@@ -46,12 +45,10 @@
             this.validateDomainName($input.val());
         }
 
-        updatePrice($form, period) {
-            const $priceDisplay = $('.domain-period-price');
-            const $container = $('.domain-product-form-container');
-            const productId = $container.data('product-id') || $form.find('input[name="add-to-cart"]').val();
+        updatePrice($container, period) {
+            const $priceDisplay = $container.find('.domain-period-price');
+            const productId = $container.data('product-id');
             
-            console.log('updatePrice called', { productId, period }); // Debug
             
             if (!productId || !period) {
                 console.log('Missing productId or period');
@@ -72,13 +69,11 @@
                     nonce: owh_domain_ajax.nonce
                 },
                 success: (response) => {
-                    console.log('AJAX success:', response); // Debug
                     if (response.success && response.data.price) {
                         $priceDisplay.removeClass('loading').html(response.data.price_html);
                         
-                        // Update hidden field for cart
-                        $form.find('input[name="domain_period"]').val(period);
-                        $form.find('input[name="domain_price"]').val(response.data.price);
+                        // Update all forms with new price data
+                        this.updateAllForms(period, response.data.price);
                     } else {
                         $priceDisplay.removeClass('loading').text('Preço não disponível');
                     }
@@ -89,21 +84,44 @@
                 }
             });
         }
-
-        updateButtonText($form, period) {
-            const $button = $form.find('.single_add_to_cart_button');
-            const periodText = period === 1 ? '1 ano' : period + ' anos';
+        
+        updateAllForms(period, price = null) {
+            // Update all WooCommerce cart forms
+            $('form.cart').each((index, form) => {
+                this.updateFormFields($(form), period, price);
+            });
             
-            $button.text(`Adicionar ao Carrinho - ${periodText}`);
+            // Update custom domain add-to-cart forms
+            $('.domain-add-to-cart-section form').each((index, form) => {
+                this.updateFormFields($(form), period, price);
+            });
+            
+            // Update global hidden fields
+            $('#hidden_domain_price').val(price || '');
+        }
+        
+        updateFormFields($form, period, price) {
+            // Remove existing fields to avoid duplicates
+            $form.find('input[name="domain_period"]').remove();
+            $form.find('input[name="domain_price"]').remove();
+            
+            // Add new hidden fields
+            $form.append(`<input type="hidden" name="domain_period" value="${period}" />`);
+            if (price) {
+                $form.append(`<input type="hidden" name="domain_price" value="${price}" />`);
+            }
+            
         }
 
         updateInitialPrice() {
             // Set initial price for products with period selector
             $('.domain-period-selector').each((index, element) => {
                 const $selector = $(element);
-                if ($selector.val()) {
-                    const $form = $selector.closest('form');
-                    this.updatePrice($form, parseInt($selector.val()));
+                const selectedValue = $selector.val() || $selector.find('option:selected').val();
+                
+                if (selectedValue) {
+                    const $container = $selector.closest('.domain-product-form-container');
+                    this.updatePrice($container, parseInt(selectedValue));
                 }
             });
         }

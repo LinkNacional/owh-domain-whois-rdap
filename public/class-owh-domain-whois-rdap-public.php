@@ -123,9 +123,10 @@ class Owh_Domain_Whois_Rdap_Public {
 				true 
 			);
 			
-			// Add global nonce for AJAX requests
+			// Add global nonce for AJAX requests and custom field configs
 			wp_add_inline_script( 'owh-domain-checkout-blocks', 
-				'window.owh_domain_nonce = "' . wp_create_nonce( 'owh_domain_ajax' ) . '";',
+				'window.owh_domain_nonce = "' . wp_create_nonce( 'owh_domain_ajax' ) . '";' .
+				'window.owh_ajax_url = "' . admin_url( 'admin-ajax.php' ) . '";',
 				'before'
 			);
 		}
@@ -156,6 +157,8 @@ class Owh_Domain_Whois_Rdap_Public {
 			'hasResultsPage' => !empty($results_page_id),
 			'rest_url' => rest_url( 'owh-rdap/v1/' ),
 			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
+			'ajax_url' => admin_url( 'admin-ajax.php' ),
+			'nonce' => wp_create_nonce( 'owh_domain_ajax' ),
 			'strings' => array(
 				'configRequired' => __( 'Para realizar pesquisas, é necessário configurar uma "Página de Resultados" nas configurações do plugin. Entre em contato com o administrador.', 'owh-domain-whois-rdap' ),
 				'configTitle' => __( 'Configuração Necessária', 'owh-domain-whois-rdap' )
@@ -819,6 +822,8 @@ class Owh_Domain_Whois_Rdap_Public {
 					$cart_item_data['domain_price'] = $price;
 				}
 			}
+		} else {
+			error_log( 'Domain cart item data - No domain_period in POST data' );
 		}
 
 		// Get domain name from URL parameter (when coming from search results) or form
@@ -835,6 +840,36 @@ class Owh_Domain_Whois_Rdap_Public {
 
 		return $cart_item_data;
 	}
+
+	public function modify_wp_kses_allowed_html($tags, $context){
+			if ($context === 'post') {
+				$tags['select'] = [
+					'class' => true,
+					'name' => true,
+					'data-cart-key' => true,
+					'data-product-id' => true
+				];
+
+				$tags['option'] = [
+					'value' => true,
+					'selected' => true,
+					'data-price' => true
+				];
+
+				$tags['div'] = [
+					'class' => true
+				];
+
+				$tags['strong'] = [];
+				
+				$tags['span'] = [
+					'class' => true,
+					'style' => true
+				];
+			}
+
+			return $tags;
+		}
 
 	/**
 	 * Modify domain product name in cart and checkout (classic)
@@ -856,31 +891,79 @@ class Owh_Domain_Whois_Rdap_Public {
 		
 		// Add domain name if available
 		if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
-			$period = isset( $cart_item['domain_period'] ) ? intval( $cart_item['domain_period'] ) : 1;
-			$period_text = $period == 1 ? '1 ano' : $period . ' anos';
+			$product = $cart_item['data'];
+			$current_period = isset( $cart_item['domain_period'] ) ? intval( $cart_item['domain_period'] ) : 1;
+			$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
 			
-			// Get price from cart item or product matrix
-			$price_text = '';
-			if ( isset( $cart_item['domain_price'] ) && $cart_item['domain_price'] > 0 ) {
-				$price_text = ' (' . wc_price( $cart_item['domain_price'] ) . ')';
-			} else {
-				// Try to get price from product matrix as fallback
-				$product = $cart_item['data'];
-				if ( method_exists( $product, 'get_price_for_period' ) ) {
-					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
-					$price = $product->get_price_for_period( $period, $action );
-					if ( $price !== null && $price > 0 ) {
-						$price_text = ' (' . wc_price( $price ) . ')';
-					}
-				}
+			// Get available periods for the product
+			$available_periods = array();
+			if ( method_exists( $product, 'get_available_periods' ) ) {
+				$available_periods = $product->get_available_periods();
 			}
 			
-			$new_name = sprintf( 
-				'%s por %s%s', 
-				esc_html( $cart_item['domain_name'] ), 
-				$period_text,
-				$price_text
-			);
+			// If no periods available or only one period, show static text
+			if ( empty( $available_periods ) || count( $available_periods ) <= 1 ) {
+				$period_text = $current_period == 1 ? '1 ano' : $current_period . ' anos';
+				
+				// Get price from cart item or product matrix
+				$price_text = '';
+				if ( isset( $cart_item['domain_price'] ) && $cart_item['domain_price'] > 0 ) {
+					$formatted_price = 'R$ ' . number_format( $cart_item['domain_price'], 2, ',', '.' );
+					$price_text = ' (' . $formatted_price . ')';
+				} else {
+					// Try to get price from product matrix as fallback
+					if ( method_exists( $product, 'get_price_for_period' ) ) {
+						$price = $product->get_price_for_period( $current_period, $action );
+						if ( $price !== null && $price > 0 ) {
+							$formatted_price = 'R$ ' . number_format( $price, 2, ',', '.' );
+							$price_text = ' (' . $formatted_price . ')';
+						}
+					}
+				}
+				
+				$new_name = sprintf( 
+					'%s por %s%s', 
+					esc_html( $cart_item['domain_name'] ), 
+					$period_text,
+					$price_text
+				);
+			} else {
+				// Multiple periods available - show select dropdown
+				$select_html = '<div class="owh-domain-period-wrapper">';
+				$select_html .= '<strong>' . esc_html( $cart_item['domain_name'] ) . '</strong> por ';
+				$select_html .= '<select class="owh-domain-period-selector" ';
+				$select_html .= 'data-cart-key="' . esc_attr( $cart_item_key ) . '" ';
+				$select_html .= 'data-product-id="' . esc_attr( $product->get_id() ) . '">';
+				
+				foreach ( $available_periods as $period ) {
+					$period = intval( $period );
+					$period_text = $period == 1 ? '1 ano' : $period . ' anos';
+					$price = null;
+					
+					if ( method_exists( $product, 'get_price_for_period' ) ) {
+						$price = $product->get_price_for_period( $period, $action );
+					}
+					
+					$option_text = $period_text;
+					if ( $price !== null && $price > 0 ) {
+						// Use simple price formatting without HTML
+						$formatted_price = 'R$ ' . number_format( $price, 2, ',', '.' );
+						$option_text .= ' (' . $formatted_price . ')';
+					}
+					
+					$selected = ( $period == $current_period ) ? ' selected="selected"' : '';
+					
+					$select_html .= '<option value="' . esc_attr( $period ) . '"' . $selected . ' data-price="' . esc_attr( $price ) . '">';
+					$select_html .= esc_html( $option_text );
+					$select_html .= '</option>';
+				}
+				
+				$select_html .= '</select>';
+				$select_html .= '<span class="owh-domain-loading" style="display:none;margin-left:5px;">⏳</span>';
+				$select_html .= '</div>';
+				
+				$new_name = $select_html;
+			}
 		}
 
 		return $new_name;
@@ -1084,16 +1167,22 @@ class Owh_Domain_Whois_Rdap_Public {
 			return;
 		}
 		
+		// Get default period and price
+		$available_periods = $product->get_available_periods();
+		$default_period = ! empty( $available_periods ) ? array_keys( $available_periods )[0] : 1;
+		$default_price = $product->get_price_for_period( $default_period, 'register' );
+		
 		// Render Add to Cart form
 		echo '<div class="domain-add-to-cart-section">';
 		
-		echo '<form class="cart" method="post" enctype="multipart/form-data">';
+		echo '<form class="cart domain-cart-form" method="post" enctype="multipart/form-data" id="domain-cart-form-' . $product->get_id() . '">';
 		echo '<input type="hidden" name="add-to-cart" value="' . $product->get_id() . '" />';
 		echo '<input type="hidden" name="quantity" value="1" />';
 		
-		// Add custom domain fields if they exist in the session/form
-		if ( isset( $_POST['domain_period'] ) ) {
-			echo '<input type="hidden" name="domain_period" value="' . intval( $_POST['domain_period'] ) . '" />';
+		// Initialize with default values that will be updated by JavaScript
+		echo '<input type="hidden" name="domain_period" value="' . intval( $default_period ) . '" />';
+		if ( $default_price ) {
+			echo '<input type="hidden" name="domain_price" value="' . floatval( $default_price ) . '" />';
 		}
 		
 		echo '<button type="submit" name="add-to-cart" value="' . $product->get_id() . '" class="single_add_to_cart_button button alt wp-element-button">';
@@ -1227,7 +1316,7 @@ class Owh_Domain_Whois_Rdap_Public {
 
 		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
 		
-		echo '<div id="owh_domain_custom_fields"><h3>' . esc_html__( 'Informações Adicionais para Domínios', 'owh-domain-whois-rdap' ) . '</h3>';
+		echo '<div id="owh_domain_custom_fields"><h3>' . esc_html__( 'Informações para registro de dominio', 'owh-domain-whois-rdap' ) . '</h3>';
 		
 		foreach ( $required_fields as $field_id ) {
 			$field_config = null;
@@ -1305,10 +1394,19 @@ class Owh_Domain_Whois_Rdap_Public {
 			// Validate against regex if provided
 			if ( ! empty( $field_config['regex'] ) ) {
 				if ( ! preg_match( '/' . $field_config['regex'] . '/', $field_value ) ) {
-					wc_add_notice( sprintf( 
+					$default_error_message = sprintf( 
 						__( 'O campo "%s" não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
 						$field_config['label'] 
-					), 'error' );
+					);
+					
+					// Prepend custom error message if provided
+					if ( ! empty( $field_config['error_message'] ) ) {
+						$error_message = $field_config['error_message'] . ' ' . $default_error_message;
+					} else {
+						$error_message = $default_error_message;
+					}
+					
+					wc_add_notice( $error_message, 'error' );
 				}
 			}
 		}
@@ -1550,10 +1648,12 @@ class Owh_Domain_Whois_Rdap_Public {
 						$correct_price = floatval( $pricing_matrix[$period][$action] );
 						$correct_subtotal += $correct_price * intval( $cart_item['quantity'] );
 					} else {
-						$correct_subtotal += floatval( $cart_item['line_subtotal'] );
+						// Fallback para linha subtotal existente ou 0 se não existir
+						$correct_subtotal += isset( $cart_item['line_subtotal'] ) ? floatval( $cart_item['line_subtotal'] ) : 0;
 					}
 				} else {
-					$correct_subtotal += floatval( $cart_item['line_subtotal'] );
+					// Fallback para linha subtotal existente ou 0 se não existir
+					$correct_subtotal += isset( $cart_item['line_subtotal'] ) ? floatval( $cart_item['line_subtotal'] ) : 0;
 				}
 			}
 			
@@ -1587,10 +1687,12 @@ class Owh_Domain_Whois_Rdap_Public {
 						$correct_price = floatval( $pricing_matrix[$period][$action] );
 						$correct_total += $correct_price * intval( $cart_item['quantity'] );
 					} else {
-						$correct_total += floatval( $cart_item['line_total'] );
+						// Fallback para linha total existente ou 0 se não existir
+						$correct_total += isset( $cart_item['line_total'] ) ? floatval( $cart_item['line_total'] ) : 0;
 					}
 				} else {
-					$correct_total += floatval( $cart_item['line_total'] );
+					// Fallback para linha total existente ou 0 se não existir
+					$correct_total += isset( $cart_item['line_total'] ) ? floatval( $cart_item['line_total'] ) : 0;
 				}
 			}
 			

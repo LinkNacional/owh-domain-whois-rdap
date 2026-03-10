@@ -138,7 +138,7 @@ defined( 'ABSPATH' ) or exit;
         <!-- Custom Fields Tab -->
         <div id="tab-custom-fields" class="owh-tab-panel">
             <h2><?php esc_html_e('Campos Customizados para TLDs', 'owh-domain-whois-rdap'); ?></h2>
-            <p><?php esc_html_e('Configure campos customizados que serão obrigatórios no checkout para domínios específicos. Cada campo deve ter um label (rótulo). A regex para validação é opcional - sem regex, qualquer valor será aceito.', 'owh-domain-whois-rdap'); ?></p>
+            <p><?php esc_html_e('Configure campos customizados que serão obrigatórios no checkout para domínios específicos. Cada campo deve ter um label (rótulo). A regex para validação é opcional - sem regex, qualquer valor será aceito. A mensagem de erro personalizada será exibida ANTES da mensagem padrão do sistema quando a validação falhar.', 'owh-domain-whois-rdap'); ?></p>
             
             <div id="custom-fields-container">
                 <div id="custom-fields-grid-wrapper">
@@ -162,18 +162,19 @@ defined( 'ABSPATH' ) or exit;
                 <ol>
                     <li><?php esc_html_e('Crie campos com labels descritivos (ex: "CPF", "CNPJ", "Passaporte")', 'owh-domain-whois-rdap'); ?></li>
                     <li><?php esc_html_e('Opcionalmente, configure uma regex JavaScript para validação (ex: "^[0-9]{11}$" para CPF)', 'owh-domain-whois-rdap'); ?></li>
+                    <li><?php esc_html_e('Configure uma mensagem de erro personalizada que será exibida ANTES da mensagem padrão', 'owh-domain-whois-rdap'); ?></li>
                     <li><?php esc_html_e('Sem regex, qualquer valor será aceito no campo', 'owh-domain-whois-rdap'); ?></li>
                     <li><?php esc_html_e('Nas configurações de produtos, selecione quais campos são obrigatórios para cada TLD', 'owh-domain-whois-rdap'); ?></li>
                     <li><?php esc_html_e('Os campos aparecerão automaticamente no checkout quando necessário', 'owh-domain-whois-rdap'); ?></li>
                 </ol>
                 
                 <div class="regex-examples">
-                    <h4><?php esc_html_e('Exemplos de Regex:', 'owh-domain-whois-rdap'); ?></h4>
+                    <h4><?php esc_html_e('Exemplos de Regex e Mensagens:', 'owh-domain-whois-rdap'); ?></h4>
                     <ul>
-                        <li><strong>CPF:</strong> <code>^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$</code></li>
-                        <li><strong>CNPJ:</strong> <code>^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$</code></li>
-                        <li><strong>Email:</strong> <code>^[^@\s]+@[^@\s]+\.[^@\s]+$</code></li>
-                        <li><strong>Telefone BR:</strong> <code>^(\(?\d{2}\)?\s?)?(9?\d{4})-?\d{4}$</code></li>
+                        <li><strong>CPF:</strong> <code>^[0-9]{3}\.[0-9]{3}\.[0-9]{3}-[0-9]{2}$</code> | <em>Mensagem: "Por favor, insira um CPF válido no formato 000.000.000-00"</em></li>
+                        <li><strong>CNPJ:</strong> <code>^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$</code> | <em>Mensagem: "Por favor, insira um CNPJ válido no formato 00.000.000/0000-00"</em></li>
+                        <li><strong>Email:</strong> <code>^[^@\s]+@[^@\s]+\.[^@\s]+$</code> | <em>Mensagem: "Por favor, insira um endereço de email válido"</em></li>
+                        <li><strong>Telefone:</strong> <code>^\+55\s?\(?\d{2}\)?\s?9?\d{4}-?\d{4}$</code> | <em>Mensagem: "Por favor, insira um telefone válido no formato +0000000000000"</em></li>
                     </ul>
                 </div>
             </div>
