@@ -39,34 +39,10 @@ if ( ! empty( $container_styles ) ) {
 	$inline_styles = ' style="' . implode( '; ', $container_styles ) . '"';
 }
 
-// Add custom CSS if provided
-$custom_css_output = '';
-if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
-	// Clean and validate CSS - remove any malicious content
-	$clean_css = wp_strip_all_tags( $custom_css );
-	$clean_css = str_replace( array( '<script', '</script>', 'javascript:' ), '', $clean_css );
-	
-	// Apply with higher specificity to override plugin styles
-	$custom_css_output = '<style>
-	.owh-rdap-whois-details-container { ' . esc_attr( $clean_css ) . ' }
-	.owh-rdap-whois-details-container * { ' . esc_attr( $clean_css ) . ' }
-	.owh-rdap-whois-details-container h1, 
-	.owh-rdap-whois-details-container h2, 
-	.owh-rdap-whois-details-container h3, 
-	.owh-rdap-whois-details-container h4, 
-	.owh-rdap-whois-details-container h5, 
-	.owh-rdap-whois-details-container h6 { ' . esc_attr( $clean_css ) . ' }
-	.owh-rdap-whois-details-container p, 
-	.owh-rdap-whois-details-container span, 
-	.owh-rdap-whois-details-container div { ' . esc_attr( $clean_css ) . ' }
-	</style>';
-}
+// Styles are now enqueued via wp_enqueue_style in the Public class
+// Custom CSS is added via wp_add_inline_style in the whois_details_shortcode method
 
 ?>
-
-<?php if ( ! empty( $custom_css_output ) ) : ?>
-	<?php echo wp_kses( $custom_css_output, array( 'style' => array() ) ); ?>
-<?php endif; ?>
 
 <div class="owh-rdap-whois-details-container"<?php echo esc_attr( $inline_styles ); ?>>
 	<?php if ( isset( $show_title ) && $show_title ) : ?>
@@ -269,9 +245,9 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 		</div>
 	<?php else : ?>
 		<div class="owh-rdap-no-domain">
-			<div style="text-align: center;">
+			<div class="owh-rdap-whois-icon-container">>
 				<?php if ( isset( $show_icon ) && $show_icon ) : ?>
-					<div style="font-size: 48px; margin-bottom: 15px;"><?php echo esc_html( isset( $custom_icon ) ? $custom_icon : '📋' ); ?></div>
+					<div class="owh-rdap-icon-large"><?php echo esc_html( isset( $custom_icon ) ? $custom_icon : '📋' ); ?></div>
 				<?php endif; ?>
 				<h4><?php echo esc_html( isset( $no_domain_text ) ? $no_domain_text : __( 'Nenhum Domínio Informado', 'owh-domain-whois-rdap' ) ); ?></h4>
 				<p><?php echo esc_html( isset( $no_domain_description ) ? $no_domain_description : __( 'Para visualizar os detalhes WHOIS, acesse esta página através do link "Ver detalhes completos" nos resultados da pesquisa.', 'owh-domain-whois-rdap' ) ); ?></p>

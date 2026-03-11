@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Helpers;
+namespace OwhdwhoisrdapDomainWhoisRdap\Helpers;
 
 /**
  * Domain Validator

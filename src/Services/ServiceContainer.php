@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Services;
+namespace OwhdwhoisrdapDomainWhoisRdap\Services;
 
 /**
  * Service Container for Dependency Injection

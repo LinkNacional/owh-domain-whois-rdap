@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Services;
+namespace OwhdwhoisrdapDomainWhoisRdap\Services;
 
 /**
  * Bootstrap File Handler
@@ -18,6 +18,34 @@ class BootstrapFileHandler
      * IANA DNS JSON URL
      */
     private const IANA_DNS_JSON_URL = 'https://data.iana.org/rdap/dns.json';
+
+    /**
+     * Get the uploads directory path for this plugin
+     *
+     * @return string
+     */
+    private function getPluginUploadsPath(): string
+    {
+        $upload_dir = \wp_upload_dir();
+        $plugin_upload_dir = $upload_dir['basedir'] . '/owh-domain-whois-rdap';
+        
+        // Create directory if it doesn't exist
+        if (!file_exists($plugin_upload_dir)) {
+            \wp_mkdir_p($plugin_upload_dir);
+        }
+        
+        return $plugin_upload_dir;
+    }
+
+    /**
+     * Get the DNS data file path in uploads directory
+     *
+     * @return string
+     */
+    private function getDnsDataFilePath(): string
+    {
+        return $this->getPluginUploadsPath() . '/dns.json';
+    }
 
     /**
      * Get RDAP server for TLD
@@ -136,16 +164,18 @@ class BootstrapFileHandler
             return false;
         }
 
-        // Replace the bundled file directly
-        $plugin_dir = dirname(dirname(__DIR__)) . '/';
-        $bundled_file = $plugin_dir . 'data/dns.json';
+        // Replace the file in uploads directory
+        $dns_file_path = $this->getDnsDataFilePath();
 
-        // Write new data to bundled file
-        $result = \file_put_contents($bundled_file, json_encode($dns_data, JSON_PRETTY_PRINT));
+        // Ensure directory exists
+        $plugin_upload_dir = $this->getPluginUploadsPath();
+
+        // Write new data to uploads directory
+        $result = \file_put_contents($dns_file_path, json_encode($dns_data, JSON_PRETTY_PRINT));
 
         // Update last update date in WordPress options if successful
         if ($result !== false) {
-            \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+            \update_option('owhdwhoisrdap_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
         }
 
         return $result !== false;
@@ -213,12 +243,14 @@ class BootstrapFileHandler
             ];
         }
 
-        // Replace the bundled file directly
-        $plugin_dir = dirname(dirname(__DIR__)) . '/';
-        $bundled_file = $plugin_dir . 'data/dns.json';
+        // Replace the file in uploads directory
+        $dns_file_path = $this->getDnsDataFilePath();
 
-        // Write new data to bundled file
-        $result = \file_put_contents($bundled_file, json_encode($dns_data, JSON_PRETTY_PRINT));
+        // Ensure directory exists
+        $plugin_upload_dir = $this->getPluginUploadsPath();
+
+        // Write new data to uploads directory
+        $result = \file_put_contents($dns_file_path, json_encode($dns_data, JSON_PRETTY_PRINT));
 
         if ($result === false) {
             return [
@@ -228,7 +260,7 @@ class BootstrapFileHandler
         }
 
         // Update last update date in WordPress options if successful
-        \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+        \update_option('owhdwhoisrdap_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
 
         return [
             'success' => true,
@@ -243,27 +275,32 @@ class BootstrapFileHandler
      */
     public function getLastUpdateInfo(): array
     {
-        // Always check bundled file
-        $plugin_dir = dirname(dirname(__DIR__)) . '/';
-        $bundled_file = $plugin_dir . 'data/dns.json';
+        // Check file in uploads directory
+        $dns_file_path = $this->getDnsDataFilePath();
         
         $info = [
-            'has_file' => \file_exists($bundled_file),
+            'has_file' => \file_exists($dns_file_path),
             'last_modified' => null,
             'file_size' => 0,
-            'from_bundled' => true,
+            'from_bundled' => false,
             'date' => 'Não disponível',
-            'source' => 'Arquivo bundled do plugin'
+            'source' => 'Arquivo no diretório uploads'
         ];
 
         if ($info['has_file']) {
-            $info['last_modified'] = \filemtime($bundled_file);
-            $info['file_size'] = \filesize($bundled_file);
+            $info['last_modified'] = \filemtime($dns_file_path);
+            $info['file_size'] = \filesize($dns_file_path);
             $info['date'] = gmdate('d/m/Y H:i:s', $info['last_modified']);
             
             // Se arquivo foi modificado recentemente, provavelmente foi atualizado
             if (time() - $info['last_modified'] < 300) { // 5 minutos
                 $info['source'] = 'Atualizado da IANA';
+            }
+        } else {
+            // Se não existe arquivo nos uploads, verificar se precisa copiar do bundled
+            $this->ensureDataFileExists();
+            if (\file_exists($dns_file_path)) {
+                return $this->getLastUpdateInfo(); // Recursively check after creation
             }
         }
 
@@ -277,14 +314,68 @@ class BootstrapFileHandler
      */
     private function getDnsData(): ?array
     {
-        // Always try to load from plugin's bundled file
+        // First, try to load from uploads directory
+        $uploads_data = $this->loadDnsDataFromUploads();
+        if ($uploads_data) {
+            return $uploads_data;
+        }
+
+        // Fallback: try to load from plugin's bundled file and copy to uploads
         $bundled_data = $this->loadBundledDnsData();
         if ($bundled_data) {
+            // Copy bundled data to uploads directory for future use
+            $this->copyBundledToUploads();
             return $bundled_data;
         }
 
-        // If bundled file is empty/corrupt, fallback to test data
-        $test_data = [
+        // If neither exists, return fallback test data
+        return $this->getFallbackTestData();
+    }
+
+    /**
+     * Load DNS data from uploads directory
+     *
+     * @return array|null
+     */
+    private function loadDnsDataFromUploads(): ?array
+    {
+        $dns_file_path = $this->getDnsDataFilePath();
+
+        if (!\file_exists($dns_file_path)) {
+            return null;
+        }
+
+        $content = \file_get_contents($dns_file_path);
+        $dns_data = json_decode($content, true);
+
+        return (json_last_error() === JSON_ERROR_NONE) ? $dns_data : null;
+    }
+
+    /**
+     * Ensure data file exists in uploads directory
+     *
+     * @return bool
+     */
+    private function ensureDataFileExists(): bool
+    {
+        $dns_file_path = $this->getDnsDataFilePath();
+        
+        if (\file_exists($dns_file_path)) {
+            return true;
+        }
+
+        // Try to copy from bundled file
+        return $this->copyBundledToUploads();
+    }
+
+    /**
+     * Get fallback test data when no files are available
+     *
+     * @return array
+     */
+    private function getFallbackTestData(): array
+    {
+        return [
             'services' => [
                 [
                     ['com'],
@@ -308,47 +399,6 @@ class BootstrapFileHandler
                 ]
             ]
         ];
-        
-        return $test_data;
-    }
-
-    /**
-     * Save DNS data to file
-     *
-     * @param array $dns_data
-     * @return void
-     */
-    private function saveDnsDataToFile(array $dns_data): void
-    {
-        $upload_dir = \wp_upload_dir();
-        $plugin_upload_dir = $upload_dir['basedir'] . '/owh-domain-whois-rdap';
-        $file_path = $plugin_upload_dir . '/dns.json';
-
-        if (!\file_exists($plugin_upload_dir)) {
-            \wp_mkdir_p($plugin_upload_dir);
-        }
-
-        \file_put_contents($file_path, json_encode($dns_data, JSON_PRETTY_PRINT));
-    }
-
-    /**
-     * Load DNS data from file
-     *
-     * @return array|null
-     */
-    private function loadDnsDataFromFile(): ?array
-    {
-        $upload_dir = \wp_upload_dir();
-        $file_path = $upload_dir['basedir'] . '/owh-domain-whois-rdap/dns.json';
-
-        if (!\file_exists($file_path)) {
-            return null;
-        }
-
-        $content = \file_get_contents($file_path);
-        $dns_data = json_decode($content, true);
-
-        return (json_last_error() === JSON_ERROR_NONE) ? $dns_data : null;
     }
 
     /**
@@ -386,15 +436,15 @@ class BootstrapFileHandler
             return false;
         }
 
-        $upload_dir = \wp_upload_dir();
-        $plugin_upload_dir = $upload_dir['basedir'] . '/owh-domain-whois-rdap';
-        $target_file = $plugin_upload_dir . '/dns.json';
+        // Get uploads directory path using our methods
+        $dns_file_path = $this->getDnsDataFilePath();
+        $plugin_upload_dir = $this->getPluginUploadsPath();
 
-        if (!\file_exists($plugin_upload_dir)) {
-            \wp_mkdir_p($plugin_upload_dir);
-        }
+        // Copy content from bundled file to uploads
+        $content = \file_get_contents($bundled_file);
+        $result = \file_put_contents($dns_file_path, $content);
 
-        return \copy($bundled_file, $target_file);
+        return $result !== false;
     }
 
     /**
@@ -448,5 +498,23 @@ class BootstrapFileHandler
         }
 
         return true;
+    }
+
+    /**
+     * Migrate existing DNS data from plugin directory to uploads directory
+     * This method should be called during plugin activation/update
+     *
+     * @return bool Success of migration
+     */
+    public function migrateDnsDataToUploads(): bool
+    {
+        // Check if data already exists in uploads
+        $dns_file_path = $this->getDnsDataFilePath();
+        if (\file_exists($dns_file_path)) {
+            return true; // Already migrated
+        }
+
+        // Try to copy from bundled file
+        return $this->copyBundledToUploads();
     }
 }

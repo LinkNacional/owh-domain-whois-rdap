@@ -59,7 +59,7 @@
         // Enter key handling for better UX
         $('#owh-rdap-domain-input').on('keypress', function(e) {
             if (e.which === 13) { // Enter key
-                $('#owh-rdap-search-form').submit();
+                $('#owhdwhoisrdap-rdap-search-form').submit();
             }
         });
 

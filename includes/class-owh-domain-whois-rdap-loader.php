@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Owh_Domain_Whois_Rdap_Loader {
+class Owhdwhoisrdap_Domain_Whois_Rdap_Loader {
 
 	/**
 	 * The array of actions registered with WordPress.

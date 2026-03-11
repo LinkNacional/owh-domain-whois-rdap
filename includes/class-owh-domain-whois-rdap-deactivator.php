@@ -20,7 +20,7 @@
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Owh_Domain_Whois_Rdap_Deactivator {
+class Owhdwhoisrdap_Domain_Whois_Rdap_Deactivator {
 
 	/**
 	 * Short Description. (use period)

@@ -5,7 +5,7 @@
 * Tags: domínios, WHOIS, RDAP, verificação, disponibilidade, DNS
 * Testado até: 6.8
 * Requer PHP: 7.4
-* Tag estável: 1.2.1
+* Tag estável: 1.2.2
 * Licença: GPLv2 ou posterior
 * URI da licença: [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -47,23 +47,26 @@ O plugin oferece uma experiência completa de verificação de domínios com int
 4. Selecione a **página de detalhes WHOIS**.
 5. Configure o **tipo de integração** (Custom URL ou WHMCS).
 
+### Armazenamento de Dados
+O plugin armazena dados de configuração TLD no diretório de uploads do WordPress (`wp-content/uploads/owh-domain-whois-rdap/`) em vez da pasta do plugin, garantindo que os dados sejam preservados durante atualizações. Durante a ativação, o plugin migra automaticamente quaisquer dados existentes para o local apropriado.
+
 ## Uso
 
 ### Shortcodes Disponíveis
 
 #### Formulário de Busca
 ```php
-[owh-rdap-whois-search]
+[owhdwhoisrdap-rdap-whois-search]
 ```
 
 #### Página de Resultados
 ```php
-[owh-rdap-whois-results]
+[owhdwhoisrdap-rdap-whois-results]
 ```
 
 #### Detalhes WHOIS Completos
 ```php
-[owh-rdap-whois-details]
+[owhdwhoisrdap-rdap-whois-details]
 ```
 
 
@@ -78,6 +81,33 @@ O plugin oferece uma experiência completa de verificação de domínios com int
    - **Bordas**: Raio, largura, cor
    - **Layout**: Padrão ou inline
    - **CSS**: Código CSS personalizado
+
+## Serviços Externos
+
+Este plugin conecta-se a serviços externos para obter informações de domínio e dados de validação TLD. Esses serviços são essenciais para fornecer informações precisas sobre disponibilidade de domínios.
+
+### IANA RDAP DNS Bootstrap Service
+- **Serviço**: Serviço oficial da IANA para descoberta de servidores RDAP
+- **Uso**: Obter lista oficial de TLDs e seus servidores RDAP correspondentes
+- **Dados enviados**: Nenhum dado pessoal. Download do arquivo público DNS bootstrap
+- **URL**: https://data.iana.org/rdap/dns.json
+- **Termos de Uso**: https://www.iana.org/help/terms-of-service
+- **Política de Privacidade**: https://www.iana.org/privacy-policy
+
+### Servidores RDAP (Vários Operadores de Registro)
+- **Serviço**: Servidores RDAP operados por registros de domínio mundiais
+- **Uso**: Consulta de informações de registro e status de disponibilidade de domínios
+- **Dados enviados**: Apenas o nome do domínio consultado (ex: "example.com")
+- **Principais servidores**:
+  - Verisign (.com/.net): https://rdap.verisign.com/
+  - PIR (.org): https://rdap.publicinterestregistry.org/
+  - Afilias (.info/.biz): https://rdap.afilias.info/
+
+**Proteção de Dados**:
+- Nenhum dado pessoal é coletado ou transmitido
+- Apenas nomes de domínio são enviados para consulta legítima
+- Todas as comunicações usam conexões HTTPS seguras
+- Cache local reduz solicitações a serviços externos
 
 ### Suporte Técnico
 - [Atendimento LinkNacional](https://www.linknacional.com.br/atendimento/)

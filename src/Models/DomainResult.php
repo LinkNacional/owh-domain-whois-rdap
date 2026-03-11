@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Models;
+namespace OwhdwhoisrdapDomainWhoisRdap\Models;
 
 /**
  * Domain Result DTO

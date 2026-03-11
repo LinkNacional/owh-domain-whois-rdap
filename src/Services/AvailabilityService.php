@@ -1,9 +1,11 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Services;
+namespace OwhdwhoisrdapDomainWhoisRdap\Services;
 
-use OwhDomainWhoisRdap\Models\DomainResult;
-use OwhDomainWhoisRdap\Helpers\DomainValidator;
+use OwhdwhoisrdapDomainWhoisRdap\Models\DomainResult;
+use OwhdwhoisrdapDomainWhoisRdap\Helpers\DomainValidator;
+use OwhdwhoisrdapDomainWhoisRdap\Services\CacheManager;
+use OwhdwhoisrdapDomainWhoisRdap\Services\SettingsManager;
 
 /**
  * Availability Service

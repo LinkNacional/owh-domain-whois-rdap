@@ -1,3 +1,6 @@
+# 1.2.2
+* Correção de erros do wordpress.
+
 # 1.2.1
 * Adição de alerta informando que é preciso configurar a página de resultados;
 * Correção de erros do wordpress.
