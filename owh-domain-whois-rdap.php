@@ -35,13 +35,13 @@ if ( ! defined( 'WPINC' ) ) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define( 'OWH_DOMAIN_WHOIS_RDAP_VERSION', '1.2.1' );
+define( 'OWHDWHOISRDAP_DOMAIN_WHOIS_RDAP_VERSION', '1.2.1' );
 
 /**
  * Plugin path and URL
  */
-define( 'OWH_DOMAIN_WHOIS_RDAP_PATH', plugin_dir_path( __FILE__ ) );
-define( 'OWH_DOMAIN_WHOIS_RDAP_URL', plugin_dir_url( __FILE__ ) );
+define( 'OWHDWHOISRDAP_DOMAIN_WHOIS_RDAP_PATH', plugin_dir_path( __FILE__ ) );
+define( 'OWHDWHOISRDAP_DOMAIN_WHOIS_RDAP_URL', plugin_dir_url( __FILE__ ) );
 
 /**
  * Composer Autoloader
@@ -54,7 +54,7 @@ require_once plugin_dir_path( __FILE__ ) . 'vendor/autoload.php';
  * This action is documented in includes/class-owh-domain-whois-rdap-activator.php
  */
 function owh_activate_domain_whois_rdap() {
-	Owh_Domain_Whois_Rdap_Activator::activate();
+	Owhdwhoisrdap_Domain_Whois_Rdap_Activator::activate();
 }
 
 /**
@@ -62,7 +62,7 @@ function owh_activate_domain_whois_rdap() {
  * This action is documented in includes/class-owh-domain-whois-rdap-deactivator.php
  */
 function owh_deactivate_domain_whois_rdap() {
-	Owh_Domain_Whois_Rdap_Deactivator::deactivate();
+	Owhdwhoisrdap_Domain_Whois_Rdap_Deactivator::deactivate();
 }
 
 register_activation_hook( __FILE__, 'owh_activate_domain_whois_rdap' );
@@ -78,7 +78,7 @@ register_deactivation_hook( __FILE__, 'owh_deactivate_domain_whois_rdap' );
  * @since    1.0.0
  */
 function owh_run_domain_whois_rdap() {
-	$plugin = new Owh_Domain_Whois_Rdap();
+	$plugin = new Owhdwhoisrdap_Domain_Whois_Rdap();
 	$plugin->run();
 }
 owh_run_domain_whois_rdap();

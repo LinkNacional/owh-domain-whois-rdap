@@ -5,7 +5,7 @@
     "description": "WordPress plugin para verificação de disponibilidade de domínios via protocolo RDAP",
     "autoload": {
         "psr-4": {
-            "OwhDomainWhoisRdap\\": "src/"
+            "OwhdwhoisrdapDomainWhoisRdap\\": "src/"
         },
         "classmap": [
             "includes/",

@@ -92,9 +92,9 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 
 		<div class="owh-rdap-result-content"><?php else : ?>
 			<div class="owh-rdap-result-placeholder">
-			<div style="text-align: center; padding: 40px; background: #f9f9f9; border-radius: 8px;">
+			<div class="owh-rdap-centered-content">>
 				<?php if ( $show_icons ) : ?>
-					<div style="font-size: 48px; margin-bottom: 15px;"><?php echo esc_html( $search_icon ); ?></div>
+					<div class="owh-rdap-icon-large"><?php echo esc_html( $search_icon ); ?></div>
 				<?php endif; ?>
 				<h3><?php echo esc_html( $no_result_text ); ?></h3>
 				<p><?php echo esc_html( $no_result_description ); ?></p>
@@ -109,7 +109,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					<div class="owh-rdap-error-icon">⚠️</div>
 				<?php endif; ?>
 				<div class="owh-rdap-error-content">
-					<h4 style="color: #dc3232;"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
+					<h4 class="owh-rdap-error-title"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
 					<p><?php echo esc_html( $result->getError() ); ?></p>
 				</div>
 			</div>
@@ -124,7 +124,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					
 					<?php 
 					// New integration logic
-					$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+					$integration_type = get_option( 'owhdwhoisrdap_rdap_integration_type', 'none' );
 					
 					// Only show buy button if integration type is not 'none'
 					if ( $integration_type !== 'none' ) {
@@ -133,7 +133,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 						$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
 
 						if ( $integration_type === 'custom' ) {
-						$custom_url = get_option( 'owh_rdap_custom_url', '' );
+						$custom_url = get_option( 'owhdwhoisrdap_rdap_custom_url', '' );
 						if ( ! empty( $custom_url ) ) {
 							$buy_url = str_replace(
 								array( '{domain}', '{sld}', '{tld}' ),
@@ -154,7 +154,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 							<?php
 						}
 					} elseif ( $integration_type === 'whmcs' ) {
-						$whmcs_url = get_option( 'owh_rdap_whmcs_url', '' );
+						$whmcs_url = get_option( 'owhdwhoisrdap_rdap_whmcs_url', '' );
 						if ( ! empty( $whmcs_url ) ) {
 							$form_id = 'whmcs_' . str_replace( '.', '_', $result->getDomain() );
 							?>
@@ -189,7 +189,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					
 					<?php 
 					// Check if WHOIS details page is configured
-					$whois_details_page_id = get_option( 'owh_rdap_whois_details_page', 0 );
+					$whois_details_page_id = get_option( 'owhdwhoisrdap_rdap_whois_details_page', 0 );
 					if ( ! empty( $whois_details_page_id ) && $whois_details_page_id > 0 ) :
 						$whois_details_url = get_permalink( $whois_details_page_id );
 						if ( $whois_details_url ) :

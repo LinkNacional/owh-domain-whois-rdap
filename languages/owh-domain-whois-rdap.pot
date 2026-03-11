@@ -1,0 +1,35 @@
+# Copyright (C) 2024 OWH Domain WHOIS RDAP
+# This file is distributed under the same license as the OWH Domain WHOIS RDAP package.
+msgid ""
+msgstr ""
+"Project-Id-Version: OWH Domain WHOIS RDAP 1.2.1\n"
+"Report-Msgid-Bugs-To: https://github.com/linknacional/owh-domain-whois-rdap\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-03-11T10:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.8.1\n"
+"X-Domain: owh-domain-whois-rdap\n"
+
+#. Plugin Name of the plugin
+msgid "OWH Domain WHOIS RDAP"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://github.com/linknacional/owh-domain-whois-rdap"
+msgstr ""
+
+#. Description of the plugin
+msgid "Verificação de disponibilidade de domínios via protocolo RDAP."
+msgstr ""
+
+#. Author of the plugin
+msgid "Link Nacional"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://linknacional.com.br"
+msgstr ""

@@ -1,7 +1,7 @@
 === OWH Domain WHOIS RDAP ===
 Contributors: linknacional
 Donate link: https://www.linknacional.com.br/wordpress/plugins/
-Tags: domains, whois, rdap, domain search, domain availability, dns, domain checker
+Tags: domains, whois, rdap, domain availability, dns
 Requires at least: 5.0
 Tested up to: 6.9
 Stable tag: 1.2.1
@@ -76,6 +76,9 @@ wp plugin activate owh-domain-whois-rdap
 2. **Results Page**: Create a page with `[owh-rdap-whois-results]` shortcode
 3. **Details Page**: Create a page with `[owh-rdap-whois-details]` shortcode
 
+### Data Storage
+The plugin stores TLD configuration data in the WordPress uploads directory (`wp-content/uploads/owh-domain-whois-rdap/`) rather than in the plugin folder, ensuring data is preserved during plugin updates. Upon activation, the plugin automatically migrates any existing data to the appropriate location.
+
 ### Gutenberg Block Setup
 1. Edit any page or post with Gutenberg editor
 2. Add a new block and search for **"RDAP Domain Search Enhanced"**
@@ -91,24 +94,66 @@ wp plugin activate owh-domain-whois-rdap
 This plugin connects to external services to obtain domain information and TLD validation data. These services are essential for providing accurate domain availability information and ensuring proper domain validation.
 
 = IANA RDAP DNS Bootstrap Service =
-* **What the service is**: IANA RDAP DNS Bootstrap Service (https://data.iana.org/rdap/dns.json) - The official Internet Assigned Numbers Authority service for RDAP server discovery
+* **What the service is**: IANA RDAP DNS Bootstrap Service - The official Internet Assigned Numbers Authority service for RDAP server discovery
 * **What it is used for**: Primary source for obtaining the official list of TLD (Top Level Domains) and their corresponding RDAP servers
 * **What data is sent**: No personal data is sent. The plugin downloads the public DNS bootstrap file containing TLD-to-RDAP-server mappings
 * **When data is sent**: During TLD list updates (manual or automatic) and when validating domain extensions
+* **Service URL**: https://data.iana.org/rdap/dns.json
+* **Terms of Use**: https://www.iana.org/help/terms-of-service
+* **Privacy Policy**: https://www.iana.org/privacy-policy
 
-= RDAP Servers (Various Domain Registries) =
-* **What the service is**: Various RDAP servers operated by domain registries and registrars worldwide (e.g., Verisign for .com/.net, PIR for .org, etc.)
-* **What it is used for**: Querying domain registration information and availability status using the RDAP protocol
+= Verisign RDAP Servers (.com and .net domains) =
+* **What the service is**: Verisign RDAP servers for .com and .net domain queries
+* **What it is used for**: Querying domain registration information and availability status for .com and .net domains
 * **What data is sent**: Only the domain name being queried (e.g., "example.com"). No personal or sensitive information is transmitted
-* **When data is sent**: When users perform domain availability searches through the plugin interface
+* **When data is sent**: When users perform domain availability searches for .com or .net domains
+* **Service URLs**: 
+  - https://rdap.verisign.com/com/v1/ (for .com domains)
+  - https://rdap.verisign.com/net/v1/ (for .net domains)
+* **Terms of Service**: https://www.verisign.com/en_US/channel-resources/domain-registry-products/rdap/help/index.xhtml
+* **Privacy Policy**: https://www.verisign.com/en_US/website-privacy-policy/index.xhtml
 
-**Important Notes**: 
-- Domain queries are cached locally to improve performance and reduce external service requests
-- No personal, private, or sensitive data is transmitted to these services
-- Only domain names and TLD information are sent for legitimate domain availability checking
-- All communications use secure HTTPS connections
-- The plugin respects rate limiting and best practices for RDAP queries
-- If external services are unavailable, the plugin uses cached TLD data and provides appropriate error messages
+= Public Interest Registry RDAP Server (.org domains) =
+* **What the service is**: PIR (Public Interest Registry) RDAP server for .org domain queries
+* **What it is used for**: Querying domain registration information and availability status for .org domains
+* **What data is sent**: Only the domain name being queried (e.g., "example.org"). No personal information is transmitted
+* **When data is sent**: When users perform domain availability searches for .org domains
+* **Service URL**: https://rdap.publicinterestregistry.org/rdap/
+* **Terms of Service**: https://pir.org/terms-of-use/
+* **Privacy Policy**: https://pir.org/privacy-policy/
+
+= Afilias RDAP Servers (.info, .biz and other TLDs) =
+* **What the service is**: Afilias RDAP servers for various TLD domain queries
+* **What it is used for**: Querying domain registration information and availability status for domains managed by Afilias
+* **What data is sent**: Only the domain name being queried (e.g., "example.info"). No personal information is transmitted
+* **When data is sent**: When users perform domain availability searches for Afilias-managed domains
+* **Service URL**: https://rdap.afilias.info/rdap/v1/
+* **Terms of Service**: https://afilias.info/terms-conditions
+* **Privacy Policy**: https://afilias.info/privacy-policy
+
+= Other RDAP Servers (Various TLD Registry Operators) =
+* **What the service is**: Various RDAP servers operated by different domain registries worldwide
+* **What it is used for**: Querying domain registration information and availability status for their respective TLDs
+* **What data is sent**: Only the domain name being queried. No personal or sensitive information is transmitted
+* **When data is sent**: When users perform domain availability searches for domains managed by these registries
+* **Service determination**: The appropriate RDAP server is automatically determined based on the domain's TLD using IANA's official registry
+* **Note**: Each registry operator has their own terms of service and privacy policies. Users should refer to the specific registry's website for their policies.
+
+**Important Data Protection and Privacy Notes**:
+- **No Personal Data Collection**: This plugin does not collect, store, or transmit any personal information from users
+- **Domain Names Only**: The only data sent to external services is the domain name being queried (e.g., "example.com")
+- **Secure Connections**: All communications with external RDAP servers use secure HTTPS connections
+- **Local Caching**: Domain query results are cached locally to improve performance and reduce external service requests
+- **Rate Limiting Compliance**: The plugin respects rate limiting and follows best practices for RDAP queries
+- **No Tracking**: No user behavior, IP addresses, or browsing patterns are tracked or sent to external services
+- **Fallback Handling**: If external services are unavailable, the plugin uses cached TLD data and provides appropriate error messages
+- **User Consent**: Domain queries are only performed when users actively initiate a domain search
+
+**Legal Compliance**:
+- This plugin operates in compliance with RDAP protocol standards (RFC 7480-7485)
+- External service usage is limited to legitimate domain availability checking
+- Users remain responsible for ensuring compliance with their local data protection regulations
+- No sensitive, private, or personally identifiable information is transmitted to external services
 
 == Frequently Asked Questions ==
 

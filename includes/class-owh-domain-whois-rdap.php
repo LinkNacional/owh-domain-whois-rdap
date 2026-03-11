@@ -33,7 +33,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Owh_Domain_Whois_Rdap {
+class Owhdwhoisrdap_Domain_Whois_Rdap {
 
 	/**
 	 * The loader that's responsible for maintaining and registering all hooks that power
@@ -41,7 +41,7 @@ class Owh_Domain_Whois_Rdap {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      Owh_Domain_Whois_Rdap_Loader    $loader    Maintains and registers all hooks for the plugin.
+	 * @var      Owhdwhoisrdap_Domain_Whois_Rdap_Loader    $loader    Maintains and registers all hooks for the plugin.
 	 */
 	protected $loader;
 
@@ -68,7 +68,7 @@ class Owh_Domain_Whois_Rdap {
 	 *
 	 * @since    1.0.0
 	 * @access   protected
-	 * @var      \OwhDomainWhoisRdap\Services\ServiceContainer    $service_container    The service container.
+	 * @var      \OwhdwhoisrdapDomainWhoisRdap\Services\ServiceContainer    $service_container    The service container.
 	 */
 	protected $service_container;
 
@@ -82,8 +82,8 @@ class Owh_Domain_Whois_Rdap {
 	 * @since    1.0.0
 	 */
 	public function __construct() {
-		if ( defined( 'OWH_DOMAIN_WHOIS_RDAP_VERSION' ) ) {
-			$this->version = OWH_DOMAIN_WHOIS_RDAP_VERSION;
+		if ( defined( 'OWHDWHOISRDAP_DOMAIN_WHOIS_RDAP_VERSION' ) ) {
+			$this->version = OWHDWHOISRDAP_DOMAIN_WHOIS_RDAP_VERSION;
 		} else {
 			$this->version = '1.0.0';
 		}
@@ -99,9 +99,9 @@ class Owh_Domain_Whois_Rdap {
 	 *
 	 * Include the following files that make up the plugin:
 	 *
-	 * - Owh_Domain_Whois_Rdap_Loader. Orchestrates the hooks of the plugin.
-	 * - Owh_Domain_Whois_Rdap_Admin. Defines all hooks for the admin area.
-	 * - Owh_Domain_Whois_Rdap_Public. Defines all hooks for the public side of the site.
+	 * - Owhdwhoisrdap_Domain_Whois_Rdap_Loader. Orchestrates the hooks of the plugin.
+	 * - Owhdwhoisrdap_Domain_Whois_Rdap_Admin. Defines all hooks for the admin area.
+	 * - Owhdwhoisrdap_Domain_Whois_Rdap_Public. Defines all hooks for the public side of the site.
 	 *
 	 * Create an instance of the loader which will be used to register the hooks
 	 * with WordPress.
@@ -111,10 +111,10 @@ class Owh_Domain_Whois_Rdap {
 	 */
 	private function load_dependencies() {
 
-		$this->loader = new Owh_Domain_Whois_Rdap_Loader();
+		$this->loader = new Owhdwhoisrdap_Domain_Whois_Rdap_Loader();
 
 		// Initialize service container
-		$this->service_container = new \OwhDomainWhoisRdap\Services\ServiceContainer();
+		$this->service_container = new \OwhdwhoisrdapDomainWhoisRdap\Services\ServiceContainer();
 	}
 
 	
@@ -126,7 +126,7 @@ class Owh_Domain_Whois_Rdap {
 	 * @access   private
 	 */
 	private function define_admin_hooks() {
-		$plugin_admin = new Owh_Domain_Whois_Rdap_Admin( $this->get_plugin_name(), $this->get_version(), $this->service_container );
+		$plugin_admin = new Owhdwhoisrdap_Domain_Whois_Rdap_Admin( $this->get_plugin_name(), $this->get_version(), $this->service_container );
 
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_styles' );
 		$this->loader->add_action( 'admin_enqueue_scripts', $plugin_admin, 'enqueue_scripts' );
@@ -149,13 +149,13 @@ class Owh_Domain_Whois_Rdap {
 	 * @access   private
 	 */
 	private function define_public_hooks() {
-		$plugin_public = new Owh_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
+		$plugin_public = new Owhdwhoisrdap_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
 
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_styles' );
 		$this->loader->add_action( 'wp_enqueue_scripts', $plugin_public, 'enqueue_scripts' );
 		$this->loader->add_action( 'init', $plugin_public, 'register_shortcodes' );
-		$this->loader->add_action( 'wp_ajax_owh_check_domain', $plugin_public, 'ajax_check_domain' );
-		$this->loader->add_action( 'wp_ajax_nopriv_owh_check_domain', $plugin_public, 'ajax_check_domain' );
+		$this->loader->add_action( 'wp_ajax_owhdwhoisrdap_check_domain', $plugin_public, 'ajax_check_domain' );
+		$this->loader->add_action( 'wp_ajax_nopriv_owhdwhoisrdap_check_domain', $plugin_public, 'ajax_check_domain' );
 	}
 
 	/**
@@ -182,7 +182,7 @@ class Owh_Domain_Whois_Rdap {
 	 * The reference to the class that orchestrates the hooks with the plugin.
 	 *
 	 * @since     1.0.0
-	 * @return    Owh_Domain_Whois_Rdap_Loader    Orchestrates the hooks of the plugin.
+	 * @return    Owhdwhoisrdap_Domain_Whois_Rdap_Loader    Orchestrates the hooks of the plugin.
 	 */
 	public function get_loader() {
 		return $this->loader;
@@ -202,7 +202,7 @@ class Owh_Domain_Whois_Rdap {
 	 * Get the service container
 	 *
 	 * @since     1.0.0
-	 * @return    \OwhDomainWhoisRdap\Services\ServiceContainer    The service container.
+	 * @return    \OwhdwhoisrdapDomainWhoisRdap\Services\ServiceContainer    The service container.
 	 */
 	public function get_service_container() {
 		return $this->service_container;

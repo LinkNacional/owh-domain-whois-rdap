@@ -20,7 +20,7 @@
  * @subpackage OWH_Domain_WHOIS_RDAP/includes
  * @author     OWH Group <dev@owhgroup.com.br>
  */
-class Owh_Domain_Whois_Rdap_Activator {
+class Owhdwhoisrdap_Domain_Whois_Rdap_Activator {
 
 	/**
 	 * Short Description. (use period)
@@ -47,7 +47,7 @@ class Owh_Domain_Whois_Rdap_Activator {
 		);
 
 		foreach ( $default_options as $option_name => $default_value ) {
-			$full_option_name = 'owh_domain_whois_rdap_' . $option_name;
+			$full_option_name = 'owhdwhoisrdap_domain_whois_rdap_' . $option_name;
 			if ( get_option( $full_option_name ) === false ) {
 				add_option( $full_option_name, $default_value );
 			}
@@ -59,6 +59,18 @@ class Owh_Domain_Whois_Rdap_Activator {
 		
 		if ( ! file_exists( $plugin_upload_dir ) ) {
 			wp_mkdir_p( $plugin_upload_dir );
+		}
+
+		// Migrate DNS data from plugin directory to uploads directory
+		try {
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'src/Services/ServiceContainer.php';
+			require_once plugin_dir_path( dirname( __FILE__ ) ) . 'src/Services/BootstrapFileHandler.php';
+			
+			$bootstrap_handler = new \OwhdwhoisrdapDomainWhoisRdap\Services\BootstrapFileHandler();
+			$bootstrap_handler->migrateDnsDataToUploads();
+		} catch ( Exception $e ) {
+			// Log error but don't fail activation
+			error_log( 'OWH RDAP: Failed to migrate DNS data: ' . $e->getMessage() );
 		}
 	}
 }

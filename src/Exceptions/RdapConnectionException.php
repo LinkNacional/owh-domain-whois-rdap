@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Exceptions;
+namespace OwhdwhoisrdapDomainWhoisRdap\Exceptions;
 
 /**
  * RDAP Connection Exception

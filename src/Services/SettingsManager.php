@@ -1,6 +1,6 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Services;
+namespace OwhdwhoisrdapDomainWhoisRdap\Services;
 
 /**
  * Settings Manager
@@ -17,7 +17,7 @@ class SettingsManager
     /**
      * Option prefix
      */
-    private const OPTION_PREFIX = 'owh_domain_whois_rdap_';
+    private const OPTION_PREFIX = 'owhdwhoisrdap_domain_whois_rdap_';
 
     /**
      * Get option value
@@ -65,7 +65,7 @@ class SettingsManager
     public function isSearchEnabled(): bool
     {
         // Nova opção baseada no Figma
-        return (bool) \get_option('owh_rdap_enable_search', false);
+        return (bool) \get_option('owhdwhoisrdap_rdap_enable_search', false);
     }
 
     /**
@@ -76,7 +76,7 @@ class SettingsManager
     public function getResultsPageId(): int
     {
         // Nova opção baseada no Figma
-        return (int) \get_option('owh_rdap_results_page', 0);
+        return (int) \get_option('owhdwhoisrdap_rdap_results_page', 0);
     }
 
     /**
@@ -187,7 +187,7 @@ class SettingsManager
     public function getWhoisDetailsPageId(): int
     {
         // Use direct WordPress option name since this is a standalone page setting
-        return (int) \get_option('owh_rdap_whois_details_page', 0);
+        return (int) \get_option('owhdwhoisrdap_rdap_whois_details_page', 0);
     }
 
     /**

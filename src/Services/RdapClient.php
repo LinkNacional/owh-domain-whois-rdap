@@ -1,8 +1,8 @@
 <?php
 
-namespace OwhDomainWhoisRdap\Services;
+namespace OwhdwhoisrdapDomainWhoisRdap\Services;
 
-use OwhDomainWhoisRdap\Models\DomainResult;
+use OwhdwhoisrdapDomainWhoisRdap\Models\DomainResult;
 
 /**
  * RDAP Client
