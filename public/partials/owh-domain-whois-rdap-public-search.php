@@ -165,6 +165,7 @@ if ( isset( $custom_attributes ) ) {
 					<span class="owh-rdap-search-text"><?php echo esc_html( $search_button_text ); ?></span>
 					<span class="owh-rdap-search-loading" style="display: none;">
 						<span class="owh-rdap-spinner"></span>
+						<span class="owh-rdap-loading-text">Pesquisando...</span>
 					</span>
 				</button>
 			</div>
@@ -182,6 +183,15 @@ if ( isset( $custom_attributes ) ) {
 		</div>
 	</form>
 
+	<!-- Loading Overlay -->
+	<div id="owh-rdap-loading-overlay" class="owh-rdap-loading-overlay" style="display: none;">
+		<div class="owh-rdap-loading-content">
+			<div class="owh-rdap-loading-spinner-large"></div>
+			<div class="owh-rdap-loading-message">Verificando disponibilidade...</div>
+			<div class="owh-rdap-loading-submessage">Isso pode levar alguns segundos</div>
+		</div>
+	</div>
+
 </div>
 
 	<?php if ( ! $results_page ) : ?>
@@ -197,6 +207,7 @@ if ( isset( $custom_attributes ) ) {
 	max-width: 600px;
 	margin: 0 auto;
 	padding: 20px;
+	position: relative;
 }
 
 .owh-rdap-search-wrapper {
@@ -227,6 +238,14 @@ if ( isset( $custom_attributes ) ) {
 	box-shadow: 0 0 0 1px #0073aa;
 }
 
+.owh-rdap-domain-input.searching {
+	border-color: #0073aa;
+	box-shadow: 0 0 0 1px #0073aa;
+	background: linear-gradient(90deg, #f9f9f9 0%, #fff 50%, #f9f9f9 100%);
+	background-size: 200% 100%;
+	animation: owh-rdap-pulse-background 2s ease-in-out infinite;
+}
+
 .owh-rdap-search-button {
 	padding: 12px 24px;
 	background: #0073aa;
@@ -236,8 +255,10 @@ if ( isset( $custom_attributes ) ) {
 	font-size: 16px;
 	font-weight: 600;
 	cursor: pointer;
-	transition: background-color 0.3s ease;
+	transition: all 0.3s ease;
 	min-width: 120px;
+	position: relative;
+	overflow: hidden;
 }
 
 .owh-rdap-search-button:hover {
@@ -247,12 +268,37 @@ if ( isset( $custom_attributes ) ) {
 .owh-rdap-search-button:disabled {
 	background: #ccc;
 	cursor: not-allowed;
+	transform: none;
+}
+
+.owh-rdap-search-button:disabled:hover {
+	background: #ccc;
+	transform: none;
 }
 
 .owh-rdap-search-loading {
 	display: flex;
 	align-items: center;
 	gap: 8px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-search-loading.active {
+	opacity: 1;
+}
+
+.owh-rdap-search-text {
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-search-text.hidden {
+	opacity: 0;
+}
+
+.owh-rdap-loading-text {
+	font-size: 14px;
+	font-weight: 500;
 }
 
 .owh-rdap-spinner {
@@ -264,9 +310,79 @@ if ( isset( $custom_attributes ) ) {
 	animation: owh-rdap-spin 1s linear infinite;
 }
 
+/* Loading Overlay */
+.owh-rdap-loading-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(2px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	z-index: 1000;
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-loading-content {
+	text-align: center;
+	padding: 30px 20px;
+	animation: owh-rdap-fade-in-up 0.4s ease-out;
+}
+
+.owh-rdap-loading-spinner-large {
+	width: 50px;
+	height: 50px;
+	border: 4px solid rgba(0, 115, 170, 0.1);
+	border-top: 4px solid #0073aa;
+	border-right: 4px solid rgba(0, 115, 170, 0.3);
+	border-radius: 50%;
+	animation: owh-rdap-spin 1.2s linear infinite;
+	margin: 0 auto 20px;
+	box-shadow: 0 0 20px rgba(0, 115, 170, 0.1);
+}
+
+.owh-rdap-loading-message {
+	font-size: 18px;
+	font-weight: 600;
+	color: #0073aa;
+	margin-bottom: 8px;
+	letter-spacing: 0.5px;
+}
+
+.owh-rdap-loading-submessage {
+	font-size: 14px;
+	color: #666;
+	font-weight: 400;
+	opacity: 0.8;
+}
+
 @keyframes owh-rdap-spin {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
+}
+
+@keyframes owh-rdap-fade-in-up {
+	0% { 
+		opacity: 0; 
+		transform: translateY(20px); 
+	}
+	100% { 
+		opacity: 1; 
+		transform: translateY(0); 
+	}
+}
+
+@keyframes owh-rdap-pulse-background {
+	0%, 100% { 
+		background-position: 0% 50%; 
+	}
+	50% { 
+		background-position: 100% 50%; 
+	}
 }
 
 .owh-rdap-search-examples {

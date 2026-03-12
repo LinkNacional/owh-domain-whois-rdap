@@ -30,8 +30,10 @@
             // Only modify in cart and checkout summary
             if ( context === 'cart' || context === 'summary' ) {
                 
-                // Check if this is a domain product and has domain data
-                if ( cartItem.extensions && cartItem.extensions.owh_domain_data ) {
+                if ( cartItem.extensions && 
+                     cartItem.extensions.owh_domain_data && 
+                     cartItem.extensions.owh_domain_data.product_type === 'domain' ) {
+                    
                     const domainData = cartItem.extensions.owh_domain_data;
                     
                     // Tentar obter o nome do domínio de várias fontes

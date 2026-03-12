@@ -161,9 +161,6 @@ class Owh_Domain_Whois_Rdap {
 		// TLD product status check AJAX handler
 		$this->loader->add_action( 'wp_ajax_owh_check_tld_product_status', $plugin_admin, 'ajax_check_tld_product_status' );
 
-		// Display custom fields in admin order view  
-		$plugin_public = new Owh_Domain_Whois_Rdap_Public( $this->get_plugin_name(), $this->get_version(), $this->service_container );
-		$this->loader->add_action( 'woocommerce_admin_order_data_after_billing_address', $plugin_public, 'display_custom_fields_in_admin_order' );
 	}
 
 	/**
@@ -224,15 +221,12 @@ class Owh_Domain_Whois_Rdap {
 		// Register Store API extension for blocks
 		$this->loader->add_action( 'woocommerce_blocks_loaded', $plugin_public, 'register_store_api_extension' );
 		
-		// Force Add to Cart button for domain products (Block Theme compatibility)
-		$this->loader->add_action( 'woocommerce_single_product_summary', $plugin_public, 'render_domain_add_to_cart_form', 30 );
 		
 		// Dynamic checkout fields for domain products - use hooks that run after cart is loaded
 		$this->loader->add_action( 'woocommerce_checkout_init', $plugin_public, 'register_dynamic_checkout_fields' );
 		$this->loader->add_action( 'woocommerce_after_order_notes', $plugin_public, 'display_custom_checkout_fields' );
 		$this->loader->add_action( 'woocommerce_checkout_process', $plugin_public, 'validate_custom_checkout_fields' );
 		$this->loader->add_action( 'woocommerce_rest_checkout_process_payment_with_context', $plugin_public, 'save_custom_checkout_fields', 1, 2 );
-	
 		
 	}
 

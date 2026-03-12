@@ -77,19 +77,6 @@ class Owh_Domain_Whois_Rdap_Public {
 			'all' 
 		);
 
-		// Enqueue domain product periods CSS on single product page
-		if ( is_product() ) {
-			global $product;
-			if ( $product && $product->get_type() === 'domain' ) {
-				wp_enqueue_style( 
-					$this->plugin_name . '-domain-periods', 
-					plugin_dir_url( __FILE__ ) . 'css/owh-domain-product-periods.css', 
-					array( $this->plugin_name ), 
-					$this->version, 
-					'all' 
-				);
-			}
-		}
 	}
 
 	public function add_inline_styles( $custom_css ) {
@@ -132,6 +119,8 @@ class Owh_Domain_Whois_Rdap_Public {
 		}
 
 		// Enqueue domain product periods script on single product page
+		// Removed: Now using domain search shortcode instead of period selection
+		/*
 		if ( is_product() ) {
 			global $product;
 			if ( $product && $product->get_type() === 'domain' ) {
@@ -149,6 +138,7 @@ class Owh_Domain_Whois_Rdap_Public {
 				) );
 			}
 		}
+		*/
 
 		// Localize script with plugin settings
 		$results_page_id = get_option( 'owh_domain_whois_rdap_results_page', '' );
@@ -991,7 +981,9 @@ class Owh_Domain_Whois_Rdap_Public {
 			return array();
 		}
 
-		$domain_data = array();
+		$domain_data = array(
+			'product_type' => 'domain', // Explicitly mark this as a domain product
+		);
 
 		if ( isset( $cart_item['domain_name'] ) ) {
 			$domain_data['domain_name'] = $cart_item['domain_name'];
@@ -1016,6 +1008,11 @@ class Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function extend_cart_item_store_api_schema() {
 		return array(
+			'product_type' => array(
+				'description' => __( 'Tipo do produto', 'owh-domain-whois-rdap' ),
+				'type'        => 'string',
+				'context'     => array( 'view', 'edit' ),
+			),
 			'domain_name' => array(
 				'description' => __( 'Nome do domínio', 'owh-domain-whois-rdap' ),
 				'type'        => 'string',
@@ -1149,51 +1146,6 @@ class Owh_Domain_Whois_Rdap_Public {
     }
 
 	/**
-	 * Render Add to Cart form for domain products
-	 * Ensures compatibility with Block Themes
-	 * 
-	 * @since 1.0.0
-	 */
-	public function render_domain_add_to_cart_form() {
-		global $product;
-		
-		// Only show for domain products
-		if ( ! $product || $product->get_type() !== 'domain' ) {
-			return;
-		}
-		
-		// Don't show if not purchasable
-		if ( ! method_exists( $product, 'is_purchasable' ) || ! $product->is_purchasable() ) {
-			return;
-		}
-		
-		// Get default period and price
-		$available_periods = $product->get_available_periods();
-		$default_period = ! empty( $available_periods ) ? array_keys( $available_periods )[0] : 1;
-		$default_price = $product->get_price_for_period( $default_period, 'register' );
-		
-		// Render Add to Cart form
-		echo '<div class="domain-add-to-cart-section">';
-		
-		echo '<form class="cart domain-cart-form" method="post" enctype="multipart/form-data" id="domain-cart-form-' . $product->get_id() . '">';
-		echo '<input type="hidden" name="add-to-cart" value="' . $product->get_id() . '" />';
-		echo '<input type="hidden" name="quantity" value="1" />';
-		
-		// Initialize with default values that will be updated by JavaScript
-		echo '<input type="hidden" name="domain_period" value="' . intval( $default_period ) . '" />';
-		if ( $default_price ) {
-			echo '<input type="hidden" name="domain_price" value="' . floatval( $default_price ) . '" />';
-		}
-		
-		echo '<button type="submit" name="add-to-cart" value="' . $product->get_id() . '" class="single_add_to_cart_button button alt wp-element-button">';
-		echo 'Adicionar ao carrinho';
-		echo '</button>';
-		
-		echo '</form>';
-		echo '</div>';
-	}
-
-	/**
 	 * Get product ID for a specific TLD
 	 *
 	 * @param string $tld The TLD to search for (including the dot, e.g. '.com')
@@ -1249,7 +1201,7 @@ class Owh_Domain_Whois_Rdap_Public {
 	}
 
 	/**
-	 * Register dynamic checkout fields for domain products
+	 * Register dynamic checkout fields for blocks checkout
 	 * 
 	 * @since 1.0.0
 	 */
@@ -1287,7 +1239,7 @@ class Owh_Domain_Whois_Rdap_Public {
 				continue;
 			}
 
-
+			
 			woocommerce_register_additional_checkout_field( array(
 				'id'       => 'owh-domain-whois-rdap/custom-field-' . $field_id,
 				'label'    => $field_config['label'],
@@ -1303,7 +1255,7 @@ class Owh_Domain_Whois_Rdap_Public {
 	}
 
 	/**
-	 * Display custom checkout field (fallback method)
+	 * Register dynamic checkout fields for shortcode checkout
 	 * 
 	 * @since 1.0.0
 	 */
@@ -1503,84 +1455,6 @@ class Owh_Domain_Whois_Rdap_Public {
 
 		// Remove duplicates and return
 		return array_unique( $required_fields );
-	}
-
-	/**
-	 * Display custom checkout fields in admin order view
-	 * 
-	 * Exibe os campos personalizados na página de visualização do pedido no painel administrativo.
-	 * Mostra no formato: (Label do Campo) (Valor do Campo)
-	 * 
-	 * @since 1.0.0
-	 * @param WC_Order $order Order object
-	 */
-	public function display_custom_fields_in_admin_order( $order ) {
-		// Get custom fields from order meta
-		$custom_fields = $this->get_order_custom_fields( $order );
-		
-		// Always enqueue the CSS for consistency, even if no fields
-		$this->enqueue_admin_custom_fields_styles();
-		
-		// Get field configurations to show proper labels
-		$field_configs = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
-		
-		// Create a map of field_id => field_config for easier lookup
-		$field_map = array();
-		foreach ( $field_configs as $field_config ) {
-			if ( isset( $field_config['id'] ) ) {
-				$field_map[ $field_config['id'] ] = $field_config;
-			}
-		}
-
-		// Prepare template variables
-		$template_vars = array(
-			'custom_fields' => $custom_fields,
-			'field_map' => $field_map,
-			'section_title' => __( 'Informações Adicionais do Domínio', 'owh-domain-whois-rdap' )
-		);
-
-		// Load template
-		$this->load_admin_template( 'owh-domain-custom-fields-admin-order', $template_vars );
-	}
-
-	/**
-	 * Enqueue admin styles for custom fields display
-	 * 
-	 * @since 1.0.0
-	 */
-	private function enqueue_admin_custom_fields_styles() {
-		wp_enqueue_style( 
-			$this->plugin_name . '-admin-custom-fields', 
-			plugin_dir_url( dirname( __FILE__ ) ) . 'admin/css/owh-domain-custom-fields-admin.css', 
-			array(), 
-			$this->version, 
-			'all' 
-		);
-	}
-
-	/**
-	 * Load admin template with variables
-	 * 
-	 * @since 1.0.0
-	 * @param string $template_name Template file name (without .php extension)
-	 * @param array $vars Variables to extract for template use
-	 */
-	private function load_admin_template( $template_name, $vars = array() ) {
-		// Extract variables for template use
-		extract( $vars );
-		
-		// Build template path
-		$template_path = plugin_dir_path( dirname( __FILE__ ) ) . 'admin/partials/' . $template_name . '.php';
-		
-		// Load template if exists
-		if ( file_exists( $template_path ) ) {
-			include $template_path;
-		} else {
-			// Fallback error message
-			echo '<div class="notice notice-error"><p>' . 
-				sprintf( __( 'Template não encontrado: %s', 'owh-domain-whois-rdap' ), $template_name ) . 
-				'</p></div>';
-		}
 	}
 
 	/**

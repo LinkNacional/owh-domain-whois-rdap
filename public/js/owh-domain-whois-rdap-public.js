@@ -121,12 +121,169 @@
         // Auto-focus on domain input when page loads
         $('#owh-rdap-domain-input').focus();
 
+        // Handle page unload to show loading for redirected searches
+        $(window).on('beforeunload', function() {
+            var form = $('#owh-rdap-search-form');
+            var loadingOverlay = $('#owh-rdap-loading-overlay');
+            
+            if (form.length > 0 && form.attr('action') && form.attr('action') !== '') {
+                // If form has an action URL, show loading during page transition
+                if (loadingOverlay.length > 0) {
+                    loadingOverlay.show();
+                }
+            }
+        });
+
+        // Hide loading on page load (in case it was left visible)
+        $(window).on('load', function() {
+            var loadingOverlay = $('#owh-rdap-loading-overlay');
+            if (loadingOverlay.length > 0) {
+                loadingOverlay.hide();
+            }
+        });
+
         // Enter key handling for better UX
         $('#owh-rdap-domain-input').on('keypress', function(e) {
             if (e.which === 13) { // Enter key
                 $('#owh-rdap-search-form').submit();
             }
         });
+
+        // Handle form submission with loading overlay
+        $(document).on('submit', '#owh-rdap-search-form', function(e) {
+            var form = $(this);
+            var domainInput = $('#owh-rdap-domain-input');
+            var domain = domainInput.val().trim();
+            var searchButton = $('#owh-rdap-search-button');
+            var searchText = searchButton.find('.owh-rdap-search-text');
+            var searchLoading = searchButton.find('.owh-rdap-search-loading');
+            var loadingOverlay = $('#owh-rdap-loading-overlay');
+            
+            // Basic validation
+            if (domain === '') {
+                e.preventDefault();
+                domainInput.focus();
+                return false;
+            }
+            
+            // Show loading states
+            showSearchLoading(searchButton, searchText, searchLoading, loadingOverlay);
+            
+            // If this is a same-page search (no results page configured), handle with AJAX
+            if (!form.attr('action') || form.attr('action') === '') {
+                e.preventDefault();
+                handleAjaxSearch(domain, searchButton, searchText, searchLoading, loadingOverlay);
+                return false;
+            }
+            
+            // For normal form submission to results page, show loading until page changes
+            // The loading will be hidden when the new page loads
+        });
+
+        function showSearchLoading(searchButton, searchText, searchLoading, loadingOverlay) {
+            // Button loading state with smooth transition
+            searchText.addClass('hidden');
+            searchLoading.addClass('active').show();
+            searchButton.prop('disabled', true);
+            
+            // Add searching class to input
+            $('#owh-rdap-domain-input').addClass('searching').prop('readonly', true);
+            
+            // Show overlay if it exists
+            if (loadingOverlay.length > 0) {
+                loadingOverlay.fadeIn(300);
+            }
+        }
+
+        function hideSearchLoading(searchButton, searchText, searchLoading, loadingOverlay) {
+            // Button normal state with smooth transition
+            searchLoading.removeClass('active');
+            setTimeout(function() {
+                searchLoading.hide();
+                searchText.removeClass('hidden');
+            }, 300);
+            searchButton.prop('disabled', false);
+            
+            // Remove searching class from input
+            $('#owh-rdap-domain-input').removeClass('searching').prop('readonly', false);
+            
+            // Hide overlay if it exists
+            if (loadingOverlay.length > 0) {
+                loadingOverlay.fadeOut(300);
+            }
+        }
+
+        function handleAjaxSearch(domain, searchButton, searchText, searchLoading, loadingOverlay) {
+            var resultsContainer = $('#owh-rdap-search-results');
+            
+            // Show results container if hidden
+            if (resultsContainer.length > 0 && resultsContainer.is(':hidden')) {
+                resultsContainer.show();
+            }
+            
+            // Setup dynamic loading messages
+            var loadingMessages = [
+                'Verificando disponibilidade...',
+                'Consultando registros RDAP...',
+                'Analisando status do domínio...',
+                'Finalizando consulta...'
+            ];
+            var currentMessageIndex = 0;
+            var messageInterval;
+            
+            // Update loading message if overlay exists
+            if (loadingOverlay.length > 0) {
+                var loadingMessage = loadingOverlay.find('.owh-rdap-loading-message');
+                if (loadingMessage.length > 0) {
+                    messageInterval = setInterval(function() {
+                        currentMessageIndex = (currentMessageIndex + 1) % loadingMessages.length;
+                        loadingMessage.fadeOut(200, function() {
+                            $(this).text(loadingMessages[currentMessageIndex]).fadeIn(200);
+                        });
+                    }, 2000);
+                }
+            }
+            
+            // Make AJAX request (this would need to be implemented in the PHP side)
+            $.ajax({
+                url: owhRdapPublic.ajax_url || ajaxurl || '/wp-admin/admin-ajax.php',
+                type: 'POST',
+                data: {
+                    action: 'owh_rdap_search_domain',
+                    domain: domain,
+                    nonce: owhRdapPublic.nonce || ''
+                },
+                timeout: 30000, // 30 seconds timeout
+                success: function(response) {
+                    if (response.success && resultsContainer.length > 0) {
+                        resultsContainer.html(response.data.html || '<p>Resultado da pesquisa para: ' + domain + '</p>');
+                    } else {
+                        if (resultsContainer.length > 0) {
+                            resultsContainer.html('<div class="owh-rdap-result-error">Erro ao processar a pesquisa. Tente novamente.</div>');
+                        }
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('AJAX Error:', status, error);
+                    if (resultsContainer.length > 0) {
+                        var errorMessage = 'Erro de conexão. ';
+                        if (status === 'timeout') {
+                            errorMessage += 'A pesquisa está demorando mais que o esperado. Tente novamente.';
+                        } else {
+                            errorMessage += 'Verifique sua conexão e tente novamente.';
+                        }
+                        resultsContainer.html('<div class="owh-rdap-result-error">' + errorMessage + '</div>');
+                    }
+                },
+                complete: function() {
+                    // Clear message interval
+                    if (messageInterval) {
+                        clearInterval(messageInterval);
+                    }
+                    hideSearchLoading(searchButton, searchText, searchLoading, loadingOverlay);
+                }
+            });
+        }
 
     });
 
