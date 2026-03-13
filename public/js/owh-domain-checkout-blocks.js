@@ -54,17 +54,20 @@
                         const selectId = 'domain-period-select-' + cartItem.key;
                         
                         return `
-                            <select 
-                                id="${selectId}" 
-                                class="domain-period-selector loading" 
-                                data-cart-key="${cartItem.key}"
-                                data-domain="${domainName}"
-                                data-product-id="${productId}"
-                                style="width: 100%; max-width: 300px; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
-                                onchange="updateDomainPeriod(this)"
-                            >
-                                <option>Carregando opções de período...</option>
-                            </select>
+                            <div style="display: flex; flex-direction: column; gap: 5px;">
+                                <span style="font-weight: 500; color: #333;">${domainName} por</span>
+                                <select 
+                                    id="${selectId}" 
+                                    class="domain-period-selector loading" 
+                                    data-cart-key="${cartItem.key}"
+                                    data-domain="${domainName}"
+                                    data-product-id="${productId}"
+                                    style="width: fit-content; padding: 5px; border: 1px solid #ddd; border-radius: 4px;"
+                                    onchange="updateDomainPeriod(this)"
+                                >
+                                    <option>Carregando opções de período...</option>
+                                </select>
+                            </div>
                         `;
                     }
                 }
@@ -129,7 +132,7 @@
                     const selected = periodNumber === currentPeriod ? ' selected' : '';
                     const priceFormatted = 'R$ ' + parseFloat(registerPrice).toFixed(2).replace('.', ',');
 
-                    const optionHtml = `<option value="${periodNumber}"${selected}>${domainData.domain_name} por ${periodText} (${priceFormatted})</option>`;
+                    const optionHtml = `<option value="${periodNumber}"${selected}>${periodText} (${priceFormatted})</option>`;
                     selectOptions += optionHtml;
 
                 }
@@ -279,10 +282,11 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success && data.data) {
-                    // Build error message map
+                    // Build error message map - store by field.id for flexible matching
                     data.data.forEach(function(field) {
                         if (field.id && field.error_message && field.error_message.trim() !== '') {
-                            customErrorMessages['validate-error-order_owh-domain-whois-rdap/custom-field-' + field.id] = field.error_message;
+                            // Store just the field ID and error message for flexible matching
+                            customErrorMessages[field.id] = field.error_message;
                         }
                     });
                 } else {
@@ -307,7 +311,8 @@
                         if (data.success && data.data) {
                             data.data.forEach(function(field) {
                                 if (field.id && field.error_message && field.error_message.trim() !== '') {
-                                    customErrorMessages['validate-error-order_owh-domain-whois-rdap/custom-field-' + field.id] = field.error_message;
+                                    // Store just the field ID and error message for flexible matching
+                                    customErrorMessages[field.id] = field.error_message;
                                 }
                             });
                         }
@@ -343,11 +348,18 @@
         
         // Function to replace error message
         function replaceErrorMessage(errorDiv) {
-            const errorP = errorDiv.querySelector('p[id^="validate-error-order_owh-domain-whois-rdap/custom-field-"]');
+            // Look for any error paragraph that contains our custom field pattern
+            const errorP = errorDiv.querySelector('p[id*="owh-domain-whois-rdap/custom-field-"]');
             if (errorP) {
-                const fieldId = errorP.id;
+                const fullFieldId = errorP.id;
+                let fieldId = null;
                 
-                if (customErrorMessages[fieldId]) {
+                const matches = fullFieldId.match(/custom-field-(?:[^-]+-)?(\d+)$/);
+                if (matches && matches[1]) {
+                    fieldId = matches[1];
+                }
+                
+                if (fieldId && customErrorMessages[fieldId]) {
                     const span = errorP.querySelector('span');
                     if (span) {
                         const currentText = span.textContent.trim();
@@ -379,15 +391,9 @@
                                 // Prepend custom message to the existing message
                                 const newMessage = customErrorMessages[fieldId] + ' ' + currentText;
                                 span.textContent = newMessage;
-                            } else {
-                                console.log('Error message doesn\'t match replacement patterns:', currentText);
                             }
-                        } else {
-                            console.log('Message already contains custom prefix, skipping');
                         }
                     }
-                } else {
-                    console.log('No custom message found for field ID:', fieldId);
                 }
             }
         }
@@ -434,5 +440,218 @@
     
     // Initialize the observer
     initCustomErrorMessageObserver();
+    
+    /**
+     * Group domain fields by domain name and add section headers
+     */
+    function initDomainFieldGrouping() {
+        function groupDomainFields() {
+            const orderFieldset = document.querySelector('#order-fields');
+            if (!orderFieldset) return;
+
+            const addressForm = orderFieldset.querySelector('.wc-block-components-address-form');
+            if (!addressForm) return;
+
+            // Find all custom domain fields
+            const domainFields = addressForm.querySelectorAll('[class*="owh-domain-whois-rdap-custom-field-"]');
+            if (domainFields.length === 0) return;
+
+            // Group fields by domain (hash)
+            const domainGroups = {};
+            
+            domainFields.forEach(field => {
+                // Extract domain name and hash from field classes
+                const classList = Array.from(field.classList);
+                const customFieldClass = classList.find(cls => cls.includes('owh-domain-whois-rdap-custom-field-'));
+                
+                if (customFieldClass) {
+                    // Extract hash from class name
+                    const match = customFieldClass.match(/owh-domain-whois-rdap-custom-field-([^-]+)/);
+                    if (match) {
+                        const hash = match[1];
+                        
+                        // Get domain name from label
+                        const label = field.querySelector('label');
+                        let domainName = '';
+                        
+                        if (label) {
+                            const labelText = label.textContent;
+                            // Extract domain from parentheses like "CPF (example.com)"
+                            const domainMatch = labelText.match(/\(([^)]+)\)$/);
+                            if (domainMatch) {
+                                domainName = domainMatch[1];
+                                
+                                // Remove parentheses from the label text for cleaner look
+                                const cleanLabelText = labelText.replace(/\s*\([^)]+\)$/, '');
+                                label.textContent = cleanLabelText;
+                            }
+                        }
+                        
+                        if (domainName) {
+                            if (!domainGroups[hash]) {
+                                domainGroups[hash] = {
+                                    domainName: domainName,
+                                    fields: []
+                                };
+                            }
+                            domainGroups[hash].fields.push(field);
+                        }
+                    }
+                }
+            });
+
+            // Only proceed if we have multiple domains or want to add headers
+            if (Object.keys(domainGroups).length === 0) return;
+
+            // Change the main title
+            const mainTitle = orderFieldset.querySelector('.wc-block-components-checkout-step__title');
+            if (mainTitle && Object.keys(domainGroups).length === 1) {
+                const firstDomain = Object.values(domainGroups)[0];
+                mainTitle.textContent = `Informações para registro do domínio ${firstDomain.domainName}`;
+            } else if (mainTitle && Object.keys(domainGroups).length > 1) {
+                mainTitle.textContent = 'Informações para registro dos domínios';
+            }
+
+            // Remove legend if exists (we'll replace with custom headers)
+            const legend = orderFieldset.querySelector('legend');
+            if (legend) {
+                legend.style.display = 'none';
+            }
+
+            // Create grouped sections
+            let hasCreatedSections = false;
+            
+            Object.values(domainGroups).forEach((group, index) => {
+                if (group.fields.length === 0) return;
+
+                // Create section header for multiple domains
+                if (Object.keys(domainGroups).length > 1) {
+                    const sectionHeader = document.createElement('div');
+                    sectionHeader.className = 'wc-block-components-checkout-step__heading-container owh-domain-section-header';
+                    sectionHeader.innerHTML = `
+                        <div class="wc-block-components-checkout-step__heading">
+                            <h3 class="wc-block-components-title wc-block-components-checkout-step__title" style="font-size: 1.1em; margin: 20px 0 15px 0; color: #333;">
+                                Informações para registro do domínio ${group.domainName}
+                            </h3>
+                        </div>
+                    `;
+
+                    // Insert header before the first field of this group
+                    const firstField = group.fields[0];
+                    firstField.parentNode.insertBefore(sectionHeader, firstField);
+                    hasCreatedSections = true;
+                }
+            });
+
+            // Add some CSS to improve visual separation
+            if (hasCreatedSections) {
+                addDomainGroupingStyles();
+            }
+        }
+
+        function addDomainGroupingStyles() {
+            const styleId = 'owh-domain-grouping-styles';
+            if (document.getElementById(styleId)) return; // Already added
+
+            const styles = `
+                .owh-domain-section-header {
+                    border-top: 2px solid #e0e0e0;
+                    padding-top: 15px;
+                    margin-top: 25px;
+                }
+                
+                .owh-domain-section-header:first-child {
+                    border-top: none;
+                    margin-top: 10px;
+                    padding-top: 0;
+                }
+                
+                .owh-domain-section-header h3 {
+                    color: #333 !important;
+                    font-weight: 600 !important;
+                    border-bottom: 1px solid #ddd;
+                    padding-bottom: 8px;
+                    margin-bottom: 15px !important;
+                }
+                
+                /* Add subtle background to domain sections */
+                .wc-block-components-address-form {
+                    position: relative;
+                }
+                
+                /* Style for improved readability */
+                .wc-block-components-text-input[class*="owh-domain-whois-rdap-custom-field-"] {
+                    margin-bottom: 15px;
+                }
+                
+                /* Add spacing between domain groups */
+                .owh-domain-section-header + .wc-block-components-text-input {
+                    margin-top: 10px;
+                }
+            `;
+            
+            const styleSheet = document.createElement('style');
+            styleSheet.id = styleId;
+            styleSheet.textContent = styles;
+            document.head.appendChild(styleSheet);
+        }
+
+        // Observer to watch for DOM changes and regroup fields
+        const fieldGroupingObserver = new MutationObserver(function(mutations) {
+            let shouldRegroup = false;
+            
+            mutations.forEach(function(mutation) {
+                mutation.addedNodes.forEach(function(node) {
+                    if (node.nodeType === Node.ELEMENT_NODE) {
+                        // Check if new domain fields were added
+                        if (node.classList && Array.from(node.classList).some(cls => cls.includes('owh-domain-whois-rdap-custom-field-'))) {
+                            shouldRegroup = true;
+                        }
+                        
+                        // Also check child elements
+                        const domainFields = node.querySelectorAll && node.querySelectorAll('[class*="owh-domain-whois-rdap-custom-field-"]');
+                        if (domainFields && domainFields.length > 0) {
+                            shouldRegroup = true;
+                        }
+                    }
+                });
+            });
+            
+            if (shouldRegroup) {
+                // Debounce the regrouping to avoid excessive calls
+                clearTimeout(window.owh_regroup_timeout);
+                window.owh_regroup_timeout = setTimeout(groupDomainFields, 300);
+            }
+        });
+
+        function startFieldGrouping() {
+            // Initial grouping
+            setTimeout(groupDomainFields, 500);
+            
+            // Start observing for changes
+            const orderFields = document.querySelector('#order-fields');
+            if (orderFields) {
+                fieldGroupingObserver.observe(orderFields, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+            
+            // Also regroup when checkout updates
+            document.addEventListener('updated_checkout', function() {
+                setTimeout(groupDomainFields, 300);
+            });
+        }
+        
+        // Initialize when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startFieldGrouping);
+        } else {
+            startFieldGrouping();
+        }
+    }
+    
+    // Initialize domain field grouping
+    initDomainFieldGrouping();
 
 })();

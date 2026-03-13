@@ -695,12 +695,7 @@ class Owh_Domain_Whois_Rdap_Public {
 		// Get the pricing matrix from product meta
 		$pricing_matrix = get_post_meta( $product_id, '_domain_pricing_matrix', true );
 		
-		// Debug: Log the matrix content
-		error_log( 'OWH Debug - Product ID: ' . $product_id );
-		error_log( 'OWH Debug - Pricing Matrix Raw: ' . print_r( $pricing_matrix, true ) );
-		
 		if ( empty( $pricing_matrix ) ) {
-			error_log( 'OWH Debug - No pricing matrix found for product ' . $product_id );
 			wp_send_json_error( 'No pricing matrix found' );
 		}
 
@@ -766,15 +761,10 @@ class Owh_Domain_Whois_Rdap_Public {
 		// Update cart
 		$cart->cart_contents[ $cart_key ] = $cart_item;
 		$cart->set_session();
-		error_log(json_encode([
-			'cart1' => $cart,
-		]));
 
 		// Force recalculation
 		$cart->calculate_totals();
-		error_log(json_encode([
-			'cart2' => $cart,
-		]));
+
 		wp_send_json_success( array(
 			'message' => 'Period updated successfully',
 			'new_period' => $new_period,
@@ -794,7 +784,7 @@ class Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function add_domain_cart_item_data( $cart_item_data, $product_id, $variation_id ) {
 		$product = wc_get_product( $product_id );
-		
+
 		if ( ! $product || $product->get_type() !== 'domain' ) {
 			return $cart_item_data;
 		}
@@ -1207,6 +1197,7 @@ class Owh_Domain_Whois_Rdap_Public {
 	 */
 	public function register_dynamic_checkout_fields() {
 		// Only run on checkout pages
+		
 		if ( ! is_checkout() ) {
 			return;
 		}
@@ -1215,41 +1206,45 @@ class Owh_Domain_Whois_Rdap_Public {
 		}
 		
 		// Try modern WooCommerce method first (WC 8.8+) if available
-		$required_fields = $this->get_required_custom_fields_for_cart();
+		$cart_domain_fields = $this->get_required_custom_fields_for_cart();
 		
-		if ( empty( $required_fields ) ) {
+		if ( empty( $cart_domain_fields ) ) {
 			return;
 		}
 		
 		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
 		
 		// Only use modern method if function exists
-		foreach ( $required_fields as $field_id ) {
-			$field_config = null;
-			
-			// Find field configuration
-			foreach ( $custom_fields as $field ) {
-				if ( intval( $field['id'] ) === intval( $field_id ) ) {
-					$field_config = $field;
-					break;
+		foreach ( $cart_domain_fields as $cart_item_key => $cart_item_data ) {
+			foreach ( $cart_item_data['required_fields'] as $field_id ) {
+				$field_config = null;
+				
+				// Find field configuration
+				foreach ( $custom_fields as $field ) {
+					if ( intval( $field['id'] ) === intval( $field_id ) ) {
+						$field_config = $field;
+						break;
+					}
 				}
-			}
-			
-			if ( ! $field_config ) {
-				continue;
-			}
+				
+				if ( ! $field_config ) {
+					continue;
+				}
 
-			
-			woocommerce_register_additional_checkout_field( array(
-				'id'       => 'owh-domain-whois-rdap/custom-field-' . $field_id,
-				'label'    => $field_config['label'],
-				'location' => 'order',
-				'type'     => 'text',
-				'required' => true,
-				'attributes' => array(
-					'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
-				),
-			));
+				// Create unique field ID for this cart item
+				$unique_field_id = 'owh-domain-whois-rdap/custom-field-' . $cart_item_key . '-' . $field_id;
+				
+				woocommerce_register_additional_checkout_field( array(
+					'id'       => $unique_field_id,
+					'label'    => $field_config['label'] . ' (' . $cart_item_data['domain_name'] . ')',
+					'location' => 'order',
+					'type'     => 'text',
+					'required' => true,
+					'attributes' => array(
+						'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
+					),
+				));
+			}
 		}
 		// For older WC versions, the hooks are already registered in the main file
 	}
@@ -1260,47 +1255,57 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @since 1.0.0
 	 */
 	public function display_custom_checkout_fields( $checkout ) {
-		$required_fields = $this->get_required_custom_fields_for_cart();
+		$cart_domain_fields = $this->get_required_custom_fields_for_cart();
 		
-		if ( empty( $required_fields ) ) {
+		if ( empty( $cart_domain_fields ) ) {
 			return;
 		}
 
 		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
 		
-		echo '<div id="owh_domain_custom_fields"><h3>' . esc_html__( 'Informações para registro de dominio', 'owh-domain-whois-rdap' ) . '</h3>';
-		
-		foreach ( $required_fields as $field_id ) {
-			$field_config = null;
+		foreach ( $cart_domain_fields as $cart_item_key => $cart_item_data ) {
+			echo '<div id="owh_domain_custom_fields_' . esc_attr( $cart_item_key ) . '"><h3>' . 
+				sprintf( 
+					esc_html__( 'Informações para registro do domínio %s', 'owh-domain-whois-rdap' ), 
+					'<strong>' . esc_html( $cart_item_data['domain_name'] ) . '</strong>'
+				) . 
+				'</h3>';
 			
-			foreach ( $custom_fields as $field ) {
-				if ( intval( $field['id'] ) === intval( $field_id ) ) {
-					$field_config = $field;
-					break;
+			foreach ( $cart_item_data['required_fields'] as $field_id ) {
+				$field_config = null;
+				
+				foreach ( $custom_fields as $field ) {
+					if ( intval( $field['id'] ) === intval( $field_id ) ) {
+						$field_config = $field;
+						break;
+					}
 				}
-			}
-			
-			if ( ! $field_config ) {
-				continue;
-			}
+				
+				if ( ! $field_config ) {
+					continue;
+				}
 
-			$field_name = 'owh_domain_custom_field_' . $field_id;
-			$field_value = $checkout->get_value( $field_name );
+				// Include product_id in field name to ensure uniqueness and proper association
+				$field_name = 'owh_domain_custom_field_' . $cart_item_data['product_id'] . '_' . $cart_item_key . '_' . $field_id;
+				$field_value = $checkout->get_value( $field_name );
+				
+				woocommerce_form_field( $field_name, array(
+					'type'        => 'text',
+					'class'       => array( 'form-row-wide' ),
+					'label'       => $field_config['label'],
+					'placeholder' => $field_config['label'],
+					'required'    => true,
+					'custom_attributes' => array(
+						'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
+						'data-field-id' => $field_id,
+						'data-cart-item-key' => $cart_item_key,
+						'data-product-id' => $cart_item_data['product_id']
+					)
+				), $field_value );
+			}
 			
-			woocommerce_form_field( $field_name, array(
-				'type'        => 'text',
-				'class'       => array( 'form-row-wide' ),
-				'label'       => $field_config['label'],
-				'placeholder' => $field_config['label'],
-				'required'    => true,
-				'custom_attributes' => array(
-					'pattern' => ! empty( $field_config['regex'] ) ? $field_config['regex'] : '',
-					'data-field-id' => $field_id
-				)
-			), $field_value );
+			echo '</div>';
 		}
-		
-		echo '</div>';
 	}
 
 	/**
@@ -1309,60 +1314,74 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @since 1.0.0
 	 */
 	public function validate_custom_checkout_fields() {
-		$required_fields = $this->get_required_custom_fields_for_cart();
+		$cart_domain_fields = $this->get_required_custom_fields_for_cart();
 		
-		if ( empty( $required_fields ) ) {
+		if ( empty( $cart_domain_fields ) ) {
 			return;
 		}
 
 		$custom_fields = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
 		
-		foreach ( $required_fields as $field_id ) {
-			$field_config = null;
-			
-			foreach ( $custom_fields as $field ) {
-				if ( intval( $field['id'] ) === intval( $field_id ) ) {
-					$field_config = $field;
-					break;
-				}
-			}
-			
-			if ( ! $field_config ) {
-				continue;
-			}
-
-			$field_name = 'owh_domain_custom_field_' . $field_id;
-			$field_value = sanitize_text_field( $_POST[ $field_name ] ?? '' );
-			
-			// Check if field is required and empty
-			if ( empty( $field_value ) ) {
-				wc_add_notice( sprintf( 
-					__( 'O campo "%s" é obrigatório.', 'owh-domain-whois-rdap' ), 
-					$field_config['label'] 
-				), 'error' );
-				continue;
-			}
-			
-			// Validate against regex if provided
-			if ( ! empty( $field_config['regex'] ) ) {
-				if ( ! preg_match( '/' . $field_config['regex'] . '/', $field_value ) ) {
-					$default_error_message = sprintf( 
-						__( 'O campo "%s" não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
-						$field_config['label'] 
-					);
-					
-					// Prepend custom error message if provided
-					if ( ! empty( $field_config['error_message'] ) ) {
-						$error_message = $field_config['error_message'] . ' ' . $default_error_message;
-					} else {
-						$error_message = $default_error_message;
+		foreach ( $cart_domain_fields as $cart_item_key => $cart_item_data ) {
+			foreach ( $cart_item_data['required_fields'] as $field_id ) {
+				$field_config = null;
+				
+				foreach ( $custom_fields as $field ) {
+					if ( intval( $field['id'] ) === intval( $field_id ) ) {
+						$field_config = $field;
+						break;
 					}
-					
-					wc_add_notice( $error_message, 'error' );
+				}
+				
+				if ( ! $field_config ) {
+					continue;
+				}
+
+				// Update field name to match new pattern with product_id
+				$field_name = 'owh_domain_custom_field_' . $cart_item_data['product_id'] . '_' . $cart_item_key . '_' . $field_id;
+				$field_value = sanitize_text_field( $_POST[ $field_name ] ?? '' );
+				
+				// Check if field is required and empty
+				if ( empty( $field_value ) ) {
+					wc_add_notice( sprintf( 
+						__( 'O campo "%s" para o domínio %s é obrigatório.', 'owh-domain-whois-rdap' ), 
+						$field_config['label'],
+						$cart_item_data['domain_name']
+					), 'error' );
+					continue;
+				}
+				
+				// Validate against regex if provided
+				if ( ! empty( $field_config['regex'] ) ) {
+					if ( ! preg_match( '/' . $field_config['regex'] . '/', $field_value ) ) {
+						$default_error_message = sprintf( 
+							__( 'O campo "%s" para o domínio %s não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
+							$field_config['label'],
+							$cart_item_data['domain_name']
+						);
+						
+						// Prepend custom error message if provided
+						if ( ! empty( $field_config['error_message'] ) ) {
+							$error_message = $field_config['error_message'] . ' ' . $default_error_message;
+						} else {
+							$error_message = $default_error_message;
+						}
+						
+						wc_add_notice( $error_message, 'error' );
+					}
 				}
 			}
 		}
 	}
+
+	public function save_checkout_blocks_custom_fields($context, $result) {
+		$this->save_custom_fields($context->payment_data, $context->order);
+	}
+
+	public function save_checkout_shortcode_custom_fields($orderId, $postedData, $order) {
+		$this->save_custom_fields($_POST, $order);
+	}
+
 
 	/**
 	 * Save custom checkout fields to order meta
@@ -1370,22 +1389,20 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * Este método salva os campos personalizados do checkout no meta da ordem.
 	 * Os dados chegam através do $context->payment_data no formato:
 	 * Array(
-	 *   "owh-domain-whois-rdap-custom-field-1" => "624.655.700-72",
-	 *   "owh-domain-whois-rdap-custom-field-2" => "23.375.581/0001-41"
+	 *   "owh-domain-whois-rdap-custom-field-cart_key-1" => "624.655.700-72",
+	 *   "owh-domain-whois-rdap-custom-field-cart_key-2" => "23.375.581/0001-41"
 	 * )
 	 * 
 	 * E são salvos como uma única meta da ordem com a chave "_owh_domain_custom_fields" 
-	 * contendo um array estruturado:
+	 * contendo um array estruturado por produto:
 	 * Array(
-	 *   "1" => Array(
-	 *     "field_id" => "1",
-	 *     "value" => "624.655.700-72", 
-	 *     "original_key" => "owh-domain-whois-rdap-custom-field-1"
-	 *   ),
-	 *   "2" => Array(
-	 *     "field_id" => "2",
-	 *     "value" => "23.375.581/0001-41",
-	 *     "original_key" => "owh-domain-whois-rdap-custom-field-2" 
+	 *   "cart_item_key_1" => Array(
+	 *     "domain_name" => "example.com",
+	 *     "product_id" => 123,
+	 *     "fields" => Array(
+	 *       "1" => Array("field_id" => "1", "value" => "624.655.700-72", "original_key" => "..."),
+	 *       "2" => Array("field_id" => "2", "value" => "23.375.581/0001-41", "original_key" => "...")
+	 *     )
 	 *   )
 	 * )
 	 * 
@@ -1393,53 +1410,272 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @param \WC_Order_Context $context Payment context object
 	 * @param \WC_Result $result Payment result object
 	 */
-	public function save_custom_checkout_fields( $context, $result ) {
-		// Check if we have payment data and order
-		$order = $context->order;
-		$payment_data = $context->payment_data;
-
-		foreach ( $payment_data as $key => $value ) {
-			// Check if the key matches our custom field pattern
-			if ( strpos( $key, 'owh-domain-whois-rdap-custom-field-' ) === 0 ) {
-				// Extract the field ID from the key
-				$field_id = str_replace( 'owh-domain-whois-rdap-custom-field-', '', $key );
-				
-				// Sanitize the value
-				$sanitized_value = sanitize_text_field( $value );
-				
-				// Adicionar ao array de campos personalizados
-				$custom_fields_data[ $field_id ] = array(
-					'field_id' => $field_id,
-					'value' => $sanitized_value,
-					'original_key' => $key
+	public function save_custom_fields( $payment_data, $order ) {
+		$custom_fields_data = array();
+		$item_meta_data = array(); // Store meta data for each order item
+		
+		// Get cart info to help with mapping
+		$cart_domain_fields = $this->get_required_custom_fields_for_cart();
+		$order_items = array();
+		
+		// Prepare order items list for mapping
+		foreach ( $order->get_items() as $item_id => $item ) {
+			$product_id = $item->get_product_id();
+			$product = wc_get_product( $product_id );
+			
+			if ( $product && $product->get_type() === 'domain' ) {
+				$order_items[] = array(
+					'item_id' => $item_id,
+					'item' => $item,
+					'product_id' => $product_id,
+					'domain_name' => $item->get_meta( '_domain_name', true ) ?: $product->get_name()
 				);
 			}
 		}
+		
+		foreach ( $payment_data as $key => $value ) {
+			// Check if the key matches our new custom field pattern with product_id
+			if ( strpos( $key, 'owh_domain_custom_field_' ) === 0 ) {
+				// Extract product_id, cart_item_key and field_id from: owh_domain_custom_field_{product_id}_{cart_item_key}_{field_id}
+				$field_key = str_replace( 'owh_domain_custom_field_', '', $key );
+				$key_parts = explode( '_', $field_key, 3 ); // Split into 3 parts: product_id, cart_item_key, field_id
+				
+				if ( count( $key_parts ) === 3 ) {
+					$product_id = $key_parts[0];
+					$cart_item_key = $key_parts[1];
+					$field_id = $key_parts[2];
+					
+					$sanitized_value = sanitize_text_field( $value );
+					
+					// Initialize array for this product if not exists
+					if ( ! isset( $item_meta_data[ $product_id ] ) ) {
+						$item_meta_data[ $product_id ] = array(
+							'product_id' => $product_id,
+							'cart_item_key' => $cart_item_key,
+							'fields' => array()
+						);
+					}
+					
+					// Store field data
+					$item_meta_data[ $product_id ]['fields'][ $field_id ] = array(
+						'field_id' => $field_id,
+						'value' => $sanitized_value,
+						'original_key' => $key
+					);
+					
+					// Also keep the old structure for backward compatibility
+					if ( ! isset( $custom_fields_data[ $cart_item_key ] ) ) {
+						$custom_fields_data[ $cart_item_key ] = array(
+							'product_id' => $product_id,
+							'fields' => array()
+						);
+					}
+					
+					$custom_fields_data[ $cart_item_key ]['fields'][ $field_id ] = array(
+						'field_id' => $field_id,
+						'value' => $sanitized_value,
+						'original_key' => $key
+					);
+				}
+			}
+			// Check if the key matches blocks checkout pattern (with hashes)
+			elseif ( strpos( $key, 'owh-domain-whois-rdap-custom-field-' ) === 0 ) {
+				// Extract hash and field_id from: owh-domain-whois-rdap-custom-field-{hash}-{field_id}
+				$field_key = str_replace( 'owh-domain-whois-rdap-custom-field-', '', $key );
+				$key_parts = explode( '-', $field_key, 2 ); // Split on first dash only
+				
+				if ( count( $key_parts ) === 2 ) {
+					$hash = $key_parts[0];
+					$field_id = $key_parts[1];
+					
+					$sanitized_value = sanitize_text_field( $value );
+					
+					// Store in custom_fields_data using hash as key
+					if ( ! isset( $custom_fields_data[ $hash ] ) ) {
+						$custom_fields_data[ $hash ] = array(
+							'product_id' => null, // Will be filled later
+							'domain_name' => null, // Will be filled later
+							'fields' => array()
+						);
+					}
+					
+					$custom_fields_data[ $hash ]['fields'][ $field_id ] = array(
+						'field_id' => $field_id,
+						'value' => $sanitized_value,
+						'original_key' => $key
+					);
+				}
+			}
+		}
 
-		// Salvar todos os campos em uma única meta se houver dados
+		// Now we need to map the hashes to actual order items
+		// Strategy: Distribute hash-based fields to available domain products in order
+		$hash_groups = array();
+		$used_order_items = array();
+		
+		foreach ( $custom_fields_data as $hash_key => $hash_data ) {
+			if ( $hash_data['product_id'] === null ) { // This is a hash-based entry
+				$hash_groups[ $hash_key ] = $hash_data;
+			}
+		}
+		
+		// Distribute hash groups to order items
+		$item_index = 0;
+		foreach ( $hash_groups as $hash_key => $hash_data ) {
+			if ( isset( $order_items[ $item_index ] ) ) {
+				$order_item = $order_items[ $item_index ];
+				$product_id = $order_item['product_id'];
+				
+				// Update the hash entry with product info
+				$custom_fields_data[ $hash_key ]['product_id'] = $product_id;
+				$custom_fields_data[ $hash_key ]['domain_name'] = $order_item['domain_name'];
+				
+				// Add to item_meta_data for saving to order items
+				if ( ! in_array( $product_id, $used_order_items ) ) {
+					$item_meta_data[ $product_id ] = array(
+						'product_id' => $product_id,
+						'domain_name' => $order_item['domain_name'],
+						'fields' => $hash_data['fields'],
+						'item_id' => $order_item['item_id']
+					);
+					
+					$used_order_items[] = $product_id;
+					$item_index++; // Move to next available item
+				} else {
+					// If product already used, merge fields
+					$item_meta_data[ $product_id ]['fields'] = array_merge(
+						$item_meta_data[ $product_id ]['fields'],
+						$hash_data['fields']
+					);
+				}
+			}
+		}
+
+		// Save custom fields to individual order items
+		$items_updated = 0;
+		$custom_fields_option = get_option( 'owh_domain_whois_rdap_custom_fields', array() );
+
+
+		foreach ( $order_items as $order_item_data ) {
+			$item_id = $order_item_data['item_id'];
+			$item = $order_item_data['item'];
+			$product_id = $order_item_data['product_id'];
+			
+			if ( isset( $item_meta_data[ $product_id ] ) ) {
+				$fields_data = $item_meta_data[ $product_id ]['fields'];
+				
+				if ( ! empty( $fields_data ) ) {
+					// Save each field as individual meta data on the order item
+
+					// Get domain name from WooCommerce cart global data
+					$domain_name = '';
+					
+					// First try to get from WooCommerce cart global
+					if ( function_exists( 'WC' ) && WC()->cart && ! empty( WC()->cart->cart_contents ) ) {
+						foreach ( WC()->cart->cart_contents as $cart_item_key => $cart_item ) {
+							if ( isset( $cart_item['product_id'] ) && $cart_item['product_id'] == $product_id ) {
+								if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
+									$domain_name = $cart_item['domain_name'];
+									break;
+								}
+							}
+						}
+					}
+					
+					// Fallback: try with global $woocommerce (legacy support)
+					if ( empty( $domain_name ) ) {
+						global $woocommerce;
+						if ( isset( $woocommerce->cart ) && ! empty( $woocommerce->cart->cart_contents ) ) {
+							foreach ( $woocommerce->cart->cart_contents as $cart_item_key => $cart_item ) {
+								if ( isset( $cart_item['product_id'] ) && $cart_item['product_id'] == $product_id ) {
+									if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
+										$domain_name = $cart_item['domain_name'];
+										break;
+									}
+								}
+							}
+						}
+					}
+					
+					// If not found in cart, try to get from order item meta or product name
+					if ( empty( $domain_name ) ) {
+						$domain_name = $item->get_meta( '_domain_name', true );
+						if ( empty( $domain_name ) && function_exists( 'wc_get_product' ) ) {
+							$product = wc_get_product( $product_id );
+							if ( $product ) {
+								$domain_name = $product->get_name();
+							}
+						}
+					}
+					
+					// Add domain name as meta data to the order item
+					if ( ! empty( $domain_name ) ) {
+						$item->update_meta_data( 'Domínio', $domain_name, true );
+					}
+
+					foreach ( $fields_data as $field_data ) {
+
+						$field_id = $field_data['field_id'];
+
+						foreach ( $custom_fields_option as $field ) {
+							if ( intval( $field['id'] ) === intval( $field_id ) ) {
+								$field_config = $field;
+								break;
+							}
+						}
+
+						if ( ! empty( $field_config ) ) {
+							$item->update_meta_data( $field_config['label'], $field_data['value'], true );
+						}
+					}
+
+					
+					$item->save();
+					$items_updated++;
+					
+				}
+			}
+		}
+
+		// Fill missing data in custom_fields_data using cart info
+		foreach ( $custom_fields_data as $key => &$data ) {
+			if ( empty( $data['domain_name'] ) && isset( $cart_domain_fields[ $key ] ) ) {
+				$data['domain_name'] = $cart_domain_fields[ $key ]['domain_name'];
+			}
+			if ( empty( $data['product_id'] ) && isset( $cart_domain_fields[ $key ] ) ) {
+				$data['product_id'] = $cart_domain_fields[ $key ]['product_id'];
+			}
+		}
+
+		// Save all fields in order meta for backward compatibility
 		if ( ! empty( $custom_fields_data ) ) {
 			$order->update_meta_data( '_owh_domain_custom_fields', $custom_fields_data );
 		}
 
 		// Save the order to persist the meta data
 		$order->save();
+		
+		
+		throw new Exception(json_encode([
+			'orderId' => $order->get_id(),
+		]));
 	}
 
 	/**
 	 * Get required custom fields for domain products in cart
 	 * 
 	 * @since 1.0.0
-	 * @return array Array of field IDs that are required
+	 * @return array Array of cart items with their required fields
 	 */
 	private function get_required_custom_fields_for_cart() {
 		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
 			return array();
 		}
 
-		$required_fields = array();
+		$cart_domain_fields = array();
 		
 		// Loop through cart items
-		foreach ( WC()->cart->get_cart() as $cart_item ) {
+		foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
 			$product_id = $cart_item['product_id'];
 			$product = wc_get_product( $product_id );
 			
@@ -1447,24 +1683,31 @@ class Owh_Domain_Whois_Rdap_Public {
 			if ( $product && $product->get_type() === 'domain' ) {
 				$product_required_fields = get_post_meta( $product_id, '_domain_required_custom_fields', true );
 				
-				if ( is_array( $product_required_fields ) ) {
-					$required_fields = array_merge( $required_fields, $product_required_fields );
+				if ( is_array( $product_required_fields ) && ! empty( $product_required_fields ) ) {
+					// Get domain name from cart item
+					$domain_name = isset( $cart_item['domain_name'] ) ? $cart_item['domain_name'] : $product->get_name();
+					
+					$cart_domain_fields[ $cart_item_key ] = array(
+						'product_id' => $product_id,
+						'domain_name' => $domain_name,
+						'required_fields' => $product_required_fields
+					);
 				}
 			}
 		}
 
-		// Remove duplicates and return
-		return array_unique( $required_fields );
+		return $cart_domain_fields;
 	}
 
 	/**
 	 * Get custom checkout fields from order meta
 	 * 
 	 * Método helper para recuperar os campos personalizados salvos no meta da ordem.
+	 * Retorna a nova estrutura organizada por produto/domínio.
 	 * 
 	 * @since 1.0.0
 	 * @param WC_Order|int $order Order object or order ID
-	 * @return array Array of custom fields data or empty array if none found
+	 * @return array Array of custom fields data organized by cart item or empty array if none found
 	 */
 	public function get_order_custom_fields( $order ) {
 		if ( is_numeric( $order ) ) {
@@ -1486,16 +1729,166 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @since 1.0.0
 	 * @param WC_Order|int $order Order object or order ID
 	 * @param string|int $field_id Field ID to retrieve
-	 * @return string|null Field value or null if not found
+	 * @param string $cart_item_key Optional cart item key for specific product (new parameter)
+	 * @return string|array|null Field value, array of all matching values, or null if not found
 	 */
-	public function get_order_custom_field_value( $order, $field_id ) {
+	public function get_order_custom_field_value( $order, $field_id, $cart_item_key = null ) {
 		$custom_fields = $this->get_order_custom_fields( $order );
 		
-		if ( isset( $custom_fields[ $field_id ] ) && isset( $custom_fields[ $field_id ]['value'] ) ) {
-			return $custom_fields[ $field_id ]['value'];
+		// If cart_item_key is specified, look for that specific item
+		if ( $cart_item_key && isset( $custom_fields[ $cart_item_key ] ) && 
+			 isset( $custom_fields[ $cart_item_key ]['fields'][ $field_id ] ) && 
+			 isset( $custom_fields[ $cart_item_key ]['fields'][ $field_id ]['value'] ) ) {
+			return $custom_fields[ $cart_item_key ]['fields'][ $field_id ]['value'];
+		}
+		
+		// If no cart_item_key specified, return all matching values for backward compatibility
+		if ( ! $cart_item_key ) {
+			$matching_values = array();
+			foreach ( $custom_fields as $item_key => $item_data ) {
+				if ( isset( $item_data['fields'][ $field_id ] ) && 
+					 isset( $item_data['fields'][ $field_id ]['value'] ) ) {
+					$matching_values[ $item_key ] = array(
+						'value' => $item_data['fields'][ $field_id ]['value'],
+						'domain_name' => $item_data['domain_name'] ?? '',
+						'product_id' => $item_data['product_id'] ?? ''
+					);
+				}
+			}
+			
+			// If only one match, return just the value for backward compatibility
+			if ( count( $matching_values ) === 1 ) {
+				return array_values( $matching_values )[0]['value'];
+			}
+			
+			// Return array if multiple matches or empty array if none
+			return $matching_values;
 		}
 		
 		return null;
+	}
+
+	/**
+	 * Get all custom fields for a specific domain/cart item
+	 * 
+	 * Nova função helper para obter todos os campos de um domínio específico.
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @param string $cart_item_key Cart item key
+	 * @return array|null Array with domain data and fields, or null if not found
+	 */
+	public function get_order_domain_custom_fields( $order, $cart_item_key ) {
+		$custom_fields = $this->get_order_custom_fields( $order );
+		
+		if ( isset( $custom_fields[ $cart_item_key ] ) ) {
+			return $custom_fields[ $cart_item_key ];
+		}
+		
+		return null;
+	}
+
+	/**
+	 * Get custom fields from order item meta (new method)
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order_Item $item Order item object
+	 * @return array Array of custom fields data for this item
+	 */
+	public function get_order_item_custom_fields( $item ) {
+		// Fallback: try to get individual field values
+		$all_meta = $item->get_meta_data();
+		$fields = array();
+		
+		foreach ( $all_meta as $meta ) {
+			$key = $meta->get_data()['key'];
+			$value = $meta->get_data()['value'];
+			
+			// Check if it's a custom field meta key
+			if ( strpos( $key, '_owh_domain_custom_field_' ) === 0 ) {
+				$field_id = str_replace( '_owh_domain_custom_field_', '', $key );
+				$fields[ $field_id ] = array(
+					'field_id' => $field_id,
+					'value' => $value,
+					'original_key' => $key
+				);
+			}
+		}
+		
+		return $fields;
+	}
+
+	/**
+	 * Get custom fields for a specific order item by product ID
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @param int $product_id Product ID to find
+	 * @return array Array of custom fields data for the product
+	 */
+	public function get_order_product_custom_fields( $order, $product_id ) {
+		if ( ! $order instanceof WC_Order ) {
+			$order = wc_get_order( $order );
+		}
+		
+		if ( ! $order ) {
+			return array();
+		}
+
+		foreach ( $order->get_items() as $item_id => $item ) {
+			if ( $item->get_product_id() == $product_id ) {
+				return $this->get_order_item_custom_fields( $item );
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Get all order items with their custom fields
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @return array Array of order items with their custom fields
+	 */
+	public function get_order_items_with_custom_fields( $order ) {
+		if ( ! $order instanceof WC_Order ) {
+			$order = wc_get_order( $order );
+		}
+		
+		if ( ! $order ) {
+			return array();
+		}
+
+		$items_with_fields = array();
+
+		foreach ( $order->get_items() as $item_id => $item ) {
+			$custom_fields = $this->get_order_item_custom_fields( $item );
+			
+			if ( ! empty( $custom_fields ) ) {
+				$items_with_fields[ $item_id ] = array(
+					'item' => $item,
+					'product_id' => $item->get_product_id(),
+					'product_name' => $item->get_name(),
+					'custom_fields' => $custom_fields
+				);
+			}
+		}
+
+		return $items_with_fields;
+	}
+
+	/**
+	 * Get all domains with their custom fields from order
+	 * 
+	 * Nova função helper para obter todos os domínios e seus campos de uma ordem.
+	 * 
+	 * @since 1.0.0
+	 * @param WC_Order|int $order Order object or order ID
+	 * @return array Array of domains with their custom fields
+	 */
+	public function get_order_all_domains_custom_fields( $order ) {
+		return $this->get_order_custom_fields( $order );
 	}
 
 	/**
@@ -1570,7 +1963,6 @@ class Owh_Domain_Whois_Rdap_Public {
 				}
 			}
 			
-			error_log( "OWH TOTAL FILTER: Original={$total}, Corrected={$correct_total}" );
 			return $correct_total;
 		}
 		
@@ -1612,7 +2004,6 @@ class Owh_Domain_Whois_Rdap_Public {
 					// Também atualiza o preço do produto
 					$cart_item['data']->set_price($correct_price);
 					
-					error_log("OWH FILTRO - Forçando valores: Período={$period}, Preço={$correct_price}, LineTotal={$correct_line_total}");
 				}
 			}
 		}

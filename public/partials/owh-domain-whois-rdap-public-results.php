@@ -151,9 +151,37 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					
 					// Only show buy button if integration type is not 'none'
 					if ( $integration_type !== 'none' ) {
-						$domain_parts = explode( '.', $result->getDomain() );
+						// Extract TLD from domain - handle both traditional TLDs and custom subdomains
+						$domain = $result->getDomain();
+						$domain_parts = explode( '.', $domain );
 						$sld = $domain_parts[0];
-						$tld = isset( $domain_parts[1] ) ? $domain_parts[1] : '';
+						
+						// Get custom TLDs from configuration
+						$custom_tlds = get_option( 'owh_domain_whois_rdap_custom_tlds', array() );
+						
+						$tld = '';
+						if ( ! empty( $custom_tlds ) && is_array( $custom_tlds ) ) {
+							// Check if any custom TLD matches this domain
+							foreach ( $custom_tlds as $custom_tld_config ) {
+								if ( isset( $custom_tld_config['tld'] ) && ! empty( $custom_tld_config['tld'] ) ) {
+									$custom_tld = $custom_tld_config['tld'];
+									// Remove leading dot if present for comparison
+									$custom_tld_clean = ltrim( $custom_tld, '.' );
+									
+									// Check if domain ends with this custom TLD
+									if ( substr( $domain, -strlen( $custom_tld_clean ) - 1 ) === '.' . $custom_tld_clean ) {
+										$tld = $custom_tld[0] === '.' ? $custom_tld : '.' . $custom_tld;
+										break;
+									}
+								}
+							}
+						}
+						
+						// If no custom TLD matched, use traditional logic
+						if ( empty( $tld ) && count( $domain_parts ) > 1 ) {
+							// For traditional domains like exemplo.com.br, get the root TLD (.br)
+							$tld = '.' . end( $domain_parts );
+						}
 
 						if ( $integration_type === 'custom' ) {
 						$custom_url = get_option( 'owh_rdap_custom_url', '' );
@@ -197,10 +225,37 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 							<?php
 						}
 					} elseif ( $integration_type === 'woocommerce' ) {
-						// Extract TLD from domain
-						$domain_parts = explode( '.', $result->getDomain() );
-						$tld = isset( $domain_parts[1] ) ? '.' . $domain_parts[1] : '';
+						// Extract TLD from domain - handle both traditional TLDs and custom subdomains
+						$domain = $result->getDomain();
+						$domain_parts = explode( '.', $domain );
 						
+						// Get custom TLDs from configuration
+						$custom_tlds = get_option( 'owh_domain_whois_rdap_custom_tlds', array() );
+						
+						$tld = '';
+						if ( ! empty( $custom_tlds ) && is_array( $custom_tlds ) ) {
+							// Check if any custom TLD matches this domain
+							foreach ( $custom_tlds as $custom_tld_config ) {
+								if ( isset( $custom_tld_config['tld'] ) && ! empty( $custom_tld_config['tld'] ) ) {
+									$custom_tld = $custom_tld_config['tld'];
+									// Remove leading dot if present for comparison
+									$custom_tld_clean = ltrim( $custom_tld, '.' );
+									
+									// Check if domain ends with this custom TLD
+									if ( substr( $domain, -strlen( $custom_tld_clean ) - 1 ) === '.' . $custom_tld_clean ) {
+										$tld = $custom_tld[0] === '.' ? $custom_tld : '.' . $custom_tld;
+										break;
+									}
+								}
+							}
+						}
+						
+						// If no custom TLD matched, use traditional logic
+						if ( empty( $tld ) && count( $domain_parts ) > 1 ) {
+							// For traditional domains like exemplo.com.br, get the root TLD (.br)
+							$tld = '.' . end( $domain_parts );
+						}
+
 						if ( ! empty( $tld ) && class_exists( 'WooCommerce' ) ) {
 							// Check if there's a product for this TLD
 							$existing_products = get_posts( array(

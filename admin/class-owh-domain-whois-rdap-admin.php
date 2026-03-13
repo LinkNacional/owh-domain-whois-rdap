@@ -2032,29 +2032,44 @@ class Owh_Domain_Whois_Rdap_Admin {
 		// Path to dns.json file
 		$dns_file = plugin_dir_path( dirname( __FILE__ ) ) . 'data/dns.json';
 		
-		if ( ! file_exists( $dns_file ) ) {
-			return $tld_options;
-		}
-		
-		// Read and decode JSON
-		$dns_content = file_get_contents( $dns_file );
-		$dns_data = json_decode( $dns_content, true );
-		
-		if ( ! $dns_data || ! isset( $dns_data['services'] ) ) {
-			return $tld_options;
-		}
-		
 		$tlds = array();
 		
-		// Extract TLDs from services array
-		foreach ( $dns_data['services'] as $service ) {
-			if ( isset( $service[0] ) && is_array( $service[0] ) ) {
-				foreach ( $service[0] as $tld ) {
-					if ( is_string( $tld ) && ! empty( $tld ) ) {
-						// Ensure TLD has leading dot
-						$formatted_tld = ( strpos( $tld, '.' ) === 0 ) ? $tld : '.' . $tld;
-						$tlds[ $formatted_tld ] = $formatted_tld;
+		// Extract TLDs from dns.json if file exists
+		if ( file_exists( $dns_file ) ) {
+			// Read and decode JSON
+			$dns_content = file_get_contents( $dns_file );
+			$dns_data = json_decode( $dns_content, true );
+			
+			if ( $dns_data && isset( $dns_data['services'] ) ) {
+				// Extract TLDs from services array
+				foreach ( $dns_data['services'] as $service ) {
+					if ( isset( $service[0] ) && is_array( $service[0] ) ) {
+						foreach ( $service[0] as $tld ) {
+							if ( is_string( $tld ) && ! empty( $tld ) ) {
+								// Ensure TLD has leading dot
+								$formatted_tld = ( strpos( $tld, '.' ) === 0 ) ? $tld : '.' . $tld;
+								$tlds[ $formatted_tld ] = $formatted_tld;
+							}
+						}
 					}
+				}
+			}
+		}
+		
+		// Add custom TLDs from subdomain configuration
+		$custom_tlds = get_option( 'owh_domain_whois_rdap_custom_tlds', array() );
+		if ( is_array( $custom_tlds ) ) {
+			foreach ( $custom_tlds as $custom_tld ) {
+				if ( ! empty( $custom_tld['tld'] ) ) {
+					$tld = $custom_tld['tld'];
+					
+					// Ensure TLD starts with dot
+					if ( strpos( $tld, '.' ) !== 0 ) {
+						$tld = '.' . $tld;
+					}
+					
+					// Add to TLD list
+					$tlds[ $tld ] = $tld;
 				}
 			}
 		}

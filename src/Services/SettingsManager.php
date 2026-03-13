@@ -225,26 +225,15 @@ class SettingsManager
      */
     public function setCustomTlds(array $custom_tlds): bool
     {
-        // Debug log
-        error_log('OWH RDAP Debug - SettingsManager::setCustomTlds called with: ' . print_r($custom_tlds, true));
-        
         // Filter out empty entries - be more lenient with validation
         $filtered_tlds = array_filter($custom_tlds, function($tld) {
             $is_valid = !empty($tld['tld']) && !empty($tld['rdap_url']);
-            if (!$is_valid) {
-                error_log('OWH RDAP Debug - Filtering out TLD: ' . print_r($tld, true));
-            }
             return $is_valid;
         });
-        
-        error_log('OWH RDAP Debug - Filtered TLDs: ' . print_r($filtered_tlds, true));
         
         // Use direct WordPress function to avoid potential issues
         $wp_option_name = self::OPTION_PREFIX . 'custom_tlds';
         $result = \update_option($wp_option_name, $filtered_tlds);
-        
-        error_log('OWH RDAP Debug - update_option result: ' . ($result ? 'true' : 'false'));
-        error_log('OWH RDAP Debug - Option name: ' . $wp_option_name);
         
         return $result;
     }

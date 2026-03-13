@@ -226,8 +226,8 @@ class Owh_Domain_Whois_Rdap {
 		$this->loader->add_action( 'woocommerce_checkout_init', $plugin_public, 'register_dynamic_checkout_fields' );
 		$this->loader->add_action( 'woocommerce_after_order_notes', $plugin_public, 'display_custom_checkout_fields' );
 		$this->loader->add_action( 'woocommerce_checkout_process', $plugin_public, 'validate_custom_checkout_fields' );
-		$this->loader->add_action( 'woocommerce_rest_checkout_process_payment_with_context', $plugin_public, 'save_custom_checkout_fields', 1, 2 );
-		
+		$this->loader->add_action( 'woocommerce_rest_checkout_process_payment_with_context', $plugin_public, 'save_checkout_blocks_custom_fields', 1, 2 );
+		$this->loader->add_action( 'woocommerce_checkout_order_processed', $plugin_public, 'save_checkout_shortcode_custom_fields', 1, 3 );
 	}
 
 	/**
