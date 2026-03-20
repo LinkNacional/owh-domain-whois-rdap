@@ -27,7 +27,7 @@ class RdapClient
     {
         $url = $rdapServer . '/' . $domain;
         $response = \wp_remote_get($url, [
-            'timeout' => 15,
+            'timeout' => 180,
             'headers' => [
                 'Accept' => 'application/rdap+json,application/json',
                 'User-Agent' => 'OWH Domain WHOIS RDAP Plugin/1.0.0'
@@ -50,7 +50,10 @@ class RdapClient
                 ];
             }
             
-            return null;
+            return [
+                'status_code' => null,
+                'error' => $error_message
+            ];
         }
 
         $status_code = \wp_remote_retrieve_response_code($response);

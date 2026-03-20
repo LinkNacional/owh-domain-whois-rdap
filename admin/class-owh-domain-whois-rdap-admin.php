@@ -2406,4 +2406,98 @@ class Owh_Domain_Whois_Rdap_Admin {
 			return new \WP_Error( 'load_error', 'Error loading field configs: ' . $e->getMessage(), array( 'status' => 500 ) );
 		}
 	}
+
+	public function handle_order_status_completed($order_id) {
+		$order = wc_get_order($order_id);
+		if (!$order || $order->get_meta('is_owh_subscription') == true ) {
+			return;
+		}
+
+		foreach ( $order->get_items() as $item ) {
+
+			$product = $item->get_product();
+
+			if ( ! $product || $product->get_type() !== 'domain' ) {
+				continue;
+			}
+
+			$subscription_order = wc_create_order([
+				'status' => 'wc-pending',
+				'customer_id' => $order->get_customer_id(),
+			]);
+
+			$subscription_order->add_meta_data( 'is_owh_subscription', true );
+
+
+			$subscription_order->set_billing_email( $order->get_billing_email() );
+			$subscription_order->set_billing_first_name( $order->get_billing_first_name() );
+			$subscription_order->set_billing_last_name( $order->get_billing_last_name() );
+			$subscription_order->set_currency( $order->get_currency() );
+			$subscription_order->set_payment_method( $order->get_payment_method() );
+
+			/*
+			Clona o item
+			*/
+
+			$new_item = new WC_Order_Item_Product();
+
+			$new_item->set_product_id( $product->get_id() );
+			$new_item->set_name( $item->get_meta('Domínio') );
+			$new_item->set_variation_id( $item->get_variation_id() );
+			$new_item->set_quantity( $item->get_quantity() );
+			$new_item->set_subtotal( $item->get_subtotal() );
+			$new_item->set_total( $item->get_total() );
+
+			/*
+			Copia todas as metas do item
+			*/
+
+			foreach ( $item->get_meta_data() as $meta ) {
+				$new_item->add_meta_data( $meta->key, $meta->value );
+			}
+
+			$subscription_order->add_item( $new_item );
+
+			/*
+			metas da assinatura
+			*/
+
+			$subscription_order->add_meta_data( 'lkn_is_subscription', 'on' );
+			$subscription_order->add_meta_data( 'origin_order_id', $order_id );
+			$subscription_order->add_meta_data( 'origin_order_item_id', $item->get_id() );
+
+			$subscription_order->calculate_totals();
+
+			$period = (int) $item->get_meta('_owh_domain_product_period', true);
+
+			/*
+			Datas da assinatura
+			*/
+
+			$iniDate = new DateTime();
+			$expDate = new DateTime();
+			$expDate->modify("+{$period} years");
+
+			$subscription_order->add_meta_data( 'lkn_ini_date', $iniDate->format('Y-m-d') );
+			$subscription_order->add_meta_data( 'lkn_exp_date', $expDate->format('Y-m-d') );
+			$subscription_order->add_meta_data('lkn_wcip_subscription_interval_number', $period);
+			$subscription_order->add_meta_data('lkn_wcip_subscription_interval_type', 'year');
+			$subscription_order->add_meta_data('lkn_wcip_subscription_limit', 0);
+			$subscription_order->add_meta_data('lkn_wcip_subscription_initial_limit', 0);
+			$subscription_order->add_meta_data('lkn_wcip_subscription_is_manual', 'on');
+			$subscription_order->add_meta_data('wcip_select_invoice_language', 'en_US');
+
+			$invoiceList = get_option('lkn_wcip_invoices');
+
+			if (false !== $invoiceList) {
+				$invoiceList[] = $subscription_order->get_id();
+				update_option('lkn_wcip_invoices', $invoiceList);
+			} else {
+				update_option('lkn_wcip_invoices', array($subscription_order->get_id()));
+			}
+			
+			$subscription_order->save();
+		}
+		
+	}
 }

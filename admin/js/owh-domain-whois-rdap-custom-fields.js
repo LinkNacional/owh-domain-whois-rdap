@@ -27,7 +27,6 @@
             return;
         }
 
-        console.log('Custom Fields initialized with:', owhCustomFieldsAjax);
 
         // Initialize custom fields grid when custom-fields tab is active
         if ($('#tab-custom-fields').length > 0) {
@@ -118,7 +117,6 @@
                             showWelcomeMessage();
                         }
                     } else {
-                        console.log('Server response:', response);
                         showStatus('Nenhum campo configurado ainda. Clique em "Adicionar Campo" para começar.', 'info');
                         // Initialize empty grid anyway
                         customFieldsData = [];
@@ -152,7 +150,6 @@
                     try {
                         // Try to parse the response
                         var response = JSON.parse(xhr.responseText);
-                        console.log('Parsed response from "error":', response);
                         
                         // Handle as success if we can parse it
                         if (response.success) {
@@ -173,7 +170,6 @@
                 let errorMessage = 'Nenhum campo configurado ainda. Clique em "Adicionar Campo" para começar.';
                 try {
                     if (xhr.responseText) {
-                        console.log('Raw response text:', xhr.responseText);
                         const errorResponse = JSON.parse(xhr.responseText);
                         errorMessage = errorResponse.data || errorMessage;
                     }

@@ -1576,6 +1576,14 @@ class Owh_Domain_Whois_Rdap_Public {
 							if ( isset( $cart_item['product_id'] ) && $cart_item['product_id'] == $product_id ) {
 								if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
 									$domain_name = $cart_item['domain_name'];
+
+									if ( isset( $cart_item['domain_period'] ) ) {
+										$domain_name = $domain_name . ' por ' . intval( $cart_item['domain_period'] ) . ' anos';
+										$owh_domain_product_period = intval( $cart_item['domain_period'] );
+									}else{
+										$domain_name = $domain_name . ' por 1 ano';
+										$owh_domain_product_period = 1;
+									}
 									break;
 								}
 							}
@@ -1590,6 +1598,15 @@ class Owh_Domain_Whois_Rdap_Public {
 								if ( isset( $cart_item['product_id'] ) && $cart_item['product_id'] == $product_id ) {
 									if ( isset( $cart_item['domain_name'] ) && ! empty( $cart_item['domain_name'] ) ) {
 										$domain_name = $cart_item['domain_name'];
+
+										if ( isset( $cart_item['domain_period'] ) ) {
+											$domain_name = $domain_name . ' por ' . intval( $cart_item['domain_period'] ) . ' anos';
+											$owh_domain_product_period = intval( $cart_item['domain_period'] );
+
+										}else{
+											$domain_name = $domain_name . ' por 1 ano';
+											$owh_domain_product_period = 1;
+										}
 										break;
 									}
 								}
@@ -1629,7 +1646,7 @@ class Owh_Domain_Whois_Rdap_Public {
 						}
 					}
 
-					
+					$item->update_meta_data( '_owh_domain_product_period', $owh_domain_product_period );
 					$item->save();
 					$items_updated++;
 					
@@ -1655,10 +1672,6 @@ class Owh_Domain_Whois_Rdap_Public {
 		// Save the order to persist the meta data
 		$order->save();
 		
-		
-		throw new Exception(json_encode([
-			'orderId' => $order->get_id(),
-		]));
 	}
 
 	/**

@@ -160,7 +160,7 @@ class Owh_Domain_Whois_Rdap {
 		
 		// TLD product status check AJAX handler
 		$this->loader->add_action( 'wp_ajax_owh_check_tld_product_status', $plugin_admin, 'ajax_check_tld_product_status' );
-
+		$this->loader->add_action( 'woocommerce_order_status_completed', $plugin_admin, 'handle_order_status_completed' );
 	}
 
 	/**
