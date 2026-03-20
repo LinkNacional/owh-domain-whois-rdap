@@ -3,8 +3,8 @@
 
     $(document).ready(function() {
         // Check if localized script is available
-        if (typeof owh_rdap_admin === 'undefined') {
-            console.error('owh_rdap_admin object not found! Script localization may have failed.');
+        if (typeof owhdwhoisrdap_rdap_admin === 'undefined') {
+            console.error('owhdwhoisrdap_rdap_admin object not found! Script localization may have failed.');
             return;
         }
         
@@ -65,22 +65,22 @@
             var originalText = button.text();
             
             // Check if localized object is available
-            if (typeof owh_rdap_admin === 'undefined') {
-                console.error('owh_rdap_admin not available - using fallback');
+            if (typeof owhdwhoisrdap_rdap_admin === 'undefined') {
+                console.error('owhdwhoisrdap_rdap_admin not available - using fallback');
                 status.show().html('<span style="color: #dc3232;">Erro: Configuração JavaScript não encontrada.</span>');
                 return;
             }
             
             
-            button.prop('disabled', true).text(owh_rdap_admin.strings.updating);
+            button.prop('disabled', true).text(owhdwhoisrdap_rdap_admin.strings.updating);
             status.removeClass('success error').addClass('loading').show()
-                .html('<span style="color: #0073aa;">' + owh_rdap_admin.strings.updating + '</span>');
+                .html('<span style="color: #0073aa;">' + owhdwhoisrdap_rdap_admin.strings.updating + '</span>');
             
             $.ajax({
-                url: owh_rdap_admin.rest_url + 'update-servers',
+                url: owhdwhoisrdap_rdap_admin.rest_url + 'update-servers',
                 type: 'POST',
                 beforeSend: function(xhr) {
-                    xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.nonce);
+                    xhr.setRequestHeader('X-WP-Nonce', owhdwhoisrdap_rdap_admin.nonce);
                 },
                 timeout: 30000, // 30 seconds timeout
                 success: function(response) {
@@ -104,7 +104,7 @@
                         }, 1000);
                     } else {
                         status.removeClass('loading success').addClass('error')
-                            .html('<span style="color: #dc3232;">' + (response.message || owh_rdap_admin.strings.error) + '</span>');
+                            .html('<span style="color: #dc3232;">' + (response.message || owhdwhoisrdap_rdap_admin.strings.error) + '</span>');
                     }
                 },
                 error: function(xhr, status, error) {
@@ -228,8 +228,8 @@
         }
         
         // Check if localized object is available
-        if (typeof owh_rdap_admin === 'undefined') {
-            console.error('owh_rdap_admin not available in loadRdapServerStatus');
+        if (typeof owhdwhoisrdap_rdap_admin === 'undefined') {
+            console.error('owhdwhoisrdap_rdap_admin not available in loadRdapServerStatus');
             $('#file-status').text('Erro: Configuração JavaScript não encontrada');
             return;
         }
@@ -239,10 +239,10 @@
         $('#file-size').text('-');
         
         $.ajax({
-            url: owh_rdap_admin.rest_url + 'server-status',
+            url: owhdwhoisrdap_rdap_admin.rest_url + 'server-status',
             type: 'GET',
             beforeSend: function(xhr) {
-                xhr.setRequestHeader('X-WP-Nonce', owh_rdap_admin.nonce);
+                xhr.setRequestHeader('X-WP-Nonce', owhdwhoisrdap_rdap_admin.nonce);
             },
             success: function(response) {
                 if (response.success && response.data) {
@@ -291,7 +291,7 @@
         var status = $('#update-rdap-status');
         
         // Get localized strings
-        var strings = owh_rdap_admin.strings || {};
+        var strings = owhdwhoisrdap_rdap_admin.strings || {};
         var updatingText = strings.updating || 'Atualizando...';
         var originalText = button.text();
         
@@ -303,7 +303,7 @@
             type: 'POST',
             data: {
                 action: 'owh_update_rdap_servers',
-                nonce: owh_rdap_admin.nonce
+                nonce: owhdwhoisrdap_rdap_admin.nonce
             },
             success: function(response) {
                 if (response.success) {

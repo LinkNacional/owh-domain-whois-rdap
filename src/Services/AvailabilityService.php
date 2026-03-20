@@ -119,6 +119,8 @@ class AvailabilityService
             }
             
             // Use universal RDAP.org endpoint for standard TLDs
+            // RDAP.org is a bootstrap server that redirects to appropriate registry servers
+            // See documentation: https://rdap.org/ for more details
             $rdapServer = 'https://rdap.org/domain/';
         }
 

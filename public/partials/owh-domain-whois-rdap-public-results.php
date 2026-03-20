@@ -109,7 +109,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 					<div class="owh-rdap-error-icon">⚠️</div>
 				<?php endif; ?>
 				<div class="owh-rdap-error-content">
-					<h4 class="owh-rdap-error-title"><?php echo esc_html__( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ); ?></h4>
+					<h4 class="owh-rdap-error-title"><?php echo esc_html( __( 'Erro na Pesquisa', 'owh-domain-whois-rdap' ) ); ?></h4>
 					<p><?php echo esc_html( $result->getError() ); ?></p>
 				</div>
 			</div>

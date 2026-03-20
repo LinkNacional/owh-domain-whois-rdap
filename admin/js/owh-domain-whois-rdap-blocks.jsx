@@ -19,7 +19,7 @@ const { ServerSideRender } = wp.serverSideRender || wp.components;
 /**
  * Block: RDAP Domain Search
  */
-registerBlockType('owh-rdap/domain-search', {
+registerBlockType('owh-domain-whois-rdap/domain-search', {
     title: __('RDAP - Pesquisa de Domínios', 'owh-domain-whois-rdap'),
     description: __('Formulário de pesquisa de disponibilidade de domínios via RDAP/WHOIS', 'owh-domain-whois-rdap'),
     icon: 'search',
@@ -567,7 +567,7 @@ registerBlockType('owh-rdap/domain-search', {
 /**
  * Block: RDAP Domain Results
  */
-registerBlockType('owh-rdap/domain-results', {
+registerBlockType('owh-domain-whois-rdap/domain-results', {
     title: __('RDAP - Resultados de Domínios', 'owh-domain-whois-rdap'),
     description: __('Exibe os resultados da pesquisa de domínios via RDAP/WHOIS', 'owh-domain-whois-rdap'),
     icon: 'list-view',
@@ -1210,7 +1210,7 @@ registerBlockType('owh-rdap/domain-results', {
 /**
  * Block: RDAP WHOIS Details
  */
-registerBlockType('owh-rdap/whois-details', {
+registerBlockType('owh-domain-whois-rdap/whois-details', {
     title: __('RDAP - Detalhes WHOIS', 'owh-domain-whois-rdap'),
     description: __('Exibe informações detalhadas WHOIS/RDAP de um domínio', 'owh-domain-whois-rdap'),
     icon: 'info',

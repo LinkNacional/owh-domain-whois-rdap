@@ -78,7 +78,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 
 		// Carregar CSS específico das configurações na página de configurações do plugin
 		global $pagenow;
-		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-rdap' ) {
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-domain-whois-rdap' ) {
 			wp_enqueue_style( 
 				$this->plugin_name . '-settings', 
 				plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin-settings.css', 
@@ -102,7 +102,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 		
 		// Localize script for admin strings and API settings
 		wp_localize_script( $this->plugin_name, 'owhdwhoisrdap_rdap_admin', array(
-			'rest_url' => rest_url( 'owhdwhoisrdap-rdap/v1/' ),
+			'rest_url' => rest_url( 'owh-domain-whois-rdap/v1/' ),
 			'nonce' => wp_create_nonce( 'owhdwhoisrdap_rdap_admin_nonce' ),
 			'strings' => array(
 				'updating' => __( 'Atualizando...', 'owh-domain-whois-rdap' ),
@@ -113,7 +113,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 
 		// Carregar scripts específicos na página de configurações do plugin
 		global $pagenow;
-		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-rdap' ) {
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-domain-whois-rdap' ) {
 			// Script de layout
 			wp_enqueue_script( 
 				$this->plugin_name . '-layout', 
@@ -148,15 +148,15 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 
 		// Enqueue block scripts
 		wp_enqueue_script(
-			'owh-rdap-blocks',
+			'owh-domain-whois-rdap-blocks',
 			plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-blocks.js',
 			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'wp-components', 'wp-server-side-render' ),
 			$this->version
 		);
 
 		// Register blocks
-		register_block_type( 'owh-rdap/domain-search', array(
-			'editor_script' => 'owh-rdap-blocks',
+		register_block_type( 'owh-domain-whois-rdap/domain-search', array(
+			'editor_script' => 'owh-domain-whois-rdap-blocks',
 			'render_callback' => array( $this, 'render_search_block' ),
 			'attributes' => array(
 				'showTitle' => array(
@@ -245,8 +245,8 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			)
 		) );
 
-		register_block_type( 'owh-rdap/domain-results', array(
-			'editor_script' => 'owh-rdap-blocks',
+		register_block_type( 'owh-domain-whois-rdap/domain-results', array(
+			'editor_script' => 'owh-domain-whois-rdap-blocks',
 			'render_callback' => array( $this, 'render_results_block' ),
 			'attributes' => array(
 				'showTitle' => array(
@@ -344,8 +344,8 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			)
 		) );
 
-		register_block_type( 'owh-rdap/whois-details', array(
-			'editor_script' => 'owh-rdap-blocks',
+		register_block_type( 'owh-domain-whois-rdap/whois-details', array(
+			'editor_script' => 'owh-domain-whois-rdap-blocks',
 			'render_callback' => array( $this, 'render_whois_details_block' ),
 			'attributes' => array(
 				'showTitle' => array(
@@ -420,7 +420,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 		) );
 
 		// Set up translations for JavaScript
-		wp_set_script_translations( 'owh-rdap-blocks', 'owh-domain-whois-rdap' );
+		wp_set_script_translations( 'owh-domain-whois-rdap-blocks', 'owh-domain-whois-rdap' );
 	}
 
 	/**
@@ -495,7 +495,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			$shortcode_atts[] = 'button_layout="' . esc_attr( $attributes['buttonLayout'] ) . '"';
 		}
 		
-		return do_shortcode( '[owh-rdap-whois-search ' . implode( ' ', $shortcode_atts ) . ']' );
+		return do_shortcode( '[owh-domain-whois-rdap-search ' . implode( ' ', $shortcode_atts ) . ']' );
 	}
 
 	/**
@@ -577,7 +577,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			$shortcode_atts[] = 'unavailable_color="' . esc_attr( $attributes['unavailableColor'] ) . '"';
 		}
 		
-		return do_shortcode( '[owh-rdap-whois-results ' . implode( ' ', $shortcode_atts ) . ']' );
+		return do_shortcode( '[owh-domain-whois-rdap-results ' . implode( ' ', $shortcode_atts ) . ']' );
 	}
 
 	/**
@@ -668,7 +668,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			$shortcode_atts[] = 'custom_icon="' . esc_attr( $attributes['customIcon'] ) . '"';
 		}
 		
-		$shortcode_string = '[owh-rdap-whois-details ' . implode( ' ', $shortcode_atts ) . ']';
+		$shortcode_string = '[owh-domain-whois-rdap-details ' . implode( ' ', $shortcode_atts ) . ']';
 		return do_shortcode( $shortcode_string );
 	}
 
@@ -683,7 +683,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			__( 'OWH', 'owh-domain-whois-rdap' ),
 			__( 'OWH', 'owh-domain-whois-rdap' ),
 			'manage_options',
-			'owh-rdap',
+			'owh-domain-whois-rdap',
 			array( $this, 'display_plugin_setup_page' ),
 			'dashicons-admin-site-alt3',
 			30
@@ -738,61 +738,61 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			'owhdwhoisrdap_rdap_enable_search',
 			__( 'Enable Domain Search (RDAP/WHOIS)', 'owh-domain-whois-rdap' ),
 			array( $this, 'enable_search_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_main_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_main_settings'
 		);
 
 		// Results page
 		add_settings_field(
-			'owh_rdap_results_page',
+			'owhdwhoisrdap_rdap_results_page',
 			__( 'Search Results Page', 'owh-domain-whois-rdap' ),
 			array( $this, 'results_page_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_main_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_main_settings'
 		);
 
 		// WHOIS details page
 		add_settings_field(
-			'owh_rdap_whois_details_page',
+			'owhdwhoisrdap_rdap_whois_details_page',
 			__( 'WHOIS Details Page', 'owh-domain-whois-rdap' ),
 			array( $this, 'whois_details_page_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_main_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_main_settings'
 		);
 
 		// Integration section
 		add_settings_section(
-			'owh_rdap_integration_settings',
+			'owhdwhoisrdap_rdap_integration_settings',
 			__( 'Integration Settings', 'owh-domain-whois-rdap' ),
 			array( $this, 'integration_settings_callback' ),
-			'owh_rdap_settings'
+			'owhdwhoisrdap_rdap_settings'
 		);
 
 		// Integration type
 		add_settings_field(
-			'owh_rdap_integration_type',
+			'owhdwhoisrdap_rdap_integration_type',
 			__( 'Integration Type', 'owh-domain-whois-rdap' ),
 			array( $this, 'integration_type_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_integration_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_integration_settings'
 		);
 
 		// Custom URL
 		add_settings_field(
-			'owh_rdap_custom_url',
+			'owhdwhoisrdap_rdap_custom_url',
 			__( 'Custom URL', 'owh-domain-whois-rdap' ),
 			array( $this, 'custom_url_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_integration_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_integration_settings'
 		);
 
 		// WHMCS URL
 		add_settings_field(
-			'owh_rdap_whmcs_url',
+			'owhdwhoisrdap_rdap_whmcs_url',
 			__( 'WHMCS', 'owh-domain-whois-rdap' ),
 			array( $this, 'whmcs_url_callback' ),
-			'owh_rdap_settings',
-			'owh_rdap_integration_settings'
+			'owhdwhoisrdap_rdap_settings',
+			'owhdwhoisrdap_rdap_integration_settings'
 		);
 	}
 
@@ -814,12 +814,12 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 * Enable search field callback
 	 */
 	public function enable_search_callback() {
-		$value = get_option( 'owh_rdap_enable_search', false );
+		$value = get_option( 'owhdwhoisrdap_rdap_enable_search', false );
 		// Convert to integer to ensure proper comparison
 		$value = (int) $value;
 		echo '<fieldset>';
-		echo '<label><input type="radio" name="owh_rdap_enable_search" value="1"' . checked( 1, $value, false ) . '> ' . esc_html__( 'Ativar', 'owh-domain-whois-rdap' ) . '</label><br>';
-		echo '<label><input type="radio" name="owh_rdap_enable_search" value="0"' . checked( 0, $value, false ) . '> ' . esc_html__( 'Desativar', 'owh-domain-whois-rdap' ) . '</label>';
+		echo '<label><input type="radio" name="owhdwhoisrdap_rdap_enable_search" value="1"' . checked( 1, $value, false ) . '> ' . esc_html__( 'Ativar', 'owh-domain-whois-rdap' ) . '</label><br>';
+		echo '<label><input type="radio" name="owhdwhoisrdap_rdap_enable_search" value="0"' . checked( 0, $value, false ) . '> ' . esc_html__( 'Desativar', 'owh-domain-whois-rdap' ) . '</label>';
 		echo '</fieldset>';
 		echo '<p class="description">' . esc_html__( 'Ao ativar este recurso, você poderá inserir o formulário de pesquisa em qualquer página ou post através de shortcodes e blocos do WordPress.', 'owh-domain-whois-rdap' ) . '</p>';
 	}
@@ -828,40 +828,40 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 * Results page field callback
 	 */
 	public function results_page_callback() {
-		$value = get_option( 'owh_rdap_results_page', '' );
+		$value = get_option( 'owhdwhoisrdap_rdap_results_page', '' );
 		
 		wp_dropdown_pages( array(
-			'name'             => 'owh_rdap_results_page',
+			'name'             => 'owhdwhoisrdap_rdap_results_page',
 			'selected'         => $value,
 			'show_option_none' => __( 'Página Resultado Pesquisa domínios', 'owh-domain-whois-rdap' ),
 			'option_none_value' => '',
 		) );
 		
-		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os resultados. Para funcionar, você precisa copiar e colar o shortcode [owh-domain-whois-rdap-results] no conteúdo desta página (no editor de texto ou em um bloco de shortcode).', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
 	 * WHOIS details page field callback
 	 */
 	public function whois_details_page_callback() {
-		$value = get_option( 'owh_rdap_whois_details_page', '' );
+		$value = get_option( 'owhdwhoisrdap_rdap_whois_details_page', '' );
 		
 		wp_dropdown_pages( array(
-			'name'             => 'owh_rdap_whois_details_page',
+			'name'             => 'owhdwhoisrdap_rdap_whois_details_page',
 			'selected'         => $value,
 			'show_option_none' => __( 'Selecione a página de detalhes WHOIS', 'owh-domain-whois-rdap' ),
 			'option_none_value' => '',
 		) );
 		
-		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os detalhes WHOIS completos dos domínios registrados. Para funcionar, você precisa copiar e colar o shortcode [owh-rdap-whois-details] no conteúdo desta página.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'Escolha a página que mostrará os detalhes WHOIS completos dos domínios registrados. Para funcionar, você precisa copiar e colar o shortcode [owh-domain-whois-rdap-details] no conteúdo desta página.', 'owh-domain-whois-rdap' ) . '</p>';
 	}
 
 	/**
 	 * Integration type field callback
 	 */
 	public function integration_type_callback() {
-		$value = get_option( 'owh_rdap_integration_type', 'none' );
-		echo '<select name="owh_rdap_integration_type" id="owh_rdap_integration_type">';
+		$value = get_option( 'owhdwhoisrdap_rdap_integration_type', 'none' );
+		echo '<select name="owhdwhoisrdap_rdap_integration_type" id="owhdwhoisrdap_rdap_integration_type">';
 		echo '<option value="none"' . selected( 'none', $value, false ) . '>' . esc_html__( 'Nenhum', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="custom"' . selected( 'custom', $value, false ) . '>' . esc_html__( 'Custom URL', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="whmcs"' . selected( 'whmcs', $value, false ) . '>' . esc_html__( 'WHMCS', 'owh-domain-whois-rdap' ) . '</option>';
@@ -873,15 +873,15 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 * Custom URL field callback
 	 */
 	public function custom_url_callback() {
-		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
-		$value = get_option( 'owh_rdap_custom_url', '' );
+		$integration_type = get_option( 'owhdwhoisrdap_rdap_integration_type', 'none' );
+		$value = get_option( 'owhdwhoisrdap_rdap_custom_url', '' );
 		
 		$style = ($integration_type === 'custom') ? '' : 'style="display: none;"';
 		
 		echo '<div id="custom_url_section" ' . esc_attr( $style ) . '>';
 		echo '<p>' . esc_html__( 'Configurar os parâmetros da URL para seguir com o registro do domínio', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '<p>' . esc_html__( 'Configure um URL personalizado para registrar domínios', 'owh-domain-whois-rdap' ) . '</p>';
-		echo '<input type="url" name="owh_rdap_custom_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
+		echo '<input type="url" name="owhdwhoisrdap_rdap_custom_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
 		echo '<p class="description">' . esc_html__( 'Tags de template disponíveis: {domain}, {sld}, {tld} exemplo: https://who.linknacional.com/whois/?domain={domain}', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '</div>';
 	}
@@ -890,15 +890,15 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 * WHMCS URL field callback
 	 */
 	public function whmcs_url_callback() {
-		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
-		$value = get_option( 'owh_rdap_whmcs_url', '' );
+		$integration_type = get_option( 'owhdwhoisrdap_rdap_integration_type', 'none' );
+		$value = get_option( 'owhdwhoisrdap_rdap_whmcs_url', '' );
 		
 		$style = ($integration_type === 'whmcs') ? '' : 'style="display: none;"';
 		
 		echo '<div id="whmcs_url_section" ' . esc_attr( $style ) . '>';
 		echo '<p>' . esc_html__( 'Configurar os parâmetros da URL para seguir com o registro do domínio no WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '<p>' . esc_html__( 'Configure o URL do WHMCS para o registro de domínios.', 'owh-domain-whois-rdap' ) . '</p>';
-		echo '<input type="url" name="owh_rdap_whmcs_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
+		echo '<input type="url" name="owhdwhoisrdap_rdap_whmcs_url" value="' . esc_attr( $value ) . '" class="regular-text" placeholder="https://cliente.linknacional.com.br" />';
 		echo '<p class="description">' . esc_html__( 'Informe o URL de instalação do seu WHMCS', 'owh-domain-whois-rdap' ) . '</p>';
 		echo '</div>';
 	}
@@ -909,13 +909,13 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 * @since    1.0.0
 	 */
 	public function register_rest_routes() {
-		register_rest_route( 'owh-rdap/v1', '/update-servers', array(
+		register_rest_route( 'owh-domain-whois-rdap/v1', '/update-servers', array(
 			'methods' => 'POST',
 			'callback' => array( $this, 'rest_update_rdap_servers' ),
 			'permission_callback' => array( $this, 'rest_permissions_check' ),
 		) );
 
-		register_rest_route( 'owh-rdap/v1', '/server-status', array(
+		register_rest_route( 'owh-domain-whois-rdap/v1', '/server-status', array(
 			'methods' => 'GET',
 			'callback' => array( $this, 'rest_get_server_status' ),
 			'permission_callback' => array( $this, 'rest_permissions_check' ),
@@ -986,7 +986,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 	 */
 	public function ajax_save_custom_tlds() {
 		// Verify nonce
-		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'owh_rdap_admin_nonce' ) ) {
+		if ( ! isset( $_POST['nonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['nonce'] ) ), 'owhdwhoisrdap_rdap_admin_nonce' ) ) {
 			wp_send_json_error( array(
 				'message' => 'Verificação de segurança falhou.'
 			) );

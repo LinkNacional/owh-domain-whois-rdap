@@ -87,8 +87,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		);
 	}
 
-	// add_inline_styles method removed for security compliance
-
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
 	 *
@@ -104,9 +102,9 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		);
 
 		// Localize script with plugin settings
-		$results_page_id = get_option( 'owhdwhoisrdap_domain_whois_rdap_results_page', '' );
+		$results_page_id = get_option( 'owhdwhoisrdap_rdap_results_page', '' );
 
-		wp_localize_script( $this->plugin_name, 'owhRdapPublic', array(
+		wp_localize_script( $this->plugin_name, 'owhDomainWhoisRdapPublic', array(
 			'hasResultsPage' => !empty($results_page_id),
 			'strings' => array(
 				'configRequired' => __( 'Para realizar pesquisas, é necessário configurar uma "Página de Resultados" nas configurações do plugin. Entre em contato com o administrador.', 'owh-domain-whois-rdap' ),
@@ -121,9 +119,9 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 	 * @since    1.0.0
 	 */
 	public function register_shortcodes() {
-		add_shortcode( 'owhdwhoisrdap-rdap-whois-search', array( $this, 'search_shortcode' ) );
-		add_shortcode( 'owhdwhoisrdap-rdap-whois-results', array( $this, 'results_shortcode' ) );
-		add_shortcode( 'owhdwhoisrdap-rdap-whois-details', array( $this, 'whois_details_shortcode' ) );
+		add_shortcode( 'owh-domain-whois-rdap-search', array( $this, 'search_shortcode' ) );
+		add_shortcode( 'owh-domain-whois-rdap-results', array( $this, 'results_shortcode' ) );
+		add_shortcode( 'owh-domain-whois-rdap-details', array( $this, 'whois_details_shortcode' ) );
 	}
 
 	/**
@@ -160,7 +158,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 
 		// Check if search is enabled
 		if ( ! $settings_manager->isSearchEnabled() ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . esc_html( __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) ) . '</p>';
 		}
 
 		$show_title = $atts['show_title'] === 'true';
@@ -257,7 +255,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 
 		// Check if search is enabled
 		if ( ! $settings_manager->isSearchEnabled() ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . esc_html( __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) ) . '</p>';
 		}
 
 		$show_title = $atts['show_title'] === 'true';
@@ -465,11 +463,11 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'padding' => '20',
 			'show_icon' => 'true',
 			'custom_icon' => '📋'
-		), $atts, 'owhdwhoisrdap-rdap-whois-details' );
+		), $atts, 'owh-domain-whois-rdap-details' );
 
 		// Check if search is enabled
 		if ( ! get_option( 'owhdwhoisrdap_rdap_enable_search', false ) ) {
-			return '<p>' . __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) . '</p>';
+			return '<p>' . esc_html( __( 'A pesquisa de domínios está desabilitada.', 'owh-domain-whois-rdap' ) ) . '</p>';
 		}
 
 		// Get domain from URL parameter

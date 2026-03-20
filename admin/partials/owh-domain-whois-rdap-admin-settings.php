@@ -32,8 +32,8 @@ defined( 'ABSPATH' ) or exit;
         <div id="tab-general" class="owh-tab-panel active">
             <form method="post" action="options.php" id="mainform">
                 <?php
-                settings_fields('owh_rdap_settings');
-                do_settings_sections('owh_rdap_settings');
+                settings_fields('owhdwhoisrdap_rdap_settings');
+                do_settings_sections('owhdwhoisrdap_rdap_settings');
                 submit_button(__('Salvar Configurações', 'owh-domain-whois-rdap'));
                 ?>
             </form>

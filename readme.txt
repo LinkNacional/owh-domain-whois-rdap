@@ -4,7 +4,7 @@ Donate link: https://www.linknacional.com.br/wordpress/plugins/
 Tags: domains, whois, rdap, domain availability, dns
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -102,6 +102,15 @@ This plugin connects to external services to obtain domain information and TLD v
 * **Terms of Use**: https://www.iana.org/help/terms-of-service
 * **Privacy Policy**: https://www.iana.org/privacy-policy
 
+= RDAP.org Universal Bootstrap Server =
+* **What the service is**: RDAP.org Universal Bootstrap Server - A universal RDAP bootstrap server that aggregates information about all known RDAP servers
+* **What it is used for**: Single endpoint for RDAP queries that automatically redirects requests to the appropriate RDAP server for each TLD
+* **What data is sent**: Only the domain name being queried (e.g., "example.com"). No personal or sensitive information is transmitted
+* **When data is sent**: Used as fallback for standard TLDs when no custom RDAP server configuration is available
+* **Service URL**: https://rdap.org/domain/
+* **Terms of Use**: https://rdap.org/ (information about responsible usage)
+* **Privacy Policy**: See https://rdap.org/ for data handling details
+
 = Verisign RDAP Servers (.com and .net domains) =
 * **What the service is**: Verisign RDAP servers for .com and .net domain queries
 * **What it is used for**: Querying domain registration information and availability status for .com and .net domains
@@ -144,10 +153,11 @@ This plugin connects to external services to obtain domain information and TLD v
 - **Domain Names Only**: The only data sent to external services is the domain name being queried (e.g., "example.com")
 - **Secure Connections**: All communications with external RDAP servers use secure HTTPS connections
 - **Local Caching**: Domain query results are cached locally to improve performance and reduce external service requests
-- **Rate Limiting Compliance**: The plugin respects rate limiting and follows best practices for RDAP queries
+- **Rate Limiting Compliance**: The plugin respects rate limiting and follows best practices for RDAP queries to prevent abuse
 - **No Tracking**: No user behavior, IP addresses, or browsing patterns are tracked or sent to external services
 - **Fallback Handling**: If external services are unavailable, the plugin uses cached TLD data and provides appropriate error messages
 - **User Consent**: Domain queries are only performed when users actively initiate a domain search
+- **Universal Bootstrap**: RDAP.org is used as a universal endpoint that automatically redirects to appropriate registry servers
 
 **Legal Compliance**:
 - This plugin operates in compliance with RDAP protocol standards (RFC 7480-7485)
@@ -185,6 +195,9 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.2.3 - 2026/03/20 =
+* Fix WordPress issues.
+
 = 1.2.2 - 2026/03/11 =
 * Fix WordPress issues.
 

@@ -5,7 +5,7 @@
 * Tags: domínios, WHOIS, RDAP, verificação, disponibilidade, DNS
 * Testado até: 6.8
 * Requer PHP: 7.4
-* Tag estável: 1.2.2
+* Tag estável: 1.2.3
 * Licença: GPLv2 ou posterior
 * URI da licença: [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
@@ -94,6 +94,15 @@ Este plugin conecta-se a serviços externos para obter informações de domínio
 - **Termos de Uso**: https://www.iana.org/help/terms-of-service
 - **Política de Privacidade**: https://www.iana.org/privacy-policy
 
+### RDAP.org Universal Bootstrap Server
+- **Serviço**: Servidor de bootstrap RDAP universal que agrega informações de todos os servidores RDAP conhecidos
+- **Uso**: Endpoint único para consultas RDAP que redireciona automaticamente para o servidor RDAP apropriado para cada TLD
+- **Dados enviados**: Apenas o nome do domínio consultado (ex: "example.com"). Nenhum dado pessoal é transmitido
+- **Quando é usado**: Como fallback para TLDs padrão quando não há configuração personalizada de servidor RDAP
+- **URL**: https://rdap.org/domain/
+- **Termos de Uso**: https://rdap.org/ (informações sobre uso responsável)
+- **Política de Privacidade**: Consulte https://rdap.org/ para detalhes sobre tratamento de dados
+
 ### Servidores RDAP (Vários Operadores de Registro)
 - **Serviço**: Servidores RDAP operados por registros de domínio mundiais
 - **Uso**: Consulta de informações de registro e status de disponibilidade de domínios
@@ -108,6 +117,7 @@ Este plugin conecta-se a serviços externos para obter informações de domínio
 - Apenas nomes de domínio são enviados para consulta legítima
 - Todas as comunicações usam conexões HTTPS seguras
 - Cache local reduz solicitações a serviços externos
+- O plugin respeita os limites de taxa (rate limiting) dos servidores RDAP
 
 ### Suporte Técnico
 - [Atendimento LinkNacional](https://www.linknacional.com.br/atendimento/)
