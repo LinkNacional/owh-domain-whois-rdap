@@ -11,6 +11,10 @@
     width: 100% !important;
 }
 
+p{
+    text-wrap: balance;
+}
+
 .owh-rdap-block-tabs .components-tab-panel__tabs .components-button {
     margin: 0 !important;
     border-radius: 6px !important;

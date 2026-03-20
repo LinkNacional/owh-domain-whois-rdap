@@ -80,7 +80,20 @@ class Owh_Domain_Whois_Rdap_Admin {
 		global $pagenow;
 		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) ) {
 			$page = sanitize_text_field( wp_unslash( $_GET['page'] ) );
-			if ( $page === 'owh-rdap' ) {
+			
+			// Dashboard CSS
+			if ( $page === 'owh-rdap-dashboard' ) {
+				wp_enqueue_style( 
+					$this->plugin_name . '-dashboard', 
+					plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-dashboard.css', 
+					array( $this->plugin_name ), // Dependente do CSS principal
+					$this->version, 
+					'all' 
+				);
+			}
+			
+			// Settings CSS
+			if ( $page === 'owh-rdap-settings' ) {
 				wp_enqueue_style( 
 					$this->plugin_name . '-settings', 
 					plugin_dir_url( __FILE__ ) . 'css/owh-domain-whois-rdap-admin-settings.css', 
@@ -152,8 +165,22 @@ class Owh_Domain_Whois_Rdap_Admin {
 		wp_enqueue_script( 'wp-api' );
 		wp_enqueue_script( $this->plugin_name, plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-admin.js', array( 'jquery', 'wp-api' ), $this->version, false );
 		
-		// Domain Pricing Matrix JS - for product edit pages
+		// Dashboard JavaScript
 		global $pagenow;
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) ) {
+			$page = sanitize_text_field( wp_unslash( $_GET['page'] ) );
+			if ( $page === 'owh-rdap-dashboard' ) {
+				wp_enqueue_script(
+					$this->plugin_name . '-dashboard',
+					plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-dashboard.js',
+					array( 'jquery' ),
+					$this->version,
+					true
+				);
+			}
+		}
+		
+		// Domain Pricing Matrix JS - for product edit pages
 		if ( $pagenow === 'post.php' || $pagenow === 'post-new.php' ) {
 			global $post_type;
 			if ( $post_type === 'product' ) {
@@ -190,7 +217,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 
 		// Carregar scripts específicos na página de configurações do plugin
 		global $pagenow;
-		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-rdap' ) {
+		if ( $pagenow === 'admin.php' && isset( $_GET['page'] ) && sanitize_text_field( wp_unslash( $_GET['page'] ) ) === 'owh-rdap-settings' ) {
 			// Script de layout
 			wp_enqueue_script( 
 				$this->plugin_name . '-layout', 
@@ -849,16 +876,45 @@ class Owh_Domain_Whois_Rdap_Admin {
 	 * @since    1.0.0
 	 */
 	public function add_plugin_admin_menu() {
-		// Add main OWH menu
+		// Add main OWH menu with dashboard as main page
 		add_menu_page(
 			__( 'OWH', 'owh-domain-whois-rdap' ),
 			__( 'OWH', 'owh-domain-whois-rdap' ),
 			'manage_options',
-			'owh-rdap',
-			array( $this, 'display_plugin_setup_page' ),
+			'owh-rdap-dashboard',
+			array( $this, 'display_plugin_dashboard_page' ),
 			'dashicons-admin-site-alt3',
 			30
 		);
+
+		// Add submenu for dashboard (to rename the first item)
+		add_submenu_page(
+			'owh-rdap-dashboard',
+			__( 'Dashboard', 'owh-domain-whois-rdap' ),
+			__( 'Dashboard', 'owh-domain-whois-rdap' ),
+			'manage_options',
+			'owh-rdap-dashboard',
+			array( $this, 'display_plugin_dashboard_page' )
+		);
+
+		// Add submenu for settings
+		add_submenu_page(
+			'owh-rdap-dashboard',
+			__( 'RDAP Domains', 'owh-domain-whois-rdap' ),
+			__( 'RDAP Domains', 'owh-domain-whois-rdap' ),
+			'manage_options',
+			'owh-rdap-settings',
+			array( $this, 'display_plugin_setup_page' )
+		);
+	}
+
+	/**
+	 * Display plugin dashboard page
+	 *
+	 * @since    1.2.2
+	 */
+	public function display_plugin_dashboard_page() {
+		include_once( 'partials/owh-domain-whois-rdap-admin-dashboard.php' );
 	}
 
 	/**
