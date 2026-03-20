@@ -1,3 +1,6 @@
+# 1.2.3
+* Correção de erros do wordpress.
+
 # 1.2.2
 * Correção de erros do wordpress.
 

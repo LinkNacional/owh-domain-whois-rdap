@@ -72,24 +72,4 @@ class RdapClient
 
         return $result;
     }
-
-    /**
-     * Check if RDAP server is reachable
-     *
-     * @param string $rdapServer
-     * @return bool
-     */
-    public function isServerReachable(string $rdapServer): bool
-    {
-        $response = \wp_remote_get($rdapServer . '/help', [
-            'timeout' => 10,
-            'headers' => [
-                'Accept' => 'application/rdap+json,application/json',
-                'User-Agent' => 'OWH Domain WHOIS RDAP Plugin/1.0.0'
-            ]
-        ]);
-
-        return !\is_wp_error($response) && 
-               \wp_remote_retrieve_response_code($response) < 500;
-    }
 }

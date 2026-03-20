@@ -246,7 +246,7 @@
             });
             
             // Adicionar onchange se for o select de tipo de integração
-            if ($select.attr('id') === 'owh_rdap_integration_type') {
+            if ($select.attr('id') === 'owhdwhoisrdap_rdap_integration_type') {
                 $select.attr('onchange', 'toggleIntegrationFields()');
             }
             
@@ -369,7 +369,7 @@
             
             window.toggleIntegrationFields = function() {
                 // Verificar o tipo de integração selecionado
-                const integrationType = $('#owh_rdap_integration_type').val();
+                const integrationType = $('#owhdwhoisrdap_rdap_integration_type').val();
                 
                 // Encontrar as linhas específicas por conteúdo do th
                 const $customUrlRow = findRowByThContent('URL Personalizada');
