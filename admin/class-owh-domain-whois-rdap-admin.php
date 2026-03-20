@@ -200,11 +200,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 					'type' => 'string',
 					'default' => 'minhaempresa.org'
 				),
-				// Visual customizations
-				'customCSS' => array(
-					'type' => 'string',
-					'default' => ''
-				),
 				'borderWidth' => array(
 					'type' => 'number',
 					'default' => 0
@@ -316,11 +311,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 				'previewMode' => array(
 					'type' => 'string',
 					'default' => 'no-result'
-				),
-				// Visual customizations
-				'customCSS' => array(
-					'type' => 'string',
-					'default' => ''
 				),
 				'borderWidth' => array(
 					'type' => 'number',
@@ -470,10 +460,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			$shortcode_atts[] = 'example3="' . esc_attr( $attributes['example3'] ) . '"';
 		}
 		
-		// Add visual customizations
-		if ( isset( $attributes['customCSS'] ) && ! empty( $attributes['customCSS'] ) ) {
-			$shortcode_atts[] = 'custom_css="' . esc_attr( $attributes['customCSS'] ) . '"';
-		}
 		if ( isset( $attributes['borderWidth'] ) ) {
 			$shortcode_atts[] = 'border_width="' . esc_attr( $attributes['borderWidth'] ) . '"';
 		}
@@ -567,10 +553,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 			$shortcode_atts[] = 'unavailable_icon="' . esc_attr( $attributes['unavailableIcon'] ) . '"';
 		}
 		
-		// Add visual customizations
-		if ( isset( $attributes['customCSS'] ) && ! empty( $attributes['customCSS'] ) ) {
-			$shortcode_atts[] = 'custom_css="' . esc_attr( $attributes['customCSS'] ) . '"';
-		}
 		if ( isset( $attributes['borderWidth'] ) && $attributes['borderWidth'] !== '' ) {
 			$shortcode_atts[] = 'border_width="' . esc_attr( $attributes['borderWidth'] ) . '"';
 		}
@@ -678,9 +660,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Admin {
 		}
 		if ( isset( $attributes['padding'] ) ) {
 			$shortcode_atts[] = 'padding="' . intval( $attributes['padding'] ) . '"';
-		}
-		if ( isset( $attributes['customCSS'] ) && ! empty( trim( $attributes['customCSS'] ) ) ) {
-			$shortcode_atts[] = 'custom_css="' . esc_attr( $attributes['customCSS'] ) . '"';
 		}
 		if ( isset( $attributes['showIcon'] ) ) {
 			$shortcode_atts[] = 'show_icon="' . ( $attributes['showIcon'] ? 'true' : 'false' ) . '"';

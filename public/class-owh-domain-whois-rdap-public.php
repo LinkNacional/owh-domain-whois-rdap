@@ -87,11 +87,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		);
 	}
 
-	public function add_inline_styles( $custom_css ) {
-		if ( ! empty( $custom_css ) ) {
-			wp_add_inline_style( $this->plugin_name, $custom_css );
-		}
-	}
+	// add_inline_styles method removed for security compliance
 
 	/**
 	 * Register the JavaScript for the public-facing side of the site.
@@ -148,7 +144,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'example1' => '',
 			'example2' => '',
 			'example3' => '',
-			'custom_css' => '',
 			'border_width' => '',
 			'border_color' => '',
 			'border_radius' => '',
@@ -181,7 +176,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'example1' => ! empty( $atts['example1'] ) ? $atts['example1'] : '',
 			'example2' => ! empty( $atts['example2'] ) ? $atts['example2'] : '',
 			'example3' => ! empty( $atts['example3'] ) ? $atts['example3'] : '',
-			'custom_css' => ! empty( $atts['custom_css'] ) ? $atts['custom_css'] : '',
 			'border_width' => isset( $atts['border_width'] ) ? $atts['border_width'] : '',
 			'border_color' => ! empty( $atts['border_color'] ) ? $atts['border_color'] : '',
 			'border_radius' => isset( $atts['border_radius'] ) ? $atts['border_radius'] : '',
@@ -200,9 +194,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		// Build and add inline styles
 		$inline_css = '';
 		
-		if ( ! empty( $custom_attributes['custom_css'] ) ) {
-			$inline_css .= '.owh-rdap-search-container { ' . esc_html( $custom_attributes['custom_css'] ) . ' }' . "\n";
-		}
 
 		// Add dynamic styles from attributes
 		$dynamic_css_parts = array();
@@ -252,7 +243,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'search_icon' => '',
 			'available_icon' => '',
 			'unavailable_icon' => '',
-			'custom_css' => '',
+			// '' removed for security compliance
 			'border_width' => '',
 			'border_color' => '',
 			'border_radius' => '',
@@ -296,7 +287,7 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'search_icon' => ! empty( $atts['search_icon'] ) ? $atts['search_icon'] : '',
 			'available_icon' => ! empty( $atts['available_icon'] ) ? $atts['available_icon'] : '',
 			'unavailable_icon' => ! empty( $atts['unavailable_icon'] ) ? $atts['unavailable_icon'] : '',
-			'custom_css' => ! empty( $atts['custom_css'] ) ? $atts['custom_css'] : '',
+			// '' removed for security compliance
 			'border_width' => ! empty( $atts['border_width'] ) ? intval( $atts['border_width'] ) : '',
 			'border_color' => ! empty( $atts['border_color'] ) ? $atts['border_color'] : '',
 			'border_radius' => ! empty( $atts['border_radius'] ) ? intval( $atts['border_radius'] ) : '',
@@ -312,10 +303,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		// Build and add inline styles for results
 		$inline_css = '';
 		
-		if ( ! empty( $custom_attributes['custom_css'] ) ) {
-			$inline_css .= '.owh-rdap-results-container { ' . esc_html( $custom_attributes['custom_css'] ) . ' }' . "\n";
-		}
-
 		// Add inline styles through WordPress
 		if ( ! empty( $inline_css ) ) {
 			wp_add_inline_style( $this->plugin_name, $inline_css );
@@ -476,7 +463,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 			'border_radius' => '4',
 			'background_color' => '#ffffff',
 			'padding' => '20',
-			'custom_css' => '',
 			'show_icon' => 'true',
 			'custom_icon' => '📋'
 		), $atts, 'owhdwhoisrdap-rdap-whois-details' );
@@ -516,7 +502,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		$border_radius = intval( $atts['border_radius'] );
 		$background_color = $atts['background_color'];
 		$padding = intval( $atts['padding'] );
-		$custom_css = $atts['custom_css'];
 		$custom_icon = $atts['custom_icon'];
 		
 		$result = null;
@@ -538,13 +523,6 @@ class Owhdwhoisrdap_Domain_Whois_Rdap_Public {
 		// Build and add inline styles for whois details
 		$inline_css = '';
 		
-		if ( ! empty( $custom_css ) ) {
-			$clean_css = wp_strip_all_tags( $custom_css );
-			$clean_css = str_replace( array( '<script', '</script>', 'javascript:' ), '', $clean_css );
-			
-			$inline_css .= '.owh-rdap-whois-details-container { ' . esc_attr( $clean_css ) . ' }' . "\n";
-		}
-
 		// Add inline styles through WordPress
 		if ( ! empty( $inline_css ) ) {
 			wp_add_inline_style( $this->plugin_name . '-shortcodes', $inline_css );

@@ -72,11 +72,6 @@ registerBlockType('owh-rdap/domain-search', {
             type: 'string',
             default: 'minhaempresa.org'
         },
-        // Visual customizations
-        customCSS: {
-            type: 'string',
-            default: ''
-        },
         borderWidth: {
             type: 'number',
             default: 0
@@ -127,7 +122,7 @@ registerBlockType('owh-rdap/domain-search', {
     edit: ({ attributes, setAttributes }) => {
         const { 
             showTitle, customTitle, showExamples, placeholderText, searchButtonText, 
-            loadingText, examplesText, example1, example2, example3, customCSS, 
+            loadingText, examplesText, example1, example2, example3, 
             borderWidth, borderColor, borderRadius, backgroundColor, padding,
             primaryColor, buttonHoverColor, inputBorderColor, inputFocusColor, buttonLayout
         } = attributes;
@@ -143,12 +138,6 @@ registerBlockType('owh-rdap/domain-search', {
                 maxWidth: '600px',
                 margin: '0 auto'
             };
-
-            // Combinar com CSS customizado se fornecido
-            let combinedCSS = '';
-            if (customCSS && customCSS.trim() !== '') {
-                combinedCSS = customCSS;
-            }
 
             const containerStyle = {
                 ...dynamicStyle,
@@ -560,23 +549,6 @@ registerBlockType('owh-rdap/domain-search', {
                                                 step={5}
                                             />
                                         </PanelBody>
-                                        
-                                        <PanelBody
-                                            title={__('CSS Avançado', 'owh-domain-whois-rdap')}
-                                            initialOpen={false}
-                                        >
-                                            <p style={{ marginBottom: '10px', fontSize: '13px' }}>
-                                                {__('CSS adicional (opcional) - sobrescreve as configurações visuais acima:', 'owh-domain-whois-rdap')}
-                                            </p>
-                                            <TextareaControl
-                                                label={__('CSS Personalizado', 'owh-domain-whois-rdap')}
-                                                value={customCSS}
-                                                onChange={(value) => setAttributes({ customCSS: value })}
-                                                placeholder="Ex: background: linear-gradient(45deg, #f0f0f0, #fff); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-                                                rows={4}
-                                                help={__('Digite CSS sem as chaves {}. Este CSS terá prioridade sobre os controles visuais.', 'owh-domain-whois-rdap')}
-                                            />
-                                        </PanelBody>
                                     </div>
                                 );
                             }
@@ -670,11 +642,6 @@ registerBlockType('owh-rdap/domain-results', {
             type: 'string',
             default: 'no-result' // 'no-result', 'available', 'unavailable'
         },
-        // Visual customizations
-        customCSS: {
-            type: 'string',
-            default: ''
-        },
         borderWidth: {
             type: 'number',
             default: 0
@@ -725,7 +692,7 @@ registerBlockType('owh-rdap/domain-results', {
             availableTitle, availableText, unavailableTitle, unavailableText,
             buyButtonText, detailsButtonText,
             showIcons, searchIcon, availableIcon, unavailableIcon,
-            previewMode, customCSS, borderWidth, borderColor, borderRadius,
+            previewMode, borderWidth, borderColor, borderRadius,
             backgroundColor, padding, availableColor, unavailableColor, showWatermark, buttonLayout
         } = attributes;
 
@@ -740,12 +707,6 @@ registerBlockType('owh-rdap/domain-results', {
                 maxWidth: '600px',
                 margin: '0 auto'
             };
-
-            // Combinar com CSS customizado se fornecido
-            let combinedCSS = '';
-            if (customCSS && customCSS.trim() !== '') {
-                combinedCSS = customCSS;
-            }
 
             const containerStyle = {
                 ...dynamicStyle,
@@ -1209,23 +1170,6 @@ registerBlockType('owh-rdap/domain-results', {
                                                 step={5}
                                             />
                                         </PanelBody>
-                                        
-                                        <PanelBody
-                                            title={__('CSS Avançado', 'owh-domain-whois-rdap')}
-                                            initialOpen={false}
-                                        >
-                                            <p style={{ marginBottom: '10px', fontSize: '13px' }}>
-                                                {__('CSS adicional (opcional) - sobrescreve as configurações visuais acima:', 'owh-domain-whois-rdap')}
-                                            </p>
-                                            <TextareaControl
-                                                label={__('CSS Personalizado', 'owh-domain-whois-rdap')}
-                                                value={customCSS}
-                                                onChange={(value) => setAttributes({ customCSS: value })}
-                                                placeholder="Ex: background: linear-gradient(45deg, #f0f0f0, #fff); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-                                                rows={4}
-                                                help={__('Digite CSS sem as chaves {}. Este CSS terá prioridade sobre os controles visuais.', 'owh-domain-whois-rdap')}
-                                            />
-                                        </PanelBody>
                                     </div>
                                 );
                             }
@@ -1354,10 +1298,6 @@ registerBlockType('owh-rdap/whois-details', {
             type: 'string',
             default: '📋'
         },
-        customCSS: {
-            type: 'string',
-            default: ''
-        },
         borderWidth: {
             type: 'number',
             default: 1
@@ -1393,7 +1333,7 @@ registerBlockType('owh-rdap/whois-details', {
             showTitle, customTitle, showEvents, eventsTitle, showEntities, entitiesTitle,
             showNameservers, nameserversTitle, showStatus, statusTitle, showDnssec, dnssecTitle,
             noDomainText, noDomainDescription, availableText, errorText, previewMode,
-            showIcon, customIcon, customCSS, borderWidth, borderColor, borderRadius, 
+            showIcon, customIcon, borderWidth, borderColor, borderRadius, 
             backgroundColor, padding, buttonLayout
         } = attributes;
 
@@ -1407,12 +1347,6 @@ registerBlockType('owh-rdap/whois-details', {
                 padding: `${padding}px`,
                 textAlign: previewMode === 'no-domain' ? 'center' : 'left'
             };
-
-            // Combinar com CSS customizado se fornecido
-            let combinedCSS = '';
-            if (customCSS && customCSS.trim() !== '') {
-                combinedCSS = customCSS;
-            }
 
             if (previewMode === 'no-domain') {
                 return (
@@ -1800,23 +1734,6 @@ registerBlockType('owh-rdap/whois-details', {
                                                 min={0}
                                                 max={60}
                                                 step={5}
-                                            />
-                                        </PanelBody>
-                                        
-                                        <PanelBody
-                                            title={__('CSS Avançado', 'owh-domain-whois-rdap')}
-                                            initialOpen={false}
-                                        >
-                                            <p style={{ marginBottom: '10px', fontSize: '13px' }}>
-                                                {__('CSS adicional (opcional) - sobrescreve as configurações visuais acima:', 'owh-domain-whois-rdap')}
-                                            </p>
-                                            <TextareaControl
-                                                label={__('CSS Personalizado', 'owh-domain-whois-rdap')}
-                                                value={customCSS}
-                                                onChange={(value) => setAttributes({ customCSS: value })}
-                                                placeholder="Ex: background: linear-gradient(45deg, #f0f0f0, #fff); box-shadow: 0 2px 4px rgba(0,0,0,0.1);"
-                                                rows={4}
-                                                help={__('Digite CSS sem as chaves {}. Este CSS terá prioridade sobre os controles visuais.', 'owh-domain-whois-rdap')}
                                             />
                                         </PanelBody>
                                     </div>
