@@ -68,6 +68,7 @@ defined( 'ABSPATH' ) or exit;
                             <?php esc_html_e('É importante executar esta ação periodicamente para que a pesquisa inclua novos sufixos.', 'owh-domain-whois-rdap'); ?><br>
                             <?php 
                             $last_update = get_option('owh_domain_whois_rdap_last_update', '2024-10-21');
+                            /* translators: %s is the date of the last update */
                             printf(esc_html__('Última atualização: %s.', 'owh-domain-whois-rdap'), esc_html($last_update)); 
                             ?>
                         </p>

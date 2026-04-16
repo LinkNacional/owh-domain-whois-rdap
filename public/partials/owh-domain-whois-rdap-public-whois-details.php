@@ -88,7 +88,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 			<div class="owh-rdap-whois-available">
 				<div class="owh-rdap-available-icon">✅</div>
 				<div class="owh-rdap-available-content">
-					<!-- translators: %s is the domain name -->
+					<?php /* translators: %s is the domain name */ ?>
 					<h4><?php printf( esc_html__( 'Domínio %s', 'owh-domain-whois-rdap' ), esc_html( $domain ) ); ?></h4>
 					<p><?php echo esc_html( isset( $available_text ) ? $available_text : __( 'Este domínio está disponível para registro e não possui informações WHOIS.', 'owh-domain-whois-rdap' ) ); ?></p>
 				</div>
@@ -96,7 +96,7 @@ if ( isset( $custom_css ) && ! empty( trim( $custom_css ) ) ) {
 		<?php else : ?>
 			<div class="owh-rdap-whois-registered">
 				<div class="owh-rdap-domain-header">
-					<!-- translators: %s is the domain name -->
+					<?php /* translators: %s is the domain name */ ?>
 					<h4><?php printf( esc_html__( 'Detalhes WHOIS para %s', 'owh-domain-whois-rdap' ), '<strong>' . esc_html( $domain ) . '</strong>' ); ?></h4>
 				</div>
 

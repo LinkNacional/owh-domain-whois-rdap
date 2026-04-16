@@ -209,9 +209,9 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'nonce' => wp_create_nonce( 'owh_rdap_admin_nonce' ),
 			'rest_nonce' => wp_create_nonce( 'wp_rest' ),
 			'strings' => array(
-				'updating' => __( 'Atualizando...', 'owh-domain-whois-rdap' ),
-				'updated' => __( 'Atualizado com sucesso!', 'owh-domain-whois-rdap' ),
-				'error' => __( 'Erro ao atualizar', 'owh-domain-whois-rdap' )
+				'updating' => esc_attr__( 'Atualizando...', 'owh-domain-whois-rdap' ),
+				'updated' => esc_attr__( 'Atualizado com sucesso!', 'owh-domain-whois-rdap' ),
+				'error' => esc_attr__( 'Erro ao atualizar', 'owh-domain-whois-rdap' )
 			)
 		) );
 
@@ -1059,8 +1059,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 		
 		wp_dropdown_pages( array(
 			'name'             => 'owh_rdap_results_page',
-			'selected'         => $value,
-			'show_option_none' => __( 'Página Resultado Pesquisa domínios', 'owh-domain-whois-rdap' ),
+			'selected'         => esc_attr($value),
+			'show_option_none' => esc_attr__( 'Página Resultado Pesquisa domínios', 'owh-domain-whois-rdap' ),
 			'option_none_value' => '',
 		) );
 		
@@ -1075,8 +1075,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 		
 		wp_dropdown_pages( array(
 			'name'             => 'owh_rdap_whois_details_page',
-			'selected'         => $value,
-			'show_option_none' => __( 'Selecione a página de detalhes WHOIS', 'owh-domain-whois-rdap' ),
+			'selected'         => esc_attr($value),
+			'show_option_none' => esc_attr__( 'Selecione a página de detalhes WHOIS', 'owh-domain-whois-rdap' ),
 			'option_none_value' => '',
 		) );
 		
@@ -1597,7 +1597,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 					<div class="notice notice-warning inline">
 						<p>
 							<?php esc_html_e( 'Nenhum campo customizado foi criado ainda.', 'owh-domain-whois-rdap' ); ?>
-							<a href="<?php echo admin_url( 'admin.php?page=owh-rdap#custom-fields' ); ?>" target="_blank">
+							<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap#custom-fields' )); ?>" target="_blank">
 								<?php esc_html_e( 'Clique aqui para criar campos customizados', 'owh-domain-whois-rdap' ); ?>
 							</a>
 						</p>
@@ -1689,8 +1689,8 @@ class Owh_Domain_Whois_Rdap_Admin {
 	private function render_pricing_matrix_table() {
 		global $post;
 		
-		echo '<h3>' . __( 'Configuração de Preços - Matriz 3x10', 'owh-domain-whois-rdap' ) . '</h3>';
-		echo '<p>' . __( 'Configure os preços para registro, renovação e transferência por período de 1 a 10 anos.', 'owh-domain-whois-rdap' ) . '</p>';
+		echo '<h3>' . esc_attr__( 'Configuração de Preços - Matriz 3x10', 'owh-domain-whois-rdap' ) . '</h3>';
+		echo '<p>' . esc_attr__( 'Configure os preços para registro, renovação e transferência por período de 1 a 10 anos.', 'owh-domain-whois-rdap' ) . '</p>';
 
 		// Get current pricing matrix
 		$pricing_matrix = get_post_meta( $post->ID, '_domain_pricing_matrix', true );
@@ -1709,11 +1709,15 @@ class Owh_Domain_Whois_Rdap_Admin {
 		echo '<table class="domain-pricing-matrix-table" style="width: 100%; border-collapse: collapse;">';
 		echo '<thead>';
 		echo '<tr>';
-		echo '<th style="border: 1px solid #ddd; padding: 8px;">' . __( 'Ação / Anos', 'owh-domain-whois-rdap' ) . '</th>';
+		echo '<th style="border: 1px solid #ddd; padding: 8px;">' . esc_attr__( 'Ação / Anos', 'owh-domain-whois-rdap' ) . '</th>';
 		
 		// Header with years 1-10
 		for ( $year = 1; $year <= 10; $year++ ) {
-			echo '<th style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . sprintf( __( '%d ano(s)', 'owh-domain-whois-rdap' ), $year ) . '</th>';
+			echo '<th style="border: 1px solid #ddd; padding: 8px; text-align: center;">' . sprintf( 
+				/* translators: %d is the number of years */
+				esc_attr__( '%d ano(s)', 'owh-domain-whois-rdap' ), 
+				esc_attr( $year ) 
+			) . '</th>';
 		}
 		echo '</tr>';
 		echo '</thead>';
@@ -1735,7 +1739,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 				echo 'placeholder="0.00" ';
 				echo 'style="width: 100%; text-align: center;" ';
 				echo 'pattern="[0-9]+(\.[0-9]{1,2})?" ';
-				echo 'title="' . __( 'Digite o preço no formato: 00.00', 'owh-domain-whois-rdap' ) . '" />';
+				echo 'title="' . esc_attr__( 'Digite o preço no formato: 00.00', 'owh-domain-whois-rdap' ) . '" />';
 				echo '</td>';
 			}
 			echo '</tr>';
@@ -1901,69 +1905,6 @@ class Owh_Domain_Whois_Rdap_Admin {
 					</select>
 					<span class="description"><?php esc_html_e( 'Por enquanto apenas registro manual está disponível.', 'owh-domain-whois-rdap' ); ?></span>
 				</p>
-			</div>
-		</div>
-		<?php
-	}
-
-	/**
-	 * Domain Pricing Tab Content
-	 */
-	public function domain_pricing_tab_content() {
-		global $post;
-		
-		$pricing_matrix = get_post_meta( $post->ID, '_domain_pricing_matrix', true );
-		if ( ! is_array( $pricing_matrix ) ) {
-			$pricing_matrix = array();
-		}
-		
-		?>
-		<div id="domain_pricing_product_data" class="panel woocommerce_options_panel">
-			<div class="options_group">
-				<h3><?php esc_html_e( 'Tabela de Preços por Período', 'owh-domain-whois-rdap' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Configure os preços para registro, renovação e transferência por período (anos).', 'owh-domain-whois-rdap' ); ?></p>
-				
-				<table class="widefat domain-pricing-table">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Período', 'owh-domain-whois-rdap' ); ?></th>
-							<th><?php esc_html_e( 'Registro (R$)', 'owh-domain-whois-rdap' ); ?></th>
-							<th><?php esc_html_e( 'Renovação (R$)', 'owh-domain-whois-rdap' ); ?></th>
-							<th><?php esc_html_e( 'Transferência (R$)', 'owh-domain-whois-rdap' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php for ( $i = 1; $i <= 10; $i++ ) : ?>
-							<tr>
-								<td><strong><?php echo $i; ?> <?php echo $i === 1 ? 'ano' : 'anos'; ?></strong></td>
-								<td>
-									<input type="number" 
-										   name="domain_pricing[<?php echo $i; ?>][register]" 
-										   value="<?php echo esc_attr( $pricing_matrix[$i]['register'] ?? '' ); ?>"
-										   step="0.01" 
-										   min="0" 
-										   class="small-text" />
-								</td>
-								<td>
-									<input type="number" 
-										   name="domain_pricing[<?php echo $i; ?>][renew]" 
-										   value="<?php echo esc_attr( $pricing_matrix[$i]['renew'] ?? '' ); ?>"
-										   step="0.01" 
-										   min="0" 
-										   class="small-text" />
-								</td>
-								<td>
-									<input type="number" 
-										   name="domain_pricing[<?php echo $i; ?>][transfer]" 
-										   value="<?php echo esc_attr( $pricing_matrix[$i]['transfer'] ?? '' ); ?>"
-										   step="0.01" 
-										   min="0" 
-										   class="small-text" />
-								</td>
-							</tr>
-						<?php endfor; ?>
-					</tbody>
-				</table>
 			</div>
 		</div>
 		<?php
@@ -2553,6 +2494,11 @@ class Owh_Domain_Whois_Rdap_Admin {
 			}
 			
 			$subscription_order->save();
+
+			// Atualiza status para completo no woocomerce.
+			$subscription_order->update_status('wc-completed');
+			$subscription_order->save();
+
 		}
 		
 	}

@@ -81,6 +81,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 				// translators: %s is the domain name being searched
 				$title_text = isset( $custom_attributes['custom_title'] ) && ! empty( $custom_attributes['custom_title'] ) 
 					? $custom_attributes['custom_title'] 
+					// translators: %s is the domain name being searched
 					: __( 'Resultado da pesquisa para: %s', 'owh-domain-whois-rdap' );
 				
 				if ( strpos( $title_text, '{domain}' ) !== false ) {
@@ -291,7 +292,7 @@ $container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' '
 										</a>
 										<p class="owh-rdap-product-info">
 											<?php if ( $product->get_price() ) : ?>
-												<span class="price"><?php echo wc_price( $product->get_price() ); ?>/ano</span>
+												<span class="price"><?php echo wp_kses_post( wc_price( $product->get_price() ) ); ?>/ano</span>
 											<?php endif; ?>
 										</p>
 									</div>

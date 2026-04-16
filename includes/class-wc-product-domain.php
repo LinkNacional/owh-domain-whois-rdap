@@ -30,6 +30,7 @@ class WC_Product_Domain extends WC_Product {
         
         for ( $i = 1; $i <= 10; $i++ ) {
             if ( ! empty( $pricing_matrix[ $i ]['register'] ) && $pricing_matrix[ $i ]['register'] > 0 ) {
+                /* translators: %d: number of years */
                 $periods[ $i ] = sprintf( _n( '%d ano', '%d anos', $i, 'owh-domain-whois-rdap' ), $i );
             }
         }
@@ -119,7 +120,8 @@ class WC_Product_Domain extends WC_Product {
                 return wc_price( $min );
             } else {
                 return sprintf( 
-                    __( '%1$s &ndash; %2$s', 'woocommerce' ),
+                    /* translators: %1$s: minimum price, %2$s: maximum price */
+                    esc_attr__( '%1$s &ndash; %2$s', 'woocommerce' ),
                     wc_price( $min ),
                     wc_price( $max )
                 );
@@ -345,7 +347,7 @@ class WC_Product_Domain extends WC_Product {
      * @return string
      */
     public function single_add_to_cart_text() {
-        return __( 'Adicionar ao Carrinho', 'owh-domain-whois-rdap' );
+        return esc_attr__( 'Adicionar ao Carrinho', 'owh-domain-whois-rdap' );
     }
 
     /**

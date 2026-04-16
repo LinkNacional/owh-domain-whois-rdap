@@ -949,15 +949,7 @@ class Owh_Domain_Whois_Rdap_Public {
 		return $new_name;
 	}
 
-	/**
-	 * Extend Store API item data for blocks checkout
-	 * 
-	 * @since 1.0.0
-	 */
-	public function extend_store_api_item_data( $order, $request ) {
-		// This hook ensures domain data is available in the Store API
-		// The actual name change for blocks will be handled by JavaScript
-	}
+	
 
 	/**
 	 * Extend cart item data for Store API
@@ -1266,6 +1258,7 @@ class Owh_Domain_Whois_Rdap_Public {
 		foreach ( $cart_domain_fields as $cart_item_key => $cart_item_data ) {
 			echo '<div id="owh_domain_custom_fields_' . esc_attr( $cart_item_key ) . '"><h3>' . 
 				sprintf( 
+					/* translators: %s is the domain name */
 					esc_html__( 'Informações para registro do domínio %s', 'owh-domain-whois-rdap' ), 
 					'<strong>' . esc_html( $cart_item_data['domain_name'] ) . '</strong>'
 				) . 
@@ -1344,7 +1337,8 @@ class Owh_Domain_Whois_Rdap_Public {
 				// Check if field is required and empty
 				if ( empty( $field_value ) ) {
 					wc_add_notice( sprintf( 
-						__( 'O campo "%s" para o domínio %s é obrigatório.', 'owh-domain-whois-rdap' ), 
+						/* translators: %1$s is the field label, %2$s is the domain name */
+						__( 'O campo "%1$s" para o domínio %2$s é obrigatório.', 'owh-domain-whois-rdap' ), 
 						$field_config['label'],
 						$cart_item_data['domain_name']
 					), 'error' );
@@ -1355,7 +1349,8 @@ class Owh_Domain_Whois_Rdap_Public {
 				if ( ! empty( $field_config['regex'] ) ) {
 					if ( ! preg_match( '/' . $field_config['regex'] . '/', $field_value ) ) {
 						$default_error_message = sprintf( 
-							__( 'O campo "%s" para o domínio %s não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
+							/* translators: %1$s is the field label, %2$s is the domain name */
+							__( 'O campo "%1$s" para o domínio %2$s não atende aos critérios necessários.', 'owh-domain-whois-rdap' ), 
 							$field_config['label'],
 							$cart_item_data['domain_name']
 						);
@@ -1377,11 +1372,19 @@ class Owh_Domain_Whois_Rdap_Public {
 	public function save_checkout_blocks_custom_fields($context, $result) {
 		$this->save_custom_fields($context->payment_data, $context->order);
 	}
-
+	
 	public function save_checkout_shortcode_custom_fields($orderId, $postedData, $order) {
 		$this->save_custom_fields($_POST, $order);
 	}
 
+	/**
+	 * Extend Store API item data for blocks checkout
+	 * 
+	 * @since 1.0.0
+	 */
+	public function extend_store_api_item_data( $order, $request ) {
+		$this->save_custom_fields($request->get_param('payment_data'), $order);
+	}
 
 	/**
 	 * Save custom checkout fields to order meta
@@ -1411,6 +1414,18 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @param \WC_Result $result Payment result object
 	 */
 	public function save_custom_fields( $payment_data, $order ) {
+		// Normalize payment_data to always be key => value
+		if ( isset( $payment_data[0] ) && is_array( $payment_data[0] ) && isset( $payment_data[0]['key'] ) ) {
+			$normalized_payment_data = array();
+
+			foreach ( $payment_data as $data ) {
+				if ( isset( $data['key'] ) ) {
+					$normalized_payment_data[ $data['key'] ] = $data['value'] ?? '';
+				}
+			}
+
+			$payment_data = $normalized_payment_data;
+		}
 		$custom_fields_data = array();
 		$item_meta_data = array(); // Store meta data for each order item
 		
@@ -1433,7 +1448,39 @@ class Owh_Domain_Whois_Rdap_Public {
 			}
 		}
 		
-		foreach ( $payment_data as $key => $value ) {
+		// Normalize payment_data to handle both formats
+		$normalized_payment_data = array();
+		
+		// Format 1: Direct key-value pairs in payment_data object
+		// Format 2: Array of objects with 'key' and 'value' properties
+		if ( is_array( $payment_data ) ) {
+			// Check if it's an indexed array with key-value objects (Format 2)
+			$is_key_value_format = false;
+			if ( ! empty( $payment_data ) && is_numeric( array_keys( $payment_data )[0] ) ) {
+				// Check if first element has 'key' and 'value' properties
+				$first_element = reset( $payment_data );
+				if ( is_array( $first_element ) && isset( $first_element['key'] ) && isset( $first_element['value'] ) ) {
+					$is_key_value_format = true;
+				}
+			}
+			
+			if ( $is_key_value_format ) {
+				// Format 2: Convert array of key-value objects to associative array
+				foreach ( $payment_data as $item ) {
+					if ( isset( $item['key'] ) && isset( $item['value'] ) ) {
+						$normalized_payment_data[ $item['key'] ] = $item['value'];
+					}
+				}
+			} else {
+				// Format 1: Use as-is (associative array)
+				$normalized_payment_data = $payment_data;
+			}
+		} else {
+			// Fallback: use as-is
+			$normalized_payment_data = $payment_data;
+		}
+		
+		foreach ( $normalized_payment_data as $key => $value ) {
 			// Check if the key matches our new custom field pattern with product_id
 			if ( strpos( $key, 'owh_domain_custom_field_' ) === 0 ) {
 				// Extract product_id, cart_item_key and field_id from: owh_domain_custom_field_{product_id}_{cart_item_key}_{field_id}

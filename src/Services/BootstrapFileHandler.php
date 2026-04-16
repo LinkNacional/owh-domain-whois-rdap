@@ -176,7 +176,7 @@ class BootstrapFileHandler
 
         // Update last update date in WordPress options if successful
         if ($result !== false) {
-            \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+            \update_option('owh_domain_whois_rdap_last_update', gmdate('d/m/Y H:i:s'));
         }
 
         return $result !== false;
@@ -259,7 +259,7 @@ class BootstrapFileHandler
         }
 
         // Update last update date in WordPress options if successful
-        \update_option('owh_domain_whois_rdap_last_update', date('d/m/Y H:i:s'));
+        \update_option('owh_domain_whois_rdap_last_update', gmdate('d/m/Y H:i:s'));
 
         return [
             'success' => true,

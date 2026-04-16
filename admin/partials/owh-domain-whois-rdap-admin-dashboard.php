@@ -56,7 +56,7 @@ $logo_url = plugin_dir_url( dirname( __FILE__ ) ) . '../public/images/logo-owh-o
 									<span class="dashicons dashicons-media-document"></span>
 									<?php esc_html_e( 'Documentação', 'owh-domain-whois-rdap' ); ?>
 								</a>
-								<a href="<?php echo admin_url( 'admin.php?page=owh-rdap-settings' ); ?>" class="owh-btn owh-btn-primary">
+								<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap-settings' )); ?>" class="owh-btn owh-btn-primary">
 									<span class="dashicons dashicons-admin-generic"></span>
 									<?php esc_html_e( 'Configurar', 'owh-domain-whois-rdap' ); ?>
 								</a>
@@ -195,7 +195,7 @@ $logo_url = plugin_dir_url( dirname( __FILE__ ) ) . '../public/images/logo-owh-o
 							$html_output .= '</ul>';
 						}
 						
-						echo $html_output;
+						echo wp_kses_post($html_output);
 					} else {
 						echo '<p>' . esc_html__( 'CHANGELOG.md não encontrado.', 'owh-domain-whois-rdap' ) . '</p>';
 					}
