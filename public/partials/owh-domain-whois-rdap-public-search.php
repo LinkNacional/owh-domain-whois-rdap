@@ -1,0 +1,466 @@
+<?php
+
+/**
+ * Provide a public-facing view for the domain search form
+ *
+ * This file is used to markup the public-facing aspects of the plugin.
+ *
+ * @link       https://owhgroup.com.br
+ * @since      1.0.0
+ *
+ * @package    OWH_Domain_WHOIS_RDAP
+ * @subpackage OWH_Domain_WHOIS_RDAP/public/partials
+ */
+
+// If this file is called directly, abort.
+if ( ! defined( 'WPINC' ) ) {
+	die;
+}
+
+// Set default values for custom attributes
+$defaults = array(
+	'custom_title' => __( 'Pesquisar Domínio', 'owh-domain-whois-rdap' ),
+	'placeholder_text' => __( 'Digite o nome do domínio...', 'owh-domain-whois-rdap' ),
+	'search_button_text' => __( 'Pesquisar', 'owh-domain-whois-rdap' ),
+	'examples_text' => __( 'Exemplos:', 'owh-domain-whois-rdap' ),
+	'example1' => 'exemplo.com',
+	'example2' => 'meusite.com.br',
+	'example3' => 'minhaempresa.org'
+);
+
+// Merge custom attributes with defaults
+if ( isset( $custom_attributes ) && is_array( $custom_attributes ) ) {
+	foreach ( $defaults as $key => $default_value ) {
+		if ( isset( $custom_attributes[ $key ] ) && $custom_attributes[ $key ] !== '' ) {
+			$$key = $custom_attributes[ $key ];
+		} else {
+			$$key = $default_value;
+		}
+	}
+} else {
+	foreach ( $defaults as $key => $default_value ) {
+		$$key = $default_value;
+	}
+}
+
+// Generate custom styles
+$container_styles = array();
+if ( isset( $custom_attributes['border_width'] ) && is_numeric( $custom_attributes['border_width'] ) ) {
+	$border_color = isset( $custom_attributes['border_color'] ) ? $custom_attributes['border_color'] : '#ddd';
+	$container_styles[] = 'border: ' . intval( $custom_attributes['border_width'] ) . 'px solid ' . $border_color . ';';
+}
+if ( isset( $custom_attributes['border_radius'] ) && is_numeric( $custom_attributes['border_radius'] ) ) {
+	$container_styles[] = 'border-radius: ' . intval( $custom_attributes['border_radius'] ) . 'px;';
+}
+if ( isset( $custom_attributes['background_color'] ) && $custom_attributes['background_color'] !== '' ) {
+	$container_styles[] = 'background-color: ' . esc_attr( $custom_attributes['background_color'] ) . ';';
+}
+if ( isset( $custom_attributes['padding'] ) && is_numeric( $custom_attributes['padding'] ) ) {
+	$container_styles[] = 'padding: ' . intval( $custom_attributes['padding'] ) . 'px;';
+}
+
+$container_style_attr = ! empty( $container_styles ) ? ' style="' . implode( ' ', $container_styles ) . '"' : '';
+
+// Generate dynamic CSS for colors and layout
+$dynamic_css = '';
+$button_layout = isset( $custom_attributes['button_layout'] ) ? $custom_attributes['button_layout'] : 'external';
+
+if ( isset( $custom_attributes ) ) {
+	$primary_color = ! empty( $custom_attributes['primary_color'] ) ? $custom_attributes['primary_color'] : '#0073aa';
+	$button_hover_color = ! empty( $custom_attributes['button_hover_color'] ) ? $custom_attributes['button_hover_color'] : '#005a87';
+	$input_border_color = ! empty( $custom_attributes['input_border_color'] ) ? $custom_attributes['input_border_color'] : '#ddd';
+	$input_focus_color = ! empty( $custom_attributes['input_focus_color'] ) ? $custom_attributes['input_focus_color'] : '#0073aa';
+	
+	$dynamic_css = "
+		.owh-rdap-search-button { 
+			background: {$primary_color} !important; 
+		}
+		.owh-rdap-search-button:hover { 
+			background: {$button_hover_color} !important; 
+		}
+		.owh-rdap-domain-input { 
+			border-color: {$input_border_color} !important; 
+		}
+		.owh-rdap-domain-input:focus { 
+			border-color: {$input_focus_color} !important; 
+			box-shadow: 0 0 0 1px {$input_focus_color} !important;
+		}
+		.owh-rdap-example-domain { 
+			color: {$primary_color} !important; 
+		}
+		.owh-rdap-example-domain:hover { 
+			color: {$button_hover_color} !important; 
+		}
+	";
+	
+	// Add layout-specific CSS
+	if ( $button_layout === 'internal' ) {
+		$dynamic_css .= "
+			.owh-rdap-search-input-wrapper {
+				position: relative !important;
+				display: block !important;
+			}
+			.owh-rdap-domain-input {
+				padding-right: 130px !important;
+				width: 100% !important;
+				box-sizing: border-box !important;
+			}
+			#owh-rdap-search-button {
+				position: absolute !important;
+				right: 6px !important;
+				top: 6px !important;
+				width: 110px !important;
+				bottom: 6px !important;
+				transform: none !important;
+				padding: 0 12px !important;
+				font-size: 14px !important;
+				border-radius: 4px !important;
+				min-width: 110px !important;
+				height: auto !important;
+				display: flex !important;
+				align-items: center !important;
+				justify-content: center !important;
+			}
+		";
+	} else {
+		$dynamic_css .= "
+			.owh-rdap-search-input-wrapper {
+				display: flex !important;
+				gap: 12px !important;
+				align-items: center !important;
+			}
+			.owh-rdap-domain-input {
+				flex: 1 !important;
+			}
+			.owh-rdap-search-button {
+				flex-shrink: 0 !important;
+				min-width: 120px !important;
+			}
+		";
+	}
+}
+
+?>
+
+<!-- Custom CSS and Dynamic CSS are now handled through wp_add_inline_style in the shortcode method -->
+
+<div class="owh-rdap-search-container"<?php echo esc_attr( $container_style_attr ); ?>>
+	<?php if ( isset( $show_title ) && $show_title ) : ?>
+		<h3 class="owh-rdap-search-title"><?php echo esc_html( $custom_title ); ?></h3>
+	<?php endif; ?>
+	
+	<form id="owh-rdap-search-form" class="owh-rdap-search-form" method="get" <?php echo $results_page ? 'action="' . esc_url( get_permalink( $results_page ) ) . '"' : ''; ?>>
+		<div class="owh-rdap-search-wrapper">
+			<div class="owh-rdap-search-input-wrapper">
+				<input 
+					type="text" 
+					id="owh-rdap-domain-input" 
+					name="domain" 
+					class="owh-rdap-domain-input" 
+					placeholder="<?php echo esc_attr( $placeholder_text ); ?>" 
+					value="<?php echo isset( $_GET['domain'] ) ? esc_attr( sanitize_text_field( wp_unslash( $_GET['domain'] ) ) ) : ''; ?>"
+					required 
+				/>
+				<button type="submit" id="owh-rdap-search-button" class="owh-rdap-search-button">
+					<span class="owh-rdap-search-text"><?php echo esc_html( $search_button_text ); ?></span>
+					<span class="owh-rdap-search-loading" style="display: none;">
+						<span class="owh-rdap-spinner"></span>
+						<span class="owh-rdap-loading-text">Pesquisando...</span>
+					</span>
+				</button>
+			</div>
+
+			<?php if ( isset( $show_examples ) && $show_examples ) : ?>
+			<div class="owh-rdap-search-examples">
+				<small class="owh-rdap-examples-text">
+					<?php echo esc_html( $examples_text ); ?> 
+					<span class="owh-rdap-example-domain" data-domain="<?php echo esc_attr( $example1 ); ?>"><?php echo esc_html( $example1 ); ?></span>, 
+					<span class="owh-rdap-example-domain" data-domain="<?php echo esc_attr( $example2 ); ?>"><?php echo esc_html( $example2 ); ?></span>, 
+					<span class="owh-rdap-example-domain" data-domain="<?php echo esc_attr( $example3 ); ?>"><?php echo esc_html( $example3 ); ?></span>
+				</small>
+			</div>
+			<?php endif; ?>
+		</div>
+	</form>
+
+	<!-- Loading Overlay -->
+	<div id="owh-rdap-loading-overlay" class="owh-rdap-loading-overlay" style="display: none;">
+		<div class="owh-rdap-loading-content">
+			<div class="owh-rdap-loading-spinner-large"></div>
+			<div class="owh-rdap-loading-message">Verificando disponibilidade...</div>
+			<div class="owh-rdap-loading-submessage">Isso pode levar alguns segundos</div>
+		</div>
+	</div>
+
+</div>
+
+	<?php if ( ! $results_page ) : ?>
+	<div class="owh-rdap-config-warning" style="margin-top: 15px; padding: 12px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; color: #856404;">
+		<strong>⚠️ Configuração Necessária:</strong> 
+		Para que a pesquisa funcione corretamente, o administrador precisa configurar uma "Página de Resultados da Pesquisa" nas configurações do plugin.
+	</div>
+	<div id="owh-rdap-search-results" class="owh-rdap-search-results" style="display: none;"></div>
+	<?php endif; ?>
+
+<style>
+.owh-rdap-search-container {
+	max-width: 600px;
+	margin: 0 auto;
+	padding: 20px;
+	position: relative;
+}
+
+.owh-rdap-search-wrapper {
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+}
+
+.owh-rdap-search-input-wrapper {
+	display: flex;
+	gap: 10px;
+	margin-bottom: 15px;
+}
+
+.owh-rdap-domain-input {
+	flex: 1;
+	padding: 12px 16px;
+	border: 2px solid #ddd;
+	border-radius: 6px;
+	font-size: 16px;
+	transition: border-color 0.3s ease;
+}
+
+.owh-rdap-domain-input:focus {
+	outline: none;
+	border-color: #0073aa;
+	box-shadow: 0 0 0 1px #0073aa;
+}
+
+.owh-rdap-domain-input.searching {
+	border-color: #0073aa;
+	box-shadow: 0 0 0 1px #0073aa;
+	background: linear-gradient(90deg, #f9f9f9 0%, #fff 50%, #f9f9f9 100%);
+	background-size: 200% 100%;
+	animation: owh-rdap-pulse-background 2s ease-in-out infinite;
+}
+
+.owh-rdap-search-button {
+	padding: 12px 24px;
+	background: #0073aa;
+	color: white;
+	border: none;
+	border-radius: 6px;
+	font-size: 16px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	min-width: 120px;
+	position: relative;
+	overflow: hidden;
+}
+
+.owh-rdap-search-button:hover {
+	background: #005a87;
+}
+
+.owh-rdap-search-button:disabled {
+	background: #ccc;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.owh-rdap-search-button:disabled:hover {
+	background: #ccc;
+	transform: none;
+}
+
+.owh-rdap-search-loading {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	opacity: 0;
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-search-loading.active {
+	opacity: 1;
+}
+
+.owh-rdap-search-text {
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-search-text.hidden {
+	opacity: 0;
+}
+
+.owh-rdap-loading-text {
+	font-size: 14px;
+	font-weight: 500;
+}
+
+.owh-rdap-spinner {
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-top: 2px solid white;
+	border-radius: 50%;
+	animation: owh-rdap-spin 1s linear infinite;
+}
+
+/* Loading Overlay */
+.owh-rdap-loading-overlay {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(255, 255, 255, 0.95);
+	backdrop-filter: blur(2px);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	z-index: 1000;
+	transition: opacity 0.3s ease;
+}
+
+.owh-rdap-loading-content {
+	text-align: center;
+	padding: 30px 20px;
+	animation: owh-rdap-fade-in-up 0.4s ease-out;
+}
+
+.owh-rdap-loading-spinner-large {
+	width: 50px;
+	height: 50px;
+	border: 4px solid rgba(0, 115, 170, 0.1);
+	border-top: 4px solid #0073aa;
+	border-right: 4px solid rgba(0, 115, 170, 0.3);
+	border-radius: 50%;
+	animation: owh-rdap-spin 1.2s linear infinite;
+	margin: 0 auto 20px;
+	box-shadow: 0 0 20px rgba(0, 115, 170, 0.1);
+}
+
+.owh-rdap-loading-message {
+	font-size: 18px;
+	font-weight: 600;
+	color: #0073aa;
+	margin-bottom: 8px;
+	letter-spacing: 0.5px;
+}
+
+.owh-rdap-loading-submessage {
+	font-size: 14px;
+	color: #666;
+	font-weight: 400;
+	opacity: 0.8;
+}
+
+@keyframes owh-rdap-spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
+
+@keyframes owh-rdap-fade-in-up {
+	0% { 
+		opacity: 0; 
+		transform: translateY(20px); 
+	}
+	100% { 
+		opacity: 1; 
+		transform: translateY(0); 
+	}
+}
+
+@keyframes owh-rdap-pulse-background {
+	0%, 100% { 
+		background-position: 0% 50%; 
+	}
+	50% { 
+		background-position: 100% 50%; 
+	}
+}
+
+.owh-rdap-search-examples {
+	text-align: center;
+	margin-top: 15px;
+}
+
+.owh-rdap-examples-text {
+	color: #666;
+	font-size: 14px;
+}
+
+.owh-rdap-example-domain {
+	color: #0073aa;
+	cursor: pointer;
+	text-decoration: underline;
+}
+
+.owh-rdap-example-domain:hover {
+	color: #005a87;
+}
+
+.owh-rdap-search-results {
+	background: #fff;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+	margin-top: 20px;
+}
+
+.owh-rdap-result-available {
+	color: #46b450;
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 15px;
+}
+
+.owh-rdap-result-unavailable {
+	color: #dc3232;
+	font-size: 18px;
+	font-weight: 600;
+	margin-bottom: 15px;
+}
+
+.owh-rdap-result-error {
+	color: #dc3232;
+	font-size: 16px;
+	margin-bottom: 15px;
+}
+
+.owh-rdap-buy-button {
+	display: inline-block;
+	padding: 12px 24px;
+	background: #46b450;
+	color: white !important;
+	text-decoration: none;
+	border-radius: 6px;
+	font-weight: 600;
+	transition: background-color 0.3s ease;
+}
+
+.owh-rdap-buy-button:hover {
+	background: #3ba943;
+	color: white !important;
+}
+
+.owh-rdap-buy-button .dashicons {
+	margin-right: 5px;
+	vertical-align: middle;
+}
+
+@media (max-width: 600px) {
+	.owh-rdap-search-input-wrapper {
+		flex-direction: column;
+	}
+	
+	.owh-rdap-search-button {
+		width: 100%;
+	}
+}
+</style>

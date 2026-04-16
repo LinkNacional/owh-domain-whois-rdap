@@ -1,0 +1,41 @@
+{
+    "request": {
+        "url": "https://apisandbox.cieloecommerce.cielo.com.br/1/sales/",
+        "current_time": "2026-01-07 16:45:48",
+        "body": {
+            "MerchantOrderId": "lkn_pro_cielo_1",
+            "Customer": {
+                "Name": " ",
+                "Identity": "222********-60",
+                "IdentityType": "CPF"
+            },
+            "Payment": {
+                "Type": "Pix",
+                "Amount": 11500,
+                "QrCode": {
+                    "Expiration": 7200
+                }
+            }
+        },
+        "header": {
+            "Content-Type": "application/json",
+            "MerchantId": "7b66ca89-7d99-43cd-b17d-e75a700345bc",
+            "MerchantKey": "WUIWPPGAARNWMNFYJKZVKFLAJFGCNKOXGLWGKJNR"
+        }
+    },
+    "response": {
+        "headers": {},
+        "body": "[n  {n    "Code": 129,n    "Message": "Affiliation not found"n  }n]",
+        "response": {
+            "code": 400,
+            "message": "Bad Request"
+        },
+        "cookies": [],
+        "filename": null,
+        "http_response": {
+            "data": null,
+            "headers": null,
+            "status": null
+        }
+    }
+}

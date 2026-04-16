@@ -56,6 +56,13 @@ class ServiceContainer
             return new BootstrapFileHandler();
         }, true);
 
+        // Register TldValidator
+        $this->bind('TldValidator', function () {
+            return new TldValidator(
+                $this->get('BootstrapFileHandler')
+            );
+        }, true);
+
         // Register RdapClient
         $this->bind('RdapClient', function () {
             return new RdapClient();
@@ -98,7 +105,7 @@ class ServiceContainer
     public function get(string $name)
     {
         if (!isset($this->services[$name])) {
-            throw new \Exception("Service {$name} not found in container");
+            throw new \Exception('Service not found in container');
         }
 
         $service = $this->services[$name];

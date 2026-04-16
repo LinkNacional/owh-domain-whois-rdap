@@ -66,7 +66,7 @@ class AvailabilityService
     }
 
     /**
-     * Check domain availability using universal RDAP.org endpoint
+     * Check domain availability using universal RDAP.org endpoint or custom TLD configuration
      *
      * @param string $domain
      * @return DomainResult
@@ -86,18 +86,62 @@ class AvailabilityService
 
         $domain = strtolower(trim($domain));
 
-        // Check cache first
-        $cached_result = $this->cacheManager->get($domain);
-        if ($cached_result !== false) {
-            return DomainResult::fromArray($cached_result);
+        // Extract TLD from domain
+        $tld = $this->extractTld($domain);
+        if (!$tld) {
+            return new DomainResult(
+                $domain,
+                false,
+                'TLD não encontrado',
+                null,
+                'Não foi possível extrair a TLD do domínio'
+            );
         }
 
-        // Use universal RDAP.org endpoint for all domains
-        $rdapServer = 'https://rdap.org';
+        // Check for custom TLD configuration first
+        $customRdapUrl = $this->settingsManager->getCustomRdapUrl($tld);
+        if ($customRdapUrl) {
+            // Use custom RDAP URL for this TLD
+            $rdapServer = $customRdapUrl;
+        } else {
+            // Validate TLD using IANA list
+            $isValidTld = $this->bootstrapHandler->isValidTld($tld);
+            if (!$isValidTld) {
+                return new DomainResult(
+                    $domain,
+                    false,
+                    'TLD não suportado',
+                    null,
+                    sprintf('A extensão "%s" não está na lista oficial da IANA', $tld)
+                );
+            }
+            
+            // Use universal RDAP.org endpoint for standard TLDs
+            $rdapServer = 'https://rdap.org/domain/';
+        }
 
-        // Query universal RDAP server
+        // Check if TLD is enabled for search
+        if (!$this->isTldEnabled($tld)) {
+            return new DomainResult(
+                $domain,
+                false,
+                'TLD_DISABLED', // Status específico para TLD desabilitada
+                null,
+                sprintf('A extensão "%s" está desabilitada nas configurações do plugin', $tld)
+            );
+        }
+
+        // Query RDAP server (custom or universal)
         $rdapResponse = $this->rdapClient->queryDomain($domain, $rdapServer);
-        if (!$rdapResponse) {
+        if ($rdapResponse['status_code'] == null) {
+            error_log(json_encode(
+                array(
+                    'Erro ao conectar com o servidor RDAP: ',
+                    'Domain: ' => $domain,
+                    'RDAP Server: ' => $rdapServer,
+                    'Response: ' => json_encode($rdapResponse)
+                )
+            ));
             return new DomainResult(
                 $domain,
                 false,
@@ -217,5 +261,71 @@ class AvailabilityService
             $result->toArray(),
             $cacheTime
         );
+    }
+
+    /**
+     * Extract TLD from domain, checking custom TLDs first
+     *
+     * @param string $domain
+     * @return string|null
+     */
+    private function extractTld(string $domain): ?string
+    {
+        $parts = explode('.', $domain);
+        
+        if (count($parts) < 2) {
+            return null;
+        }
+
+        // For multi-part domains, check if there's a custom TLD configuration for longer TLD combinations
+        if (count($parts) >= 3) {
+            // Check for custom configurations starting from the longest possible TLD
+            for ($i = 2; $i <= count($parts); $i++) {
+                $potentialTld = implode('.', array_slice($parts, -$i));
+                
+                // Check if this potential TLD has a custom configuration
+                if ($this->settingsManager && $this->settingsManager->hasCustomTld($potentialTld)) {
+                    return $potentialTld;
+                }
+            }
+            
+            // No custom TLD found, check standard IANA logic
+            // Try the top-level domain first (e.g., 'br' from 'example.com.br')
+            $topLevel = end($parts);
+            if ($this->bootstrapHandler && $this->bootstrapHandler->isValidTld($topLevel)) {
+                return $topLevel;
+            }
+            
+            // If top-level doesn't work, try the full last two parts (e.g., 'com.br')
+            $fullTld = implode('.', array_slice($parts, -2));
+            if ($this->bootstrapHandler && $this->bootstrapHandler->isValidTld($fullTld)) {
+                return $fullTld;
+            }
+        }
+        
+        // For standard domains or fallback, return the last part
+        return end($parts);
+    }
+ 
+    /**
+     * Check if TLD is enabled for search
+     *
+     * @param string $tld
+     * @return bool
+     */
+    private function isTldEnabled(string $tld): bool
+    {
+        $tld = '.' . ltrim($tld, '.');
+        
+        // Get TLD configuration (only stores disabled TLDs)
+        $tldConfig = \get_option('owh_domain_whois_rdap_tlds_config', array());
+        
+        // If TLD is in configuration, it means it was explicitly disabled
+        if (isset($tldConfig[$tld])) {
+            return (bool) $tldConfig[$tld]['enabled']; // This should be false for disabled TLDs
+        }
+        
+        // If TLD not in configuration, it means it's enabled (default behavior)
+        return true;
     }
 }

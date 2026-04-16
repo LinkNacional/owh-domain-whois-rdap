@@ -8,7 +8,7 @@ on:
 env:
   PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
-  DEPLOY_TAG: "2.9.0"
+  DEPLOY_TAG: "1.2.2"
 jobs:
   release-build:
     runs-on: ubuntu-latest
@@ -17,6 +17,14 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Run composer install
+      uses: php-actions/composer@v6
+      with:
+        php_version: ${{ env.PHP_VERSION }}
+        working_dir: "."
+        args: --ignore-platform-reqs
+        command: install
+        dev: no
 
     #- name: Executar Plugin Check com configurações personalizadas
     #  uses: wordpress/plugin-check-action@v1
@@ -51,16 +59,32 @@ jobs:
         [ -d ./includes ] && mv ./includes ./build/${{ env.PLUGIN_NAME }}/ || echo "includes not found"
         [ -d ./public ] && mv ./public ./build/${{ env.PLUGIN_NAME }}/ || echo "public not found"
         [ -d ./src ] && mv ./src ./build/${{ env.PLUGIN_NAME }}/ || echo "src not found"
+        [ -d ./data ] && mv ./data ./build/${{ env.PLUGIN_NAME }}/ || echo "data not found"
         
         # Move optional directories if they exist
         [ -d ./assets ] && mv ./assets ./build/${{ env.PLUGIN_NAME }}/ || echo "assets not found"
         [ -d ./screenshots ] && mv ./screenshots ./build/${{ env.PLUGIN_NAME }}/ || echo "screenshots not found"
+        [ -d ./languages ] && mv ./languages ./build/${{ env.PLUGIN_NAME }}/ || echo "languages not found"
+        
+        # Copy composer files and vendor directory (using cp to avoid permission issues)
+        if [ -d ./vendor ]; then
+          cp -r ./vendor ./build/${{ env.PLUGIN_NAME }}/ || echo "Failed to copy vendor"
+        else
+          echo "vendor not found"
+        fi
+        
+        [ -f ./composer.json ] && cp ./composer.json ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.json not found"
+        [ -f ./composer.lock ] && cp ./composer.lock ./build/${{ env.PLUGIN_NAME }}/ || echo "composer.lock not found"
         
         # Move PHP files
-        mv *.php ./build/${{ env.PLUGIN_NAME }}/ 2>/dev/null || echo "No PHP files found"
+        find . -maxdepth 1 -name "*.php" -exec cp {} ./build/${{ env.PLUGIN_NAME }}/ \; 2>/dev/null || echo "No PHP files found"
         
-        find ./build -type f -exec chmod 0644 {} +
-        find ./build -type d -exec chmod 0755 {} +
+        # Copy documentation files
+        [ -f ./readme.txt ] && cp ./readme.txt ./build/${{ env.PLUGIN_NAME }}/ || echo "readme.txt not found"
+        
+        # Set proper permissions
+        sudo find ./build -type f -exec chmod 0644 {} + || true
+        sudo find ./build -type d -exec chmod 0755 {} + || true
 
     - name: Archive Release
       uses: thedoctor0/zip-release@master
