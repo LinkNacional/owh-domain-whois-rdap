@@ -6,7 +6,7 @@ on:
 env:
   PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
-  DEPLOY_TAG: "5.4.0"
+  DEPLOY_TAG: "1.2.4"
 
 jobs:
   deploy-to-wp:
