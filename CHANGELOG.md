@@ -1,3 +1,6 @@
+# 1.2.5
+* Alterando tags.
+
 # 1.2.4
 * Correção de erros do plugin checker.
 
