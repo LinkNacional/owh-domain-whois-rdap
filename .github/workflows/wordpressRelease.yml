@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 env:
-  PLUGIN_NAME: fee-recovery-for-givewp
+  PLUGIN_NAME: owh-domain-whois-rdap
   PHP_VERSION: "7.4"
   DEPLOY_TAG: "5.4.0"
 
@@ -29,7 +29,7 @@ jobs:
       - name: Prepare plugin folder
         run: |
           mkdir -p build/${{ env.PLUGIN_NAME }}
-          mv ./admin ./data ./includes ./languages ./public ./src *.php *.txt ./build/${{ env.PLUGIN_NAME }}
+          mv ./admin ./data ./includes ./languages ./public ./src ./templates *.php *.txt ./build/${{ env.PLUGIN_NAME }}
           cp -r vendor build/${{ env.PLUGIN_NAME }}/vendor
           find ./build -type f -exec chmod 0644 {} +
           find ./build -type d -exec chmod 0755 {} +
@@ -38,8 +38,8 @@ jobs:
         uses: 10up/action-wordpress-plugin-deploy@stable
         env:
           VERSION: ${{ env.DEPLOY_TAG }}
-          SLUG: fee-recovery-for-givewp
+          SLUG: owh-domain-whois-rdap
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          ASSETS_DIR: build/${{ env.PLUGIN_NAME }}/Includes/assets/WordpressAssets
+          ASSETS_DIR: build/${{ env.PLUGIN_NAME }}/includes/assets/WordpressAssets
           BUILD_DIR: build/${{ env.PLUGIN_NAME }}
