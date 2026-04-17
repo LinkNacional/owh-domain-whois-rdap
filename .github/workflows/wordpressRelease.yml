@@ -26,10 +26,15 @@ jobs:
           command: install
           dev: no
 
+      - name: Set safe Git directory
+        run: git config --global --add safe.directory /app
+
       - name: Prepare plugin folder
         run: |
           mkdir -p build/${{ env.PLUGIN_NAME }}
-          mv ./admin ./data ./includes ./languages ./public ./src ./templates *.php *.txt ./build/${{ env.PLUGIN_NAME }}
+          mv ./admin ./data ./includes ./public ./src *.php *.txt ./build/${{ env.PLUGIN_NAME }}
+          [ -d ./languages ] && mv ./languages ./build/${{ env.PLUGIN_NAME }}
+          [ -d ./templates ] && mv ./templates ./build/${{ env.PLUGIN_NAME }}
           cp -r vendor build/${{ env.PLUGIN_NAME }}/vendor
           find ./build -type f -exec chmod 0644 {} +
           find ./build -type d -exec chmod 0755 {} +
