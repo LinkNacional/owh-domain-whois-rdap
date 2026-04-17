@@ -1,3 +1,9 @@
+# 1.2.4
+* Correção de erros do plugin checker.
+
+# 1.2.3
+* Correção de erros do plugin checker.
+
 # 1.2.2
 * Correção de erros do plugin checker.
 
