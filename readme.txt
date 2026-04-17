@@ -1,7 +1,7 @@
 === OWH Domain WHOIS RDAP ===
 Contributors: linknacional
 Donate link: https://www.linknacional.com.br/wordpress/plugins/
-Tags: domains, whois, rdap, domain search, domain availability, dns, domain checker
+Tags: domains, whois, rdap, domain search, dns
 Requires at least: 5.0
 Tested up to: 6.9
 Stable tag: 1.2.4
