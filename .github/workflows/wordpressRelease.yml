@@ -46,5 +46,5 @@ jobs:
           SLUG: owh-domain-whois-rdap
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
-          ASSETS_DIR: build/${{ env.PLUGIN_NAME }}/includes/assets/WordpressAssets
+          ASSETS_DIR: build/${{ env.PLUGIN_NAME }}/includes/assets/wordpressAssets
           BUILD_DIR: build/${{ env.PLUGIN_NAME }}
