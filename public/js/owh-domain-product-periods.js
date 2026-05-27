@@ -51,7 +51,6 @@
             
             
             if (!productId || !period) {
-                console.log('Missing productId or period');
                 return;
             }
 
@@ -79,7 +78,6 @@
                     }
                 },
                 error: (xhr, status, error) => {
-                    console.log('AJAX error:', { xhr, status, error }); // Debug
                     $priceDisplay.removeClass('loading').text('Erro ao carregar preço');
                 }
             });

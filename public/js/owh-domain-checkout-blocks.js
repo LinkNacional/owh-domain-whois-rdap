@@ -290,12 +290,10 @@
                         }
                     });
                 } else {
-                    console.log('REST API response format unexpected:', data);
+                    console.error('REST API response format unexpected:', data);
                 }
             })
             .catch(error => {
-                console.log('REST API failed, trying AJAX fallback:', error);
-                
                 // Fallback to AJAX if available
                 if (window.owh_ajax_url && window.owh_domain_nonce) {
                     const formData = new FormData();
@@ -318,10 +316,10 @@
                         }
                     })
                     .catch(ajaxError => {
-                        console.log('Both REST API and AJAX failed:', ajaxError);
+                        console.error('Both REST API and AJAX failed:', ajaxError);
                     });
                 } else {
-                    console.log('No AJAX configuration available for fallback');
+                    console.error('No AJAX configuration available for fallback');
                 }
             });
         }
