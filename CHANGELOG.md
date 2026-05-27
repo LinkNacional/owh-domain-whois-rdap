@@ -1,3 +1,6 @@
+# 1.2.6 - 27/05/26
+* NOVO: Ícones e banners.
+
 # 1.2.5
 * Alterando tags.
 
