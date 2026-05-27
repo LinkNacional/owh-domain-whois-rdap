@@ -140,6 +140,9 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.2.7 - 2026/05/27 =
+* NEW: Banners.
+
 = 1.2.6 - 2026/05/27 =
 * NEW: Icons and banners.
 
