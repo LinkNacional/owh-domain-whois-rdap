@@ -1,3 +1,6 @@
+# 1.2.7 - 27/05/26
+* NOVO: Banners.
+
 # 1.2.6 - 27/05/26
 * NOVO: Ícones e banners.
 

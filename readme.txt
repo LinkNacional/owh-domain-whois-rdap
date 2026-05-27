@@ -4,7 +4,7 @@ Donate link: https://www.linknacional.com.br/wordpress/plugins/
 Tags: domains, whois, rdap, search, dns
 Requires at least: 5.0
 Tested up to: 6.9
-Stable tag: 1.2.6
+Stable tag: 1.2.7
 Requires PHP: 7.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -140,6 +140,9 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.2.7 - 2026/05/27 =
+* NEW: Banners.
+
 = 1.2.6 - 2026/05/27 =
 * NEW: Icons and banners.
 
