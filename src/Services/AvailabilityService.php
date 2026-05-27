@@ -134,14 +134,6 @@ class AvailabilityService
         // Query RDAP server (custom or universal)
         $rdapResponse = $this->rdapClient->queryDomain($domain, $rdapServer);
         if ($rdapResponse['status_code'] == null) {
-            error_log(json_encode(
-                array(
-                    'Erro ao conectar com o servidor RDAP: ',
-                    'Domain: ' => $domain,
-                    'RDAP Server: ' => $rdapServer,
-                    'Response: ' => json_encode($rdapResponse)
-                )
-            ));
             return new DomainResult(
                 $domain,
                 false,

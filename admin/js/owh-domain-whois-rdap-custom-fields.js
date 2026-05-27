@@ -19,10 +19,6 @@
         // Check if required variables are available
         if (typeof owhCustomFieldsAjax === 'undefined') {
             console.error('owhCustomFieldsAjax not found. Custom fields functionality may not work.');
-            console.log('Available variables:', {
-                ajaxurl: typeof ajaxurl,
-                window_ajaxurl: typeof window.ajaxurl
-            });
             showStatus('Erro: Configuração não encontrada. Recarregue a página.', 'error');
             return;
         }
@@ -174,7 +170,7 @@
                         errorMessage = errorResponse.data || errorMessage;
                     }
                 } catch (e) {
-                    console.log('Could not parse error response, using default message');
+                    console.error('Could not parse error response, using default message');
                 }
                 
                 showStatus(errorMessage, 'info');

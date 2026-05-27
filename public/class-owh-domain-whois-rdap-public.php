@@ -802,8 +802,6 @@ class Owh_Domain_Whois_Rdap_Public {
 					$cart_item_data['domain_price'] = $price;
 				}
 			}
-		} else {
-			error_log( 'Domain cart item data - No domain_period in POST data' );
 		}
 
 		// Get domain name from URL parameter (when coming from search results) or form
