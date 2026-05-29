@@ -1959,35 +1959,41 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @return float Corrected subtotal
 	 */
 	public function filter_cart_subtotal( $subtotal ) {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return $subtotal;
+		}
+
+		// If the cart contains any non-domain product, let WooCommerce handle
+		// the subtotal natively so shipping, fees and taxes are not lost.
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( ! isset( $cart_item['data'] ) || ! ( $cart_item['data'] instanceof WC_Product_Domain ) ) {
+				return $subtotal;
+			}
+		}
+
 		$correct_subtotal = 0;
-		
-		if ( function_exists( 'WC' ) && WC()->cart ) {
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				if ( isset( $cart_item['data'] ) && 
-					$cart_item['data'] instanceof WC_Product_Domain && 
-					isset( $cart_item['domain_period'] ) ) {
-					
-					$period = intval( $cart_item['domain_period'] );
-					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
-					$pricing_matrix = $cart_item['data']->get_pricing_matrix();
-					
-					if ( isset( $pricing_matrix[$period][$action] ) ) {
-						$correct_price = floatval( $pricing_matrix[$period][$action] );
-						$correct_subtotal += $correct_price * intval( $cart_item['quantity'] );
-					} else {
-						// Fallback para linha subtotal existente ou 0 se não existir
-						$correct_subtotal += isset( $cart_item['line_subtotal'] ) ? floatval( $cart_item['line_subtotal'] ) : 0;
-					}
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( isset( $cart_item['data'] ) &&
+				$cart_item['data'] instanceof WC_Product_Domain &&
+				isset( $cart_item['domain_period'] ) ) {
+
+				$period = intval( $cart_item['domain_period'] );
+				$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+				$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+
+				if ( isset( $pricing_matrix[ $period ][ $action ] ) ) {
+					$correct_price    = floatval( $pricing_matrix[ $period ][ $action ] );
+					$correct_subtotal += $correct_price * intval( $cart_item['quantity'] );
 				} else {
-					// Fallback para linha subtotal existente ou 0 se não existir
 					$correct_subtotal += isset( $cart_item['line_subtotal'] ) ? floatval( $cart_item['line_subtotal'] ) : 0;
 				}
+			} else {
+				$correct_subtotal += isset( $cart_item['line_subtotal'] ) ? floatval( $cart_item['line_subtotal'] ) : 0;
 			}
-			
-			return $correct_subtotal;
 		}
-		
-		return $subtotal;
+
+		return $correct_subtotal;
 	}
 	
 	/**
@@ -1998,35 +2004,41 @@ class Owh_Domain_Whois_Rdap_Public {
 	 * @return float Corrected total
 	 */
 	public function filter_cart_total( $total ) {
+		if ( ! function_exists( 'WC' ) || ! WC()->cart ) {
+			return $total;
+		}
+
+		// If the cart contains any non-domain product, let WooCommerce handle
+		// the total natively so shipping, fees and taxes are not lost.
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( ! isset( $cart_item['data'] ) || ! ( $cart_item['data'] instanceof WC_Product_Domain ) ) {
+				return $total;
+			}
+		}
+
 		$correct_total = 0;
-		
-		if ( function_exists( 'WC' ) && WC()->cart ) {
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				if ( isset( $cart_item['data'] ) && 
-					$cart_item['data'] instanceof WC_Product_Domain && 
-					isset( $cart_item['domain_period'] ) ) {
-					
-					$period = intval( $cart_item['domain_period'] );
-					$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
-					$pricing_matrix = $cart_item['data']->get_pricing_matrix();
-					
-					if ( isset( $pricing_matrix[$period][$action] ) ) {
-						$correct_price = floatval( $pricing_matrix[$period][$action] );
-						$correct_total += $correct_price * intval( $cart_item['quantity'] );
-					} else {
-						// Fallback para linha total existente ou 0 se não existir
-						$correct_total += isset( $cart_item['line_total'] ) ? floatval( $cart_item['line_total'] ) : 0;
-					}
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			if ( isset( $cart_item['data'] ) &&
+				$cart_item['data'] instanceof WC_Product_Domain &&
+				isset( $cart_item['domain_period'] ) ) {
+
+				$period = intval( $cart_item['domain_period'] );
+				$action = isset( $cart_item['domain_action'] ) ? $cart_item['domain_action'] : 'register';
+				$pricing_matrix = $cart_item['data']->get_pricing_matrix();
+
+				if ( isset( $pricing_matrix[ $period ][ $action ] ) ) {
+					$correct_price  = floatval( $pricing_matrix[ $period ][ $action ] );
+					$correct_total += $correct_price * intval( $cart_item['quantity'] );
 				} else {
-					// Fallback para linha total existente ou 0 se não existir
 					$correct_total += isset( $cart_item['line_total'] ) ? floatval( $cart_item['line_total'] ) : 0;
 				}
+			} else {
+				$correct_total += isset( $cart_item['line_total'] ) ? floatval( $cart_item['line_total'] ) : 0;
 			}
-			
-			return $correct_total;
 		}
-		
-		return $total;
+
+		return $correct_total;
 	}
 
 	/**
