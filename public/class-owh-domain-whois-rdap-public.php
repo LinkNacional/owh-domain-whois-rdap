@@ -1474,8 +1474,10 @@ class Owh_Domain_Whois_Rdap_Public {
 				$normalized_payment_data = $payment_data;
 			}
 		} else {
-			// Fallback: use as-is
-			$normalized_payment_data = $payment_data;
+			// Fallback: cast objects to array; leave null/scalar as empty array (initialized above)
+			if ( is_object( $payment_data ) ) {
+				$normalized_payment_data = (array) $payment_data;
+			}
 		}
 		
 		foreach ( $normalized_payment_data as $key => $value ) {
