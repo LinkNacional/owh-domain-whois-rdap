@@ -1,3 +1,6 @@
+# 1.2.8 - 29/05/26
+* Ajuste: Warning de produto + carregamento de script no Gutenberg.
+
 # 1.2.7 - 27/05/26
 * NOVO: Banners.
 
