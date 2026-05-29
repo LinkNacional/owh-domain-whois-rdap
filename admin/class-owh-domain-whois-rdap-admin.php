@@ -292,8 +292,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			return;
 		}
 
-		// Enqueue block scripts
-		wp_enqueue_script(
+		wp_register_script(
 			'owh-rdap-blocks',
 			plugin_dir_url( __FILE__ ) . 'js/owh-domain-whois-rdap-blocks.js',
 			array( 'wp-blocks', 'wp-i18n', 'wp-element', 'wp-editor', 'wp-components', 'wp-server-side-render' ),
