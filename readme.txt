@@ -140,6 +140,9 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.2.10 - 2026/06/01 =
+* Tweak: Minimum required PHP version bumped to 8.2.
+
 = 1.2.9 - 2026/05/28 =
 * Fix: Shipping and fees ignored in checkout total calculation.
 
