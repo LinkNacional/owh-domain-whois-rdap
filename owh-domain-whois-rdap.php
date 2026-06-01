@@ -17,6 +17,7 @@
  * Plugin URI:        https://github.com/linknacional/owh-domain-whois-rdap
  * Description:       Verificação de disponibilidade de domínios via protocolo RDAP.
  * Version:           1.2.9
+ * Requires PHP:      8.2
  * Author:            Link Nacional
  * Author URI:        https://linknacional.com.br
  * License:           GPL-2.0+
@@ -28,6 +29,23 @@
 // If this file is called directly, abort.
 if ( ! defined( 'WPINC' ) ) {
 	die;
+}
+
+/**
+ * Check minimum PHP version requirement.
+ */
+if ( version_compare( PHP_VERSION, '8.2', '<' ) ) {
+	add_action( 'admin_notices', function() {
+		echo '<div class="notice notice-error"><p>' .
+			sprintf(
+				/* translators: 1: required PHP version, 2: current PHP version */
+				esc_html__( 'OWH Domain WHOIS RDAP requires PHP %1$s or higher. Your server is running PHP %2$s.', 'owh-domain-whois-rdap' ),
+				'8.2',
+				PHP_VERSION
+			) .
+			'</p></div>';
+	} );
+	return;
 }
 
 /**
