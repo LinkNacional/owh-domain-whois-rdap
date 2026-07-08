@@ -136,14 +136,6 @@ class Owh_Domain_Whois_Rdap_Admin {
 			global $post_type;
 			if ( $post_type === 'product' ) {
 				wp_enqueue_style(
-					$this->plugin_name . '-domain-product-admin',
-					plugin_dir_url( __FILE__ ) . 'css/owh-domain-product-admin.css',
-					array(),
-					$this->version,
-					'all'
-				);
-				
-				wp_enqueue_style(
 					$this->plugin_name . '-pricing-matrix',
 					plugin_dir_url( __FILE__ ) . 'css/owh-domain-pricing-matrix.css',
 					array(),
@@ -1652,7 +1644,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 					<div class="notice notice-warning inline">
 						<p>
 							<?php esc_html_e( 'Nenhum campo customizado foi criado ainda.', 'owh-domain-whois-rdap' ); ?>
-							<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap#custom-fields' )); ?>" target="_blank">
+							<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap-settings#custom-fields' )); ?>" target="_blank">
 								<?php esc_html_e( 'Clique aqui para criar campos customizados', 'owh-domain-whois-rdap' ); ?>
 							</a>
 						</p>
