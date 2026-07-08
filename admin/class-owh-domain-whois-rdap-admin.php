@@ -256,8 +256,9 @@ class Owh_Domain_Whois_Rdap_Admin {
 			
 			// Localize script for TLDs grid AJAX
 			wp_localize_script( $this->plugin_name . '-tlds-grid', 'owh_admin_ajax', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce' => wp_create_nonce( 'owh_admin_ajax_nonce' )
+				'ajax_url'        => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'owh_admin_ajax_nonce' ),
+				'integration_type' => get_option( 'owh_rdap_integration_type', 'none' ),
 			));
 			
 			// Custom Fields script
@@ -2173,6 +2174,12 @@ class Owh_Domain_Whois_Rdap_Admin {
 			wp_send_json_error( 'WooCommerce is not active' );
 		}
 
+		// Check if integration type is set to WooCommerce
+		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+		if ( 'woocommerce' !== $integration_type ) {
+			wp_send_json_error( 'Conversão indisponível. O Tipo de Integração não está configurado como WooCommerce.' );
+		}
+
 		// Get and validate TLD
 		if ( ! isset( $_POST['tld'] ) || empty( $_POST['tld'] ) ) {
 			wp_send_json_error( 'TLD is required' );
@@ -2253,6 +2260,12 @@ class Owh_Domain_Whois_Rdap_Admin {
 		// Check if WooCommerce is active
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			wp_send_json_error( 'WooCommerce is not active' );
+		}
+
+		// Check if integration type is set to WooCommerce
+		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+		if ( 'woocommerce' !== $integration_type ) {
+			wp_send_json_error( 'Status de produto indisponível. O Tipo de Integração não está configurado como WooCommerce.' );
 		}
 
 		// Get and validate TLDs
