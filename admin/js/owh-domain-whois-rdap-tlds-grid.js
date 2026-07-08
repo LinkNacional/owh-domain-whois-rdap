@@ -139,14 +139,33 @@
                     formatter: function(cell, row) {
                         const tld = row.cells[0].data;
                         const sanitizedTld = tld.replace('.', '');
+                        const isWoocommerce = owh_admin_ajax.integration_type === 'woocommerce';
+
+                        if (isWoocommerce) {
+                            return gridjs.html(`
+                                <div class="product-actions" data-tld="${tld}">
+                                    <button type="button"
+                                            class="button button-small button-primary convert-to-product-btn"
+                                            data-tld="${tld}">
+                                        Converter para Produto
+                                    </button>
+                                    <div id="product-status-${sanitizedTld}" class="product-status"></div>
+                                </div>
+                            `);
+                        }
+
                         return gridjs.html(`
                             <div class="product-actions" data-tld="${tld}">
-                                <button type="button" 
-                                        class="button button-small button-primary convert-to-product-btn" 
-                                        data-tld="${tld}">
+                                <button type="button"
+                                        class="button button-small convert-to-product-btn"
+                                        data-tld="${tld}"
+                                        disabled
+                                        title="Integração WooCommerce não está ativa. Altere o Tipo de Integração nas configurações para WooCommerce.">
                                     Converter para Produto
                                 </button>
-                                <div id="product-status-${sanitizedTld}" class="product-status"></div>
+                                <div id="product-status-${sanitizedTld}" class="product-status">
+                                    <small style="color: #999;">Integração via WooCommerce desativada</small>
+                                </div>
                             </div>
                         `);
                     }
@@ -202,6 +221,13 @@
         // Add event handler for convert buttons after grid is rendered
         $(document).off('click', '.convert-to-product-btn').on('click', '.convert-to-product-btn', function(e) {
             e.preventDefault();
+
+            // Guard: só permite conversão se integração for WooCommerce
+            if (owh_admin_ajax.integration_type !== 'woocommerce') {
+                alert('A conversão para produto só está disponível quando o Tipo de Integração está configurado como WooCommerce.');
+                return;
+            }
+
             const tld = $(this).data('tld');
             convertTldToProduct(tld);
         });

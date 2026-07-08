@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/11.5/phpunit.xsd"
+    bootstrap="tests/bootstrap.php"
+    colors="true"
+    testdox="true"
+    stopOnFailure="false"
+    cacheDirectory=".phpunit.cache"
+>
+    <testsuites>
+        <testsuite name="OWH Domain WHOIS RDAP">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
+
+    <php>
+        <!-- Descomente para testes multisite -->
+        <!-- <env name="WP_MULTISITE" value="1"/> -->
+
+        <!-- Pula instalação repetida do WP (útil em loops rápidos de dev) -->
+        <!-- <env name="WP_TESTS_SKIP_INSTALL" value="1"/> -->
+    </php>
+
+    <source>
+        <include>
+            <directory>src</directory>
+            <directory>includes</directory>
+            <directory>admin</directory>
+            <directory>public</directory>
+        </include>
+    </source>
+</phpunit>

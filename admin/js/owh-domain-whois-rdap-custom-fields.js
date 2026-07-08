@@ -92,39 +92,35 @@
                     
                     if (response.success) {
                         customFieldsData = response.data || [];
-                        
+
                         // Ensure each field has an ID
                         customFieldsData.forEach(function(field, index) {
                             if (!field.id) {
                                 field.id = index + 1;
                             }
                         });
-                        
+
                         // Set next ID
                         if (customFieldsData.length > 0) {
                             nextFieldId = Math.max(...customFieldsData.map(f => f.id || 0)) + 1;
                         }
-                        
-                        initializeGrid();
+
                         hideStatus();
-                        
-                        // Show welcome message if no fields
+
                         if (customFieldsData.length === 0) {
                             showWelcomeMessage();
+                        } else {
+                            initializeGrid();
                         }
                     } else {
                         showStatus('Nenhum campo configurado ainda. Clique em "Adicionar Campo" para começar.', 'info');
-                        // Initialize empty grid anyway
                         customFieldsData = [];
-                        initializeGrid();
                         showWelcomeMessage();
                     }
                 } catch (e) {
                     console.error('Error parsing response:', e, response);
                     showStatus('Nenhum campo configurado ainda. Clique em "Adicionar Campo" para começar.', 'info');
-                    // Initialize empty grid anyway
                     customFieldsData = [];
-                    initializeGrid();
                     showWelcomeMessage();
                 }
             },
@@ -150,10 +146,11 @@
                         // Handle as success if we can parse it
                         if (response.success) {
                             customFieldsData = response.data || [];
-                            initializeGrid();
                             hideStatus();
                             if (customFieldsData.length === 0) {
                                 showWelcomeMessage();
+                            } else {
+                                initializeGrid();
                             }
                             return;
                         }
@@ -172,11 +169,9 @@
                 } catch (e) {
                     console.error('Could not parse error response, using default message');
                 }
-                
+
                 showStatus(errorMessage, 'info');
-                // Initialize empty grid anyway
                 customFieldsData = [];
-                initializeGrid();
                 showWelcomeMessage();
             }
         });
@@ -210,9 +205,21 @@
 
         const { Grid, h } = gridjs;
 
-        // Destroy existing grid if it exists
+        // Limpa o container antes de qualquer operação — evita
+        // "container element is not empty" do Grid.js ao navegar entre abas
+        const container = document.getElementById('custom-fields-grid');
+        if (container) {
+            container.innerHTML = '';
+        }
+
+        // Destroy existing grid if it exists (com try/catch contra estado interno corrompido)
         if (customFieldsGrid) {
-            customFieldsGrid.destroy();
+            try {
+                customFieldsGrid.destroy();
+            } catch (e) {
+                // Grid.js interno corrompido por render prévio que falhou — ignorar
+            }
+            customFieldsGrid = null;
         }
 
         // Prepare data for grid
@@ -386,7 +393,11 @@
     function removeField(fieldId) {
         if (confirm('Tem certeza que deseja remover este campo?')) {
             customFieldsData = customFieldsData.filter(f => f.id !== parseInt(fieldId));
-            initializeGrid();
+            if (customFieldsData.length === 0) {
+                showWelcomeMessage();
+            } else {
+                initializeGrid();
+            }
             showStatus('Campo removido.', 'success');
         }
     }

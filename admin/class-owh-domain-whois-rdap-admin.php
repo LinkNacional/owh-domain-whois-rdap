@@ -105,7 +105,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 				// Grid.js CSS
 				wp_enqueue_style(
 					'gridjs-theme',
-					plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/theme/mermaid.min.css',
+					plugin_dir_url( __FILE__ ) . 'css/gridjs-mermaid.min.css',
 					array(),
 					$this->version,
 					'all'
@@ -135,14 +135,6 @@ class Owh_Domain_Whois_Rdap_Admin {
 		if ( $pagenow === 'post.php' || $pagenow === 'post-new.php' ) {
 			global $post_type;
 			if ( $post_type === 'product' ) {
-				wp_enqueue_style(
-					$this->plugin_name . '-domain-product-admin',
-					plugin_dir_url( __FILE__ ) . 'css/owh-domain-product-admin.css',
-					array(),
-					$this->version,
-					'all'
-				);
-				
 				wp_enqueue_style(
 					$this->plugin_name . '-pricing-matrix',
 					plugin_dir_url( __FILE__ ) . 'css/owh-domain-pricing-matrix.css',
@@ -239,7 +231,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			// Grid.js library
 			wp_enqueue_script(
 				'gridjs',
-				plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/gridjs.umd.js',
+				plugin_dir_url( __FILE__ ) . 'js/gridjs.umd.js',
 				array(),
 				$this->version,
 				true
@@ -256,8 +248,9 @@ class Owh_Domain_Whois_Rdap_Admin {
 			
 			// Localize script for TLDs grid AJAX
 			wp_localize_script( $this->plugin_name . '-tlds-grid', 'owh_admin_ajax', array(
-				'ajax_url' => admin_url( 'admin-ajax.php' ),
-				'nonce' => wp_create_nonce( 'owh_admin_ajax_nonce' )
+				'ajax_url'        => admin_url( 'admin-ajax.php' ),
+				'nonce'           => wp_create_nonce( 'owh_admin_ajax_nonce' ),
+				'integration_type' => get_option( 'owh_rdap_integration_type', 'none' ),
 			));
 			
 			// Custom Fields script
@@ -942,7 +935,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'sanitize_callback' => 'absint'
 		) );
 		register_setting( 'owh_rdap_settings', 'owh_rdap_integration_type', array(
-			'sanitize_callback' => 'sanitize_key'
+			'sanitize_callback' => array( $this, 'sanitize_integration_type' )
 		) );
 		register_setting( 'owh_rdap_settings', 'owh_rdap_custom_url', array(
 			'sanitize_callback' => 'esc_url_raw'
@@ -1083,17 +1076,72 @@ class Owh_Domain_Whois_Rdap_Admin {
 	}
 
 	/**
+	 * Sanitize integration type value.
+	 *
+	 * Bloqueia 'woocommerce' se o plugin não estiver ativo.
+	 *
+	 * @param string $value Raw input.
+	 * @return string Sanitized value.
+	 */
+	public function sanitize_integration_type( $value ) {
+		$value = sanitize_key( $value );
+
+		if ( 'woocommerce' === $value && ! class_exists( 'WooCommerce' ) ) {
+			add_settings_error(
+				'owh_rdap_integration_type',
+				'woocommerce_inactive',
+				esc_html__( 'Não foi possível selecionar WooCommerce porque o plugin não está ativo.', 'owh-domain-whois-rdap' ),
+				'error'
+			);
+			return 'none';
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Integration type field callback
 	 */
 	public function integration_type_callback() {
 		$value = get_option( 'owh_rdap_integration_type', 'none' );
+		$woocommerce_active = class_exists( 'WooCommerce' );
+
+		// Se WooCommerce foi desativado mas a opção ainda está salva como woocommerce,
+		// reseta para 'none' e exibe aviso
+		if ( 'woocommerce' === $value && ! $woocommerce_active ) {
+			update_option( 'owh_rdap_integration_type', 'none' );
+			$value = 'none';
+			add_settings_error(
+				'owh_rdap_integration_type',
+				'woocommerce_inactive',
+				esc_html__( 'A integração foi redefinida para "Nenhum" porque o plugin WooCommerce não está mais ativo.', 'owh-domain-whois-rdap' ),
+				'warning'
+			);
+		}
+
 		echo '<select name="owh_rdap_integration_type" id="owh_rdap_integration_type">';
 		echo '<option value="none"' . selected( 'none', $value, false ) . '>' . esc_html__( 'Nenhum', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="custom"' . selected( 'custom', $value, false ) . '>' . esc_html__( 'Custom URL', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="whmcs"' . selected( 'whmcs', $value, false ) . '>' . esc_html__( 'WHMCS', 'owh-domain-whois-rdap' ) . '</option>';
-		echo '<option value="woocommerce"' . selected( 'woocommerce', $value, false ) . '>' . esc_html__( 'WooCommerce', 'owh-domain-whois-rdap' ) . '</option>';
+
+		// WooCommerce option: disabled se plugin não estiver ativo
+		if ( $woocommerce_active ) {
+			echo '<option value="woocommerce"' . selected( 'woocommerce', $value, false ) . '>' . esc_html__( 'WooCommerce', 'owh-domain-whois-rdap' ) . '</option>';
+		} else {
+			echo '<option value="woocommerce" disabled="disabled" style="color: #999;">'
+				. esc_html__( 'WooCommerce (plugin não está instalado/ativo)', 'owh-domain-whois-rdap' )
+				. '</option>';
+		}
+
 		echo '</select>';
-		echo '<p class="description">' . esc_html__( 'Selecione o seu sistema de vendas de domínios para criar a integração. Selecione "Nenhum" se não desejar exibir botões de compra.', 'owh-domain-whois-rdap' ) . '</p>';
+
+		if ( ! $woocommerce_active ) {
+			echo '<p class="description" style="color: #d63638;">'
+				. esc_html__( 'A opção WooCommerce está desabilitada porque o plugin WooCommerce não está instalado ou ativo. Instale e ative o WooCommerce para habilitar esta integração.', 'owh-domain-whois-rdap' )
+				. '</p>';
+		} else {
+			echo '<p class="description">' . esc_html__( 'Selecione o seu sistema de vendas de domínios para criar a integração. Selecione "Nenhum" se não desejar exibir botões de compra.', 'owh-domain-whois-rdap' ) . '</p>';
+		}
 	}
 
 	/**
@@ -1596,7 +1644,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 					<div class="notice notice-warning inline">
 						<p>
 							<?php esc_html_e( 'Nenhum campo customizado foi criado ainda.', 'owh-domain-whois-rdap' ); ?>
-							<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap#custom-fields' )); ?>" target="_blank">
+							<a href="<?php echo esc_url(admin_url( 'admin.php?page=owh-rdap-settings#custom-fields' )); ?>" target="_blank">
 								<?php esc_html_e( 'Clique aqui para criar campos customizados', 'owh-domain-whois-rdap' ); ?>
 							</a>
 						</p>
@@ -2173,6 +2221,12 @@ class Owh_Domain_Whois_Rdap_Admin {
 			wp_send_json_error( 'WooCommerce is not active' );
 		}
 
+		// Check if integration type is set to WooCommerce
+		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+		if ( 'woocommerce' !== $integration_type ) {
+			wp_send_json_error( 'Conversão indisponível. O Tipo de Integração não está configurado como WooCommerce.' );
+		}
+
 		// Get and validate TLD
 		if ( ! isset( $_POST['tld'] ) || empty( $_POST['tld'] ) ) {
 			wp_send_json_error( 'TLD is required' );
@@ -2253,6 +2307,12 @@ class Owh_Domain_Whois_Rdap_Admin {
 		// Check if WooCommerce is active
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			wp_send_json_error( 'WooCommerce is not active' );
+		}
+
+		// Check if integration type is set to WooCommerce
+		$integration_type = get_option( 'owh_rdap_integration_type', 'none' );
+		if ( 'woocommerce' !== $integration_type ) {
+			wp_send_json_error( 'Status de produto indisponível. O Tipo de Integração não está configurado como WooCommerce.' );
 		}
 
 		// Get and validate TLDs

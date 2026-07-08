@@ -5,7 +5,9 @@
   "scripts": {
     "build": "babel admin/js/owh-domain-whois-rdap-blocks.jsx --out-file admin/js/owh-domain-whois-rdap-blocks.js --presets=@babel/preset-react",
     "watch": "babel admin/js/owh-domain-whois-rdap-blocks.jsx --watch --out-file admin/js/owh-domain-whois-rdap-blocks.js --presets=@babel/preset-react",
-    "dev": "npm run watch"
+    "dev": "npm run watch",
+    "postinstall": "cp node_modules/gridjs/dist/gridjs.umd.js admin/js/ && cp node_modules/gridjs/dist/theme/mermaid.min.css admin/css/gridjs-mermaid.min.css",
+    "copy-gridjs": "cp node_modules/gridjs/dist/gridjs.umd.js admin/js/ && cp node_modules/gridjs/dist/theme/mermaid.min.css admin/css/gridjs-mermaid.min.css"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.0",

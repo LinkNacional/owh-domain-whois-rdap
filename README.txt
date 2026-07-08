@@ -4,7 +4,7 @@ Donate link: https://www.linknacional.com.br/wordpress/plugins/
 Tags: domains, whois, rdap, search, dns
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 1.2.10
+Stable tag: 1.3.0
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
@@ -140,6 +140,22 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.3.0 - 2025/07/08 =
+* New: WooCommerce integration type is now disabled in settings when WooCommerce plugin is not active, with visual guidance.
+* New: "Convert to Product" button in TLDs grid now requires WooCommerce integration — disabled with tooltip otherwise.
+* New: WordPress Plugin Check (PCP) integration via `.reasonix/skills/plugin-check.sh`.
+* New: Security scan script (`.reasonix/skills/check-security.sh`) — validates sanitization, nonces, escaping, and SQL prepare.
+* New: WP-CLI wrapper (`.reasonix/skills/wp-cli-wrapper.sh`) with safety lock for destructive commands and Local WP socket sync.
+* New: PHPUnit testing infrastructure — `phpunit.xml.dist`, `wp-tests-config.php`, `tests/bootstrap.php` with WooCommerce sibling loading.
+* New: OpenAPI contracts (`specs/openapi/`) and BDD/Gherkin feature specs (`specs/features/`).
+* New: `AGENTS.md` with architecture and security directives for AI agents.
+* New: `.reasonix.toml` pipeline — Spec → RED → GREEN → Security → Plugin-Check → Refactor.
+* Fix: Grid.js CSS/JS now loaded from `admin/` directory instead of missing `node_modules/` — resolves 500 error in production.
+* Fix: Wrong product settings link `owh-rdap` → `owh-rdap-settings`.
+* Fix: Removed missing `owh-domain-product-admin.css` enqueue — 404 on product edit page.
+* Tweak: Server-side AJAX guards for TLD-to-product conversion when WooCommerce integration is not active.
+* Tweak: Auto-reset integration type to "None" if WooCommerce is deactivated while selected.
+
 = 1.2.10 - 2026/06/01 =
 * Tweak: Minimum required PHP version bumped to 8.2.
 
