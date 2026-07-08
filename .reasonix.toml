@@ -1,0 +1,229 @@
+# .reasonix.toml
+# Pipeline de comportamento obrigatório — OWH Domain WHOIS RDAP
+#
+# Todo ciclo de desenvolvimento DEVE seguir esta máquina de estados.
+# Pular estágio = bloqueio. Sem exceções.
+
+[agent]
+name = "owh-domain-whois-rdap"
+language = "php"
+framework = "wordpress"
+
+# ──────────────────────────────────────────────
+# PIPELINE: Spec → RED → GREEN → SECURITY → PLUGIN-CHECK → REFACTOR
+# ──────────────────────────────────────────────
+
+[pipeline]
+# Ordem canônica dos estágios. Cada gate bloqueia o próximo.
+stages = ["spec", "red", "green", "security", "plugin-check", "refactor"]
+
+# Se true, o pipeline é interrompido no primeiro estágio que falhar
+fail_fast = true
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 1: SPEC — Leitura obrigatória de contexto
+# ──────────────────────────────────────────────
+
+[pipeline.stages.spec]
+description = "Ler especificações antes de qualquer código"
+required = true
+timeout_seconds = 120
+
+# Arquivos que DEVEM ser consultados no início de cada tarefa
+required_files = [
+    "AGENTS.md",
+    ".github/copilot-instructions.md",
+]
+
+# Arquivos de contexto condicional (carregar conforme escopo da tarefa)
+contextual_files = [
+    { path = ".github/wc-integration.md", when = "escopo envolve WooCommerce ou produto domain" },
+    { path = "composer.json", when = "escopo envolve dependências ou autoload" },
+    { path = "phpunit.xml.dist", when = "escopo envolve testes" },
+]
+
+# Gate: bloqueia se required_files não foram lidos
+[[pipeline.stages.spec.gate]]
+type = "files_read"
+paths = ["AGENTS.md", ".github/copilot-instructions.md"]
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 2: RED — Teste falho primeiro
+# ──────────────────────────────────────────────
+
+[pipeline.stages.red]
+description = "Escrever teste que FALHA antes de implementar"
+required = true
+timeout_seconds = 300
+
+# O teste DEVE falhar (exit ≠ 0) para avançar
+# Se passar sem implementação, o teste é inválido
+
+[[pipeline.stages.red.rules]]
+type = "test_must_fail"
+message = "Teste passou antes da implementação — teste inválido ou já coberto"
+
+# Diretório de testes por camada
+[pipeline.stages.red.test_dirs]
+legacy = "tests/"          # Testes de integração WP (snake_case)
+unit = "tests/Unit/"       # Testes unitários src/ (PSR-4)
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 3: GREEN — Implementação mínima
+# ──────────────────────────────────────────────
+
+[pipeline.stages.green]
+description = "Código mínimo para passar no teste"
+required = true
+
+# Regras de conformidade verificadas automaticamente
+[[pipeline.stages.green.rules]]
+type = "naming_convention"
+description = "src/ usa PascalCase, includes/ usa snake_case"
+check = "lint_naming"
+
+[[pipeline.stages.green.rules]]
+type = "dependency_injection"
+description = "Nenhum `new` dentro de serviço src/"
+check = "no_new_in_services"
+scope = ["src/Services/"]
+
+[[pipeline.stages.green.rules]]
+type = "hooks_in_loader"
+description = "Nenhum add_action/add_filter em construtor"
+check = "no_hooks_in_constructor"
+scope = ["admin/", "public/", "includes/"]
+
+[[pipeline.stages.green.rules]]
+type = "test_must_pass"
+message = "Teste falhou após implementação"
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 4: SECURITY — Validação de segurança
+# ──────────────────────────────────────────────
+
+[pipeline.stages.security]
+description = "Auditar superglobais, nonces, escaping e capabilities"
+required = true
+
+[[pipeline.stages.security.checks]]
+id = "no_raw_superglobals"
+description = "Nenhum $_POST/$_GET/$_REQUEST sem sanitização"
+pattern = '$_POST\[|$_GET\[|$_REQUEST\['
+exclude_pattern = '(sanitize_text_field|sanitize_email|sanitize_key|intval|absint|wp_unslash|esc_)'
+message = "Superglobal crua detectada — usar sanitize_text_field() ou equivalente"
+
+[[pipeline.stages.security.checks]]
+id = "ajax_nonce"
+description = "Toda action AJAX registrada requer check_ajax_referer"
+pattern = 'wp_ajax_'
+require_sibling = 'check_ajax_referer'
+message = "Endpoint AJAX sem nonce — adicionar check_ajax_referer()"
+
+[[pipeline.stages.security.checks]]
+id = "output_escaping"
+description = "Todo echo de variável dinâmica deve ser escapado"
+pattern = 'echo\s+\$'
+exclude_pattern = '(esc_html|esc_attr|esc_url|esc_js|wp_kses|esc_textarea)'
+message = "echo sem escaping — usar esc_html(), esc_url(), etc."
+
+[[pipeline.stages.security.checks]]
+id = "rest_permission"
+description = "register_rest_route exige permission_callback"
+pattern = 'register_rest_route'
+require_sibling = 'permission_callback'
+message = "REST route sem permission_callback — não usar __return_true"
+
+[[pipeline.stages.security.checks]]
+id = "sql_prepared"
+description = "$wpdb->query() deve usar prepare() ou ser estático"
+pattern = '\$wpdb->(query|get_var|get_row|get_results)\('
+require_sibling = '(prepare|->prepare)'
+exclude_pattern = '("DELETE FROM|"UPDATE\s+\w+\s+SET)'
+message = "Query SQL sem prepare() — risco de SQL injection"
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 5: PLUGIN-CHECK — WordPress Plugin Check (PCP)
+# ──────────────────────────────────────────────
+
+[pipeline.stages.plugin-check]
+description = "Validar plugin com WordPress Plugin Check (PCP) em modo estrito"
+required = true
+
+# Script dedicado — o agente DEVE executá-lo via shell
+[[pipeline.stages.plugin-check.rules]]
+type = "shell"
+command = "bash .reasonix/skills/plugin-check.sh"
+timeout_seconds = 120
+message = "Plugin Check falhou — corrija todos os errors e warnings antes de prosseguir"
+
+# Regra de re-execução: se exit 1, corrigir e repetir até passar limpo
+[[pipeline.stages.plugin-check.rules]]
+type = "retry_until_pass"
+max_retries = 5
+message = "Re-executar plugin-check.sh até zero errors e zero warnings"
+
+# ──────────────────────────────────────────────
+# ESTÁGIO 6: REFACTOR — Limpeza e padrões
+# ──────────────────────────────────────────────
+
+[pipeline.stages.refactor]
+description = "Refatorar sem quebrar testes"
+required = true
+
+[[pipeline.stages.refactor.checks]]
+id = "no_dead_code"
+description = "Remover imports/uses não utilizados"
+
+[[pipeline.stages.refactor.checks]]
+id = "no_debug_artifacts"
+description = "Remover var_dump, die, console.log, error_log"
+pattern = '(var_dump|print_r|die\(|error_log|console\.log)'
+exclude_pattern = '(wp_die|_wp_die_handler)'
+message = "Artefato de debug detectado — remover antes do commit"
+
+[[pipeline.stages.refactor.checks]]
+id = "psr4_compliance"
+description = "Namespace alinhado com estrutura de diretórios"
+scope = ["src/"]
+
+[[pipeline.stages.refactor.checks]]
+id = "test_still_green"
+type = "test_must_pass"
+message = "Refactor quebrou testes existentes"
+
+# ──────────────────────────────────────────────
+# RESPOSTAS CAVEMAN MODE
+# ──────────────────────────────────────────────
+
+[behavior]
+# Respostas telegráficas forçadas
+verbose = false
+max_prose_lines = 3       # Máximo de linhas de prosa por resposta
+code_first = true          # Sempre começar resposta com código/diff
+
+# RTK — Rust Token Killer
+[behavior.rtk]
+compress_terminal = true
+max_terminal_lines = 10    # Condensar output >10 linhas
+filter_vendor_warnings = true
+show_only_project_errors = true
+
+# ──────────────────────────────────────────────
+# POLÍTICA DE COMMIT
+# ──────────────────────────────────────────────
+
+[commit]
+# Mensagens seguem conventional commits
+style = "conventional"
+# Ex: feat(src): adiciona validação de TLD no RdapClient
+# Ex: fix(admin): sanitiza input de domínio no settings page
+# Ex: test(unit): cobre DomainValidator com casos de borda
+
+# Não commitar se:
+block_on = [
+    "test_failure",        # Testes falhando
+    "debug_artifacts",     # var_dump, console.log, etc
+    "raw_superglobals",    # $_POST cru
+    "missing_nonce",       # AJAX/REST sem nonce
+]

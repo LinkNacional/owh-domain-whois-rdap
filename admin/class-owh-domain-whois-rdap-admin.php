@@ -105,7 +105,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 				// Grid.js CSS
 				wp_enqueue_style(
 					'gridjs-theme',
-					plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/theme/mermaid.min.css',
+					plugin_dir_url( __FILE__ ) . 'css/gridjs-mermaid.min.css',
 					array(),
 					$this->version,
 					'all'
@@ -239,7 +239,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			// Grid.js library
 			wp_enqueue_script(
 				'gridjs',
-				plugin_dir_url( dirname( __FILE__ ) ) . 'node_modules/gridjs/dist/gridjs.umd.js',
+				plugin_dir_url( __FILE__ ) . 'js/gridjs.umd.js',
 				array(),
 				$this->version,
 				true
