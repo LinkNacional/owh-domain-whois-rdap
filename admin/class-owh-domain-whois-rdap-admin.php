@@ -943,7 +943,7 @@ class Owh_Domain_Whois_Rdap_Admin {
 			'sanitize_callback' => 'absint'
 		) );
 		register_setting( 'owh_rdap_settings', 'owh_rdap_integration_type', array(
-			'sanitize_callback' => 'sanitize_key'
+			'sanitize_callback' => array( $this, 'sanitize_integration_type' )
 		) );
 		register_setting( 'owh_rdap_settings', 'owh_rdap_custom_url', array(
 			'sanitize_callback' => 'esc_url_raw'
@@ -1084,17 +1084,72 @@ class Owh_Domain_Whois_Rdap_Admin {
 	}
 
 	/**
+	 * Sanitize integration type value.
+	 *
+	 * Bloqueia 'woocommerce' se o plugin não estiver ativo.
+	 *
+	 * @param string $value Raw input.
+	 * @return string Sanitized value.
+	 */
+	public function sanitize_integration_type( $value ) {
+		$value = sanitize_key( $value );
+
+		if ( 'woocommerce' === $value && ! class_exists( 'WooCommerce' ) ) {
+			add_settings_error(
+				'owh_rdap_integration_type',
+				'woocommerce_inactive',
+				esc_html__( 'Não foi possível selecionar WooCommerce porque o plugin não está ativo.', 'owh-domain-whois-rdap' ),
+				'error'
+			);
+			return 'none';
+		}
+
+		return $value;
+	}
+
+	/**
 	 * Integration type field callback
 	 */
 	public function integration_type_callback() {
 		$value = get_option( 'owh_rdap_integration_type', 'none' );
+		$woocommerce_active = class_exists( 'WooCommerce' );
+
+		// Se WooCommerce foi desativado mas a opção ainda está salva como woocommerce,
+		// reseta para 'none' e exibe aviso
+		if ( 'woocommerce' === $value && ! $woocommerce_active ) {
+			update_option( 'owh_rdap_integration_type', 'none' );
+			$value = 'none';
+			add_settings_error(
+				'owh_rdap_integration_type',
+				'woocommerce_inactive',
+				esc_html__( 'A integração foi redefinida para "Nenhum" porque o plugin WooCommerce não está mais ativo.', 'owh-domain-whois-rdap' ),
+				'warning'
+			);
+		}
+
 		echo '<select name="owh_rdap_integration_type" id="owh_rdap_integration_type">';
 		echo '<option value="none"' . selected( 'none', $value, false ) . '>' . esc_html__( 'Nenhum', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="custom"' . selected( 'custom', $value, false ) . '>' . esc_html__( 'Custom URL', 'owh-domain-whois-rdap' ) . '</option>';
 		echo '<option value="whmcs"' . selected( 'whmcs', $value, false ) . '>' . esc_html__( 'WHMCS', 'owh-domain-whois-rdap' ) . '</option>';
-		echo '<option value="woocommerce"' . selected( 'woocommerce', $value, false ) . '>' . esc_html__( 'WooCommerce', 'owh-domain-whois-rdap' ) . '</option>';
+
+		// WooCommerce option: disabled se plugin não estiver ativo
+		if ( $woocommerce_active ) {
+			echo '<option value="woocommerce"' . selected( 'woocommerce', $value, false ) . '>' . esc_html__( 'WooCommerce', 'owh-domain-whois-rdap' ) . '</option>';
+		} else {
+			echo '<option value="woocommerce" disabled="disabled" style="color: #999;">'
+				. esc_html__( 'WooCommerce (plugin não está instalado/ativo)', 'owh-domain-whois-rdap' )
+				. '</option>';
+		}
+
 		echo '</select>';
-		echo '<p class="description">' . esc_html__( 'Selecione o seu sistema de vendas de domínios para criar a integração. Selecione "Nenhum" se não desejar exibir botões de compra.', 'owh-domain-whois-rdap' ) . '</p>';
+
+		if ( ! $woocommerce_active ) {
+			echo '<p class="description" style="color: #d63638;">'
+				. esc_html__( 'A opção WooCommerce está desabilitada porque o plugin WooCommerce não está instalado ou ativo. Instale e ative o WooCommerce para habilitar esta integração.', 'owh-domain-whois-rdap' )
+				. '</p>';
+		} else {
+			echo '<p class="description">' . esc_html__( 'Selecione o seu sistema de vendas de domínios para criar a integração. Selecione "Nenhum" se não desejar exibir botões de compra.', 'owh-domain-whois-rdap' ) . '</p>';
+		}
 	}
 
 	/**
