@@ -47,6 +47,9 @@ tests/_output/
 # IMPORTANTE: Normalmente o devcontainer DEVE ser versionado para o time usar. 
 # Remova a linha abaixo se quiser compartilhar o ambiente Docker com a equipe.
 .devcontainer/devcontainer.json
+PR-DRAFT.md
+.reasonix/skills/task-readme.txt
+.reasonix/skills/task-pr.txt
 
 # ========================
 # Build e Distribuição
