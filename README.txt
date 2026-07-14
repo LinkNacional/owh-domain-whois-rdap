@@ -1,7 +1,7 @@
 === OWH Domain WHOIS RDAP ===
 Contributors: linknacional
 Donate link: https://www.linknacional.com.br/wordpress/plugins/
-Tags: domains, whois, rdap, search, dns
+Tags: domains, whois, rdap, search, registration
 Requires at least: 5.0
 Tested up to: 7.0
 Stable tag: 1.3.0
@@ -140,6 +140,8 @@ The plugin validates domains against IANA's official TLD list and supports stand
 Yes! Visit our [support page](https://www.linknacional.com.br/wordpress/plugins/) or create a GitHub issue for assistance.
 
 == Changelog ==
+= 1.3.1 - 2025/07/14 =
+* Fix: Fatal error when WooCommerce is not active.
 = 1.3.0 - 2025/07/08 =
 * New: WooCommerce integration type is now disabled in settings when WooCommerce plugin is not active, with visual guidance.
 * New: "Convert to Product" button in TLDs grid now requires WooCommerce integration — disabled with tooltip otherwise.

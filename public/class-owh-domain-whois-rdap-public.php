@@ -101,7 +101,8 @@ class Owh_Domain_Whois_Rdap_Public {
 		);
 
 		// Enqueue blocks checkout script for domain name modification
-		if ( is_cart() || is_checkout() ) {
+		// Só enfileira se WooCommerce estiver ativo (is_cart/is_checkout são funções WC)
+		if ( function_exists( 'is_cart' ) && ( is_cart() || is_checkout() ) ) {
 			wp_enqueue_script( 
 				'owh-domain-checkout-blocks', 
 				plugin_dir_url( __FILE__ ) . 'js/owh-domain-checkout-blocks.js', 

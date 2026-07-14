@@ -1,3 +1,5 @@
+# 1.3.1 - 2025/07/14
+* Fix: Fatal Error When WooCommerce not installed.
 # 1.3.0 - 2025/07/08
 * New: WooCommerce integration type is now disabled in settings when WooCommerce plugin is not active, with visual guidance.
 * New: "Convert to Product" button in TLDs grid now requires WooCommerce integration — disabled with tooltip otherwise.

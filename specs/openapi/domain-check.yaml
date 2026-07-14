@@ -1,7 +1,7 @@
 openapi: "3.1.0"
 info:
   title: "OWH Domain WHOIS RDAP — API REST"
-  version: "1.3.0"
+  version: "1.3.1"
   description: |
     Contratos de API REST e Webhooks do plugin OWH Domain WHOIS RDAP.
     Endpoints expostos via WordPress REST API (wp-json).

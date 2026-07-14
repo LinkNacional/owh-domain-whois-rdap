@@ -9,7 +9,7 @@ CURRENT_PHP=$(grep -h -E -i -m 1 "^[ \t]*\*[ \t]*Requires PHP:" *.php 2>/dev/nul
 
 # Lógica de hints para Versão
 if [ -z "$CURRENT_VERSION" ]; then
-    VERSION_HINT="[ex: 1.3.0]"
+    VERSION_HINT="[ex: 1.3.1]"
 else
     VERSION_HINT="[última foi: $CURRENT_VERSION]"
 fi
@@ -53,7 +53,7 @@ Contexto da Release:
 $COMMITS
 
 Diretrizes de Execução (Obrigatório):
-1. Leia o arquivo '.reasonix/skills/wp-readme-standard.txt' e use-o como gabarito rigoroso de formatação.
+1. Leia o arquivo '.reasonix/templates/README.txt' e use-o como gabarito rigoroso de formatação.
 2. Atualize o cabeçalho do 'readme.txt' atual com as novas marcações: 'Stable tag: $VERSION', 'Tested up to: $TESTED_UP' e 'Requires PHP: $PHP_VERSION'.
 3. Adicione a versão $VERSION na seção '== Changelog ==', transformando o log de commits em uma lista amigável e profissional.
 4. Se o usuário forneceu 'Destaques', avalie se vale a pena adicionar um breve parágrafo na seção '== Description ==', mas NUNCA exclua ou sobrescreva o conteúdo que já existe lá (descrições, FAQs, etc.).
