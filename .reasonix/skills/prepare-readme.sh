@@ -9,7 +9,7 @@ CURRENT_PHP=$(grep -h -E -i -m 1 "^[ \t]*\*[ \t]*Requires PHP:" *.php 2>/dev/nul
 
 # Lógica de hints para Versão
 if [ -z "$CURRENT_VERSION" ]; then
-    VERSION_HINT="[ex: 1.3.0]"
+    VERSION_HINT="[ex: 1.3.1]"
 else
     VERSION_HINT="[última foi: $CURRENT_VERSION]"
 fi

@@ -9,7 +9,7 @@
 * **Tags:** domains, whois, rdap, search, dns
 * **Testado até:** 7.0
 * **Requer PHP:** 8.2
-* **Tag estável:** 1.3.0
+* **Tag estável:** 1.3.1
 * **Licença:** GPLv2 ou posterior
 * **URI da licença:** [https://www.gnu.org/licenses/gpl-2.0.html](https://www.gnu.org/licenses/gpl-2.0.html)
 
