@@ -1,11 +1,23 @@
 Ação: Atualizar os arquivos da release (readme.txt e cabeçalho PHP).
 
 Contexto da Release:
-- Nova Versão: 1.3.0
+- Nova Versão: 1.3.2
 - Tested up to: 7.0
 - Requires PHP: 8.2
 - Destaques informados pelo usuário: 
 - Commits recentes para basear o changelog:
+97a7435 📝 ajuste na versão do plugin README.txt
+44381f6 📝 ajuste na versão do plugin
+7af00d9 🔨  Correção de erro fatal quando não tem o WooCommerce instalado. Verificaração de Plugin antes de carregar o cart.
+44336d1 Skill para criar o Readme.md
+3b5bc1e Add WordPress tag
+2743dbe Merge branch 'dev' of https://github.com/LinkNacional/owh-domain-whois-rdap into dev
+7aab4de Ajuste Gitignore novos arquivos
+fd36dec :memo: ajuste na versão do plugin
+5b616b4 Correção de warning de JS de Welcome
+939f010 renomeando README.txt
+6fa6a6a Ajuste Readme.txt e versões
+c14b4b6 script de readme e correçao de link e remocao de CSS nao existente
 ca198f8 Verifica se o WooCommerce esta disponível
 2a3d920 Converter para produto verificar tipo de integracao
 0618727 Preparação de ambiente para manutenção de plugin
@@ -64,8 +76,8 @@ cb2acd7 📝 Atualizando readme
 288787a ✨ Adicionando blocos ao gutenberg
 
 Diretrizes de Execução (Obrigatório):
-1. Leia o arquivo '.reasonix/skills/wp-readme-standard.txt' e use-o como gabarito rigoroso de formatação.
-2. Atualize o cabeçalho do 'readme.txt' atual com as novas marcações: 'Stable tag: 1.3.0', 'Tested up to: 7.0' e 'Requires PHP: 8.2'.
-3. Adicione a versão 1.3.0 na seção '== Changelog ==', transformando o log de commits em uma lista amigável e profissional.
+1. Leia o arquivo '.reasonix/templates/README.txt' e use-o como gabarito rigoroso de formatação.
+2. Atualize o cabeçalho do 'readme.txt' atual com as novas marcações: 'Stable tag: 1.3.2', 'Tested up to: 7.0' e 'Requires PHP: 8.2'.
+3. Adicione a versão 1.3.2 na seção '== Changelog ==', transformando o log de commits em uma lista amigável e profissional.
 4. Se o usuário forneceu 'Destaques', avalie se vale a pena adicionar um breve parágrafo na seção '== Description ==', mas NUNCA exclua ou sobrescreva o conteúdo que já existe lá (descrições, FAQs, etc.).
 5. IMPORTANTE: Atualize também as marcações 'Version:' e 'Requires PHP:' no cabeçalho de comentários do arquivo PHP principal do plugin para manter 100% de sincronia com o readme.txt.

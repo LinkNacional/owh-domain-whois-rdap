@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "=== 🚀 Assistente de Release (Readme.txt) ==="
+echo "=== 🚀 Assistente de Release (README.txt) ==="
 echo "Vamos preparar as informações para o Reasonix atualizar o readme."
 echo ""
 
@@ -42,7 +42,7 @@ fi
 
 # Cria o prompt dinâmico que será lido pelo Reasonix
 cat <<EOF > .reasonix/skills/task-readme.txt
-Ação: Atualizar os arquivos da release (readme.txt e cabeçalho PHP).
+Ação: Atualizar os arquivos da release (README.txt e cabeçalho PHP).
 
 Contexto da Release:
 - Nova Versão: $VERSION
@@ -54,10 +54,10 @@ $COMMITS
 
 Diretrizes de Execução (Obrigatório):
 1. Leia o arquivo '.reasonix/templates/README.txt' e use-o como gabarito rigoroso de formatação.
-2. Atualize o cabeçalho do 'readme.txt' atual com as novas marcações: 'Stable tag: $VERSION', 'Tested up to: $TESTED_UP' e 'Requires PHP: $PHP_VERSION'.
+2. Atualize o cabeçalho do 'README.txt' atual com as novas marcações: 'Stable tag: $VERSION', 'Tested up to: $TESTED_UP' e 'Requires PHP: $PHP_VERSION'.
 3. Adicione a versão $VERSION na seção '== Changelog ==', transformando o log de commits em uma lista amigável e profissional.
 4. Se o usuário forneceu 'Destaques', avalie se vale a pena adicionar um breve parágrafo na seção '== Description ==', mas NUNCA exclua ou sobrescreva o conteúdo que já existe lá (descrições, FAQs, etc.).
-5. IMPORTANTE: Atualize também as marcações 'Version:' e 'Requires PHP:' no cabeçalho de comentários do arquivo PHP principal do plugin para manter 100% de sincronia com o readme.txt.
+5. IMPORTANTE: Atualize também as marcações 'Version:' e 'Requires PHP:' no cabeçalho de comentários do arquivo PHP principal do plugin para manter 100% de sincronia com o README.txt.
 EOF
 
 echo "✅ Dossiê gerado com sucesso!"
