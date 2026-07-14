@@ -4,7 +4,7 @@ Donate link: https://www.linknacional.com.br/wordpress/plugins/
 Tags: domains, whois, rdap, search, registration
 Requires at least: 5.0
 Tested up to: 7.0
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 Requires PHP: 8.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.txt
